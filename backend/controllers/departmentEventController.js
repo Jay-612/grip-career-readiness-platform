@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import DepartmentEvent from '../model/DepartmentEvent.js';
 import User from '../model/User.js';
+import FacultyProfile from '../model/FacultyProfile.js';
 
 // ─── Schedule Improvement Event (POST /events or /api/events) ─────────────────
 export const createEvent = async (req, res) => {
@@ -23,7 +24,7 @@ export const createEvent = async (req, res) => {
       });
     }
 
-    // 3. Verify HOD user exists in database
+    // 3. Verify user exists and has faculty role
     const hodUser = await User.findById(hodId);
     if (!hodUser) {
       return res.status(404).json({
@@ -32,7 +33,23 @@ export const createEvent = async (req, res) => {
       });
     }
 
-    // 4. Validate event date
+    if (hodUser.role !== 'faculty') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. The specified user is not a faculty member',
+      });
+    }
+
+    // 4. Verify user has isHOD: true in FacultyProfile
+    const facultyProfile = await FacultyProfile.findOne({ facultyId: hodId });
+    if (!facultyProfile || !facultyProfile.isHOD) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only faculty members with HOD status (isHOD: true) can schedule department events',
+      });
+    }
+
+    // 5. Validate event date
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
       return res.status(400).json({
@@ -41,7 +58,7 @@ export const createEvent = async (req, res) => {
       });
     }
 
-    // 5. Create the department event
+    // 6. Create the department event
     const event = await DepartmentEvent.create({
       hodId,
       title: title.trim(),
@@ -171,6 +188,21 @@ export const updateEvent = async (req, res) => {
         return res.status(404).json({
           success: false,
           message: 'HOD user not found',
+        });
+      }
+
+      if (hodUser.role !== 'faculty') {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. The specified user is not a faculty member',
+        });
+      }
+
+      const facultyProfile = await FacultyProfile.findOne({ facultyId: hodId });
+      if (!facultyProfile || !facultyProfile.isHOD) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Only faculty members with HOD status (isHOD: true) can schedule or be assigned to department events',
         });
       }
       updateFields.hodId = hodId;
