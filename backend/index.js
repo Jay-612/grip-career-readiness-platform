@@ -9,6 +9,9 @@ import eventRoutes from './routes/eventRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import alumniRoutes from './routes/alumniRoutes.js';
 import guidanceRoutes from './routes/guidanceRoutes.js';
+import placementRoutes from './routes/placementRoutes.js';
+import progressRoutes from './routes/progressRoutes.js';
+import departmentRoutes from './routes/departmentRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +27,9 @@ app.use('/api/events', eventRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/alumni', alumniRoutes);
 app.use('/api/guidance', guidanceRoutes);
+app.use('/api/placement', placementRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/department', departmentRoutes);
 
 // ─── Health check ─────────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -54,7 +60,16 @@ const startServer = async () => {
     console.log(`                    GET    /api/guidance/requests`);
     console.log(`                    GET    /api/guidance/requests/:id`);
     console.log(`                    POST   /api/guidance/requests/:id/reply`);
-    console.log(`                    PUT    /api/guidance/reply/:id\n`);
+    console.log(`                    PUT    /api/guidance/reply/:id`);
+    console.log(`📊 Placement routes: GET    /api/placement/readiness/:studentId`);
+    console.log(`                    GET    /api/placement/company-match/:studentId`);
+    console.log(`                    GET    /api/placement/leaderboard`);
+    console.log(`📈 Progress routes: GET    /api/progress/dashboard/:studentId`);
+    console.log(`                    GET    /api/progress/goals/:studentId`);
+    console.log(`                    GET    /api/progress/interviews/:studentId`);
+    console.log(`🏫 Department routes: GET  /api/department/analytics`);
+    console.log(`                    GET    /api/department/skill-gaps`);
+    console.log(`                    GET    /api/department/placement-stats\n`);
   });
 };
 
