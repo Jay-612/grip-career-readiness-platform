@@ -305,3 +305,65 @@ export const getPlacementStats = async (req, res) => {
     });
   }
 };
+
+// ─── 3.4 Get Career Distribution ────────────────────────────────
+// GET /api/department/career-distribution
+export const getCareerDistribution = async (req, res) => {
+  try {
+    const hasAccess = await verifyHODAccess(req, res);
+    if (!hasAccess) return;
+
+    const totalStudents = await StudentProfile.countDocuments();
+
+    // Aggregate students grouped by selectedCareer
+    const distribution = await StudentProfile.aggregate([
+      {
+        $match: {
+          selectedCareer: { $exists: true, $ne: '' },
+        },
+      },
+      {
+        $group: {
+          _id: '$selectedCareer',
+          count: { $sum: 1 },
+          avgReadinessScore: { $avg: '$readinessScore' },
+        },
+      },
+      { $sort: { count: -1 } },
+      {
+        $project: {
+          _id: 0,
+          career: '$_id',
+          count: 1,
+          avgReadinessScore: { $round: ['$avgReadinessScore', 2] },
+          percentage: {
+            $round: [
+              {
+                $multiply: [{ $divide: ['$count', totalStudents || 1] }, 100],
+              },
+              2,
+            ],
+          },
+        },
+      },
+    ]);
+
+    const studentsWithCareer = distribution.reduce((sum, d) => sum + d.count, 0);
+    const studentsWithoutCareer = totalStudents - studentsWithCareer;
+
+    res.status(200).json({
+      success: true,
+      totalStudents,
+      studentsWithCareer,
+      studentsWithoutCareer,
+      distribution,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching career distribution',
+      error: error.message,
+    });
+  }
+};
+

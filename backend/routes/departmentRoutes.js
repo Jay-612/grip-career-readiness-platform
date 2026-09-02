@@ -4,6 +4,7 @@ import {
   getDepartmentAnalytics,
   getSkillGaps,
   getPlacementStats,
+  getCareerDistribution,
 } from '../controllers/departmentController.js';
 
 const router = express.Router();
@@ -33,6 +34,15 @@ router.get(
   protect,
   authorize('faculty', 'admin'),
   getPlacementStats
+);
+
+// GET /api/department/career-distribution — Career path distribution across students
+// Access: Faculty (HOD), Admin — HOD check is done inside the controller
+router.get(
+  '/career-distribution',
+  protect,
+  authorize('faculty', 'admin'),
+  getCareerDistribution
 );
 
 export default router;
