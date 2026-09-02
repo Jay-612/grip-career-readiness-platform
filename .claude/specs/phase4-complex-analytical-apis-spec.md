@@ -40,7 +40,7 @@ Implement three complex analytical API modules that leverage MongoDB Aggregation
 ```
 readinessScore = (goalScore × 0.30) + (interviewScore × 0.40) + (feedbackScore × 0.30)
 ```
-
+http://dependent-apis-spec.md/
 **Component Calculations**:
 
 1. **goalScore** (0–100):

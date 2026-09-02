@@ -2,11 +2,13 @@ import mongoose from 'mongoose';
 import GuidanceRequest from '../model/GuidanceRequest.js';
 import GuidanceReply from '../model/GuidanceReply.js';
 import User from '../model/User.js';
+import FacultyProfile from '../model/FacultyProfile.js';
+import AlumniProfile from '../model/AlumniProfile.js';
 
 // ─── Create Guidance Request (Student Only) ───────────────────────
 export const createGuidanceRequest = async (req, res) => {
   try {
-    const studentId = req.user.id;
+    const studentId = req.user.id || req.user.userId;
     const { question } = req.body;
 
     if (!question || !question.trim()) {
@@ -56,7 +58,7 @@ export const getGuidanceRequests = async (req, res) => {
 
     // Students can only see their own requests
     if (req.user.role === 'student') {
-      filter.studentId = req.user.id;
+      filter.studentId = req.user.id || req.user.userId;
     }
 
     const [requests, totalItems] = await Promise.all([
@@ -116,10 +118,12 @@ export const getGuidanceRequestById = async (req, res) => {
       });
     }
 
+    const currentUserId = (req.user.id || req.user.userId || '').toString();
+
     // Students can only view their own requests
     if (
       req.user.role === 'student' &&
-      request.studentId._id.toString() !== req.user.id.toString()
+      request.studentId._id.toString() !== currentUserId
     ) {
       return res.status(403).json({
         success: false,
@@ -160,12 +164,22 @@ export const getGuidanceRequestById = async (req, res) => {
   }
 };
 
-// ─── Reply to Guidance Request (Faculty, Alumni, Admin) ───────────
-export const replyToGuidanceRequest = async (req, res) => {
+// ─── POST /api/guidance/:id/reply — Reply to Guidance Request ──────
+export const replyGuidanceRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const mentorId = req.user.id;
-    const { answerText } = req.body;
+    const mentorId = req.user.id || req.user.userId;
+    const userRole = (req.user.role || '').toLowerCase();
+
+    // Restricted strictly to Faculty, Alumni, or Admin
+    if (userRole !== 'faculty' && userRole !== 'alumni' && userRole !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only Faculty or Alumni can reply to guidance requests.',
+      });
+    }
+
+    const answerText = req.body.reply || req.body.answerText;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -177,11 +191,10 @@ export const replyToGuidanceRequest = async (req, res) => {
     if (!answerText || !answerText.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'answerText is required',
+        message: 'reply text is required',
       });
     }
 
-    // Verify the guidance request exists
     const request = await GuidanceRequest.findById(id);
     if (!request) {
       return res.status(404).json({
@@ -190,32 +203,58 @@ export const replyToGuidanceRequest = async (req, res) => {
       });
     }
 
-    const reply = await GuidanceReply.create({
+    await GuidanceReply.create({
       requestId: id,
       mentorId,
       answerText: answerText.trim(),
     });
 
-    const populated = await GuidanceReply.findById(reply._id)
-      .populate('mentorId', 'name email role');
-
-    res.status(201).json({
-      success: true,
-      message: 'Reply posted successfully',
-      reply: {
-        id: populated._id,
-        requestId: populated.requestId,
-        mentorId: populated.mentorId._id,
-        mentorName: populated.mentorId.name,
-        mentorEmail: populated.mentorId.email,
-        mentorRole: populated.mentorId.role,
-        answerText: populated.answerText,
-      },
+    return res.status(201).json({
+      message: 'Reply sent successfully',
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error while posting reply',
+      error: error.message,
+    });
+  }
+};
+
+// Alias for existing route compatibility
+export const replyToGuidanceRequest = replyGuidanceRequest;
+
+// ─── GET /api/mentors/recommendation — Get Mentor Recommendations ─
+export const getMentorRecommendations = async (req, res) => {
+  try {
+    const [facultyProfiles, alumniProfiles] = await Promise.all([
+      FacultyProfile.find().populate('facultyId', 'name email role'),
+      AlumniProfile.find().populate('alumniId', 'name email role'),
+    ]);
+
+    const facultyMentors = facultyProfiles
+      .filter((f) => f.facultyId && f.facultyId.name)
+      .map((f) => ({
+        name: f.facultyId.name,
+        role: 'Faculty',
+        careerTag: f.department || 'Faculty',
+      }));
+
+    const alumniMentors = alumniProfiles
+      .filter((a) => a.alumniId && a.alumniId.name)
+      .map((a) => ({
+        name: a.alumniId.name,
+        role: 'Alumni',
+        careerTag: a.jobRole || a.currentCompany || 'Alumni',
+      }));
+
+    const recommendations = [...facultyMentors, ...alumniMentors];
+
+    return res.status(200).json(recommendations);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching mentor recommendations',
       error: error.message,
     });
   }
@@ -225,7 +264,7 @@ export const replyToGuidanceRequest = async (req, res) => {
 export const updateGuidanceReply = async (req, res) => {
   try {
     const { id } = req.params;
-    const { answerText } = req.body;
+    const answerText = req.body.answerText || req.body.reply;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -249,9 +288,11 @@ export const updateGuidanceReply = async (req, res) => {
       });
     }
 
+    const currentUserId = (req.user.id || req.user.userId || '').toString();
+
     // Only the author or an admin can update
     if (
-      reply.mentorId.toString() !== req.user.id.toString() &&
+      reply.mentorId.toString() !== currentUserId &&
       req.user.role !== 'admin'
     ) {
       return res.status(403).json({

@@ -4,7 +4,7 @@ import {
   createGuidanceRequest,
   getGuidanceRequests,
   getGuidanceRequestById,
-  replyToGuidanceRequest,
+  replyGuidanceRequest,
   updateGuidanceReply,
 } from '../controllers/guidanceController.js';
 
@@ -29,12 +29,19 @@ router.get(
   getGuidanceRequestById
 );
 
-// POST /api/guidance/requests/:id/reply — Mentor replies to a request
+// POST /api/guidance/:id/reply & POST /api/guidance/requests/:id/reply — Mentor replies to a request
+router.post(
+  '/:id/reply',
+  protect,
+  authorize('faculty', 'alumni', 'admin'),
+  replyGuidanceRequest
+);
+
 router.post(
   '/requests/:id/reply',
   protect,
   authorize('faculty', 'alumni', 'admin'),
-  replyToGuidanceRequest
+  replyGuidanceRequest
 );
 
 // PUT /api/guidance/reply/:id — Update a reply (author or Admin)
