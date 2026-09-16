@@ -1,12 +1,14 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/Public/LandingPage';
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<div><h2>Public Home</h2></div>} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
         
         {/* Auth Routes */}
         <Route path="/login" element={<div><h2>Login Page</h2></div>} />
@@ -23,6 +25,9 @@ const App = () => {
 
         {/* Recruiter Routes */}
         <Route path="/recruiter/*" element={<div><h2>Recruiter Dashboard</h2></div>} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
