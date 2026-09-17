@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP — Recruiter Candidate Evaluation &amp; Feedback Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-tint": "#2151da",
+            "on-surface": "#0b1c30",
+            "tertiary-container": "#006948",
+            "inverse-on-surface": "#eaf1ff",
+            "background": "#f8f9ff",
+            "inverse-surface": "#213145",
+            "surface-container": "#e5eeff",
+            "primary-container": "#1d4ed8",
+            "on-primary-container": "#cad3ff",
+            "on-secondary": "#ffffff",
+            "surface-dim": "#cbdbf5",
+            "surface-container-highest": "#d3e4fe",
+            "on-primary-fixed": "#001551",
+            "outline": "#747686",
+            "surface-container-low": "#eff4ff",
+            "on-tertiary-fixed-variant": "#005137",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#85f8c4",
+            "on-surface-variant": "#434655",
+            "on-secondary-fixed": "#131b2e",
+            "primary-fixed-dim": "#b7c4ff",
+            "secondary-fixed-dim": "#bec6e0",
+            "inverse-primary": "#b7c4ff",
+            "primary": "#0037b0",
+            "surface-container-high": "#dce9ff",
+            "surface-bright": "#f8f9ff",
+            "on-secondary-container": "#5c647a",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "surface-variant": "#d3e4fe",
+            "secondary": "#565e74",
+            "on-tertiary-container": "#76eab6",
+            "on-primary-fixed-variant": "#0039b5",
+            "error": "#ba1a1a",
+            "surface": "#f8f9ff",
+            "tertiary-fixed-dim": "#68dba9",
+            "secondary-container": "#dae2fd",
+            "primary-fixed": "#dce1ff",
+            "tertiary": "#004f35",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-error-container": "#93000a",
+            "outline-variant": "#c4c5d7",
+            "on-tertiary-fixed": "#002114",
+            "on-tertiary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed": "#dae2fd",
+            "on-background": "#0b1c30"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "margin-sm": "1rem",
+            "space-lg": "1.5rem",
+            "margin": "2rem",
+            "space-xl": "2.5rem",
+            "space-md": "1rem",
+            "gutter": "1.5rem",
+            "gutter-sm": "1rem"
+          },
+          "fontFamily": {
+            "body-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface antialiased">
+<!-- 1. LEFT SIDEBAR (260px Fixed) -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-outline-variant shadow-sm p-4">
+<!-- Top Brand & Recruiter Identity -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/60">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">GRIP</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-low text-primary border border-outline-variant/60 font-label-sm text-label-sm font-semibold">ENTERPRISE RECRUITER</span>
+</div>
+</div>
+<!-- Recruiter Snapshot Card -->
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/40 flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-headline-sm font-bold shadow-xs">
+            MV
+          </div>
+<div class="overflow-hidden">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface truncate">Marcus Vance</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Campus TA Lead • TechCorp Global</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5 pt-1 border-t border-outline-variant/40 text-tertiary font-label-sm text-label-sm font-medium">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span>Active Drive (Autumn '26)</span>
+</div>
+</div>
+<!-- Navigation Menu -->
+<nav class="flex flex-col gap-1 mt-1">
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">dashboard</span>
+<span>Recruiter Dashboard</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">domain</span>
+<span>Company Profile Manager</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">person_search</span>
+<span>Candidate Talent Bench</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-primary font-semibold">32</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">calendar_month</span>
+<span>Active Drives &amp; Schedules</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Oct 1</span>
+</a>
+<!-- ACTIVE ITEM: Student Feedback Portal -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-surface-container-low text-primary font-label-lg text-label-lg font-semibold border-l-4 border-primary" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">rate_review</span>
+<span>Student Feedback Portal</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-bold border border-outline-variant/40">14 Pending</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">sync</span>
+<span>ATS Integration &amp; Sync</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-semibold">Workday</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span>Recruitment Settings</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/30 font-label-md text-label-md transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">logout</span>
+<span>Sign Out</span>
+</div>
+</a>
+</nav>
+</div>
+<!-- Bottom Partner Card -->
+<div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/60 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-bold text-on-surface-variant">Evaluation Velocity</span>
+<span class="font-label-sm text-label-sm font-bold text-tertiary">96% SLA</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 56.25%;"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+<strong>18 / 32 Completed</strong> • 8 Offers Extended
+      </p>
+</div>
+</aside>
+<!-- 2. TOP APP BAR (ml-[260px], Height 64px) -->
+<header class="sticky top-0 right-0 z-30 w-full ml-[260px] max-w-[calc(100vw-260px)] h-16 bg-surface-container-lowest border-b border-outline-variant px-8 flex items-center justify-between shadow-xs">
+<!-- Breadcrumb -->
+<div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+<span>Portal</span>
+<span class="material-symbols-outlined text-outline text-[16px]">chevron_right</span>
+<span>Campus Recruitment</span>
+<span class="material-symbols-outlined text-outline text-[16px]">chevron_right</span>
+<span class="font-semibold text-on-surface">Candidate Evaluation &amp; Feedback Portal</span>
+</div>
+<!-- Center Search Bar -->
+<div class="w-96 relative">
+<span class="material-symbols-outlined text-outline absolute left-3 top-2.5 text-[18px]">search</span>
+<input class="w-full h-10 pl-9 pr-14 bg-surface rounded-lg border border-outline-variant text-on-surface placeholder:text-outline text-body-sm font-body-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search candidate by name, USN, panelist..." type="text"/>
+<span class="absolute right-2.5 top-2.5 px-1.5 py-0.5 bg-surface-container-low rounded text-outline font-label-sm text-label-sm border border-outline-variant/60">Ctrl+K</span>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-tertiary-fixed/30 border border-tertiary-fixed-dim/60 rounded-full">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-ping"></span>
+<span class="font-label-sm text-label-sm text-on-tertiary-fixed-variant font-semibold">Autumn Drive: Day 2 Technical</span>
+</div>
+<button class="h-10 px-4 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-lg text-label-lg font-semibold flex items-center gap-2 shadow-xs transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span>Batch Submit to Placement Cell</span>
+</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface hover:bg-surface-container-low relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-error text-on-error font-label-sm text-label-sm rounded-full flex items-center justify-center font-bold">5</span>
+</button>
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-lg text-label-lg font-bold border border-surface-container-high">
+        MV
+      </div>
+</div>
+</header>
+<!-- 3. MAIN WORKSPACE CANVAS (ml-[260px] p-8) -->
+<main class="ml-[260px] p-8 bg-background min-h-[calc(100vh-64px)] space-y-6">
+<!-- Top Diagnostic & Filter Bar -->
+<div class="flex flex-col gap-5">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Candidate Interview Evaluation &amp; Feedback Portal</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Record round outcomes, competency rubrics, hiring recommendations, and actionable student feedback.</p>
+</div>
+<!-- Status Counter Diagnostic Pills -->
+<div class="flex flex-wrap items-center gap-2">
+<div class="px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-label-sm text-label-sm font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span>Pending Feedback (14)</span>
+</div>
+<div class="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-label-sm font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+<span>Strong Hire / Super Dream (8)</span>
+</div>
+<div class="px-3 py-1.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-label-sm text-label-sm font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-blue-600"></span>
+<span>Under Deliberation (6)</span>
+</div>
+<div class="px-3 py-1.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-label-sm text-label-sm font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-purple-600"></span>
+<span>Official Offers Extended (4)</span>
+</div>
+</div>
+</div>
+<!-- Filter Sub-Tabs -->
+<div class="flex items-center gap-2 border-b border-outline-variant pb-2 overflow-x-auto">
+<button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors">
+          All Evaluated (32)
+        </button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container-low text-primary border border-primary/20 font-label-md text-label-md font-bold shadow-xs">
+          Needs Feedback (14)
+        </button>
+<button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors">
+          Round 2: System Design (8)
+        </button>
+<button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors">
+          Round 1: DSA (10)
+        </button>
+<button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors">
+          Bar-Raiser (4)
+        </button>
+<button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors">
+          Offers Extended (8)
+        </button>
+</div>
+</div>
+<!-- Split-Pane Workspace: Left (Candidate Queue) / Right (Evaluation Studio) -->
+<div class="grid grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN: Candidate Queue (380px equivalent: 4-cols) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-3">
+<div class="flex items-center justify-between px-1">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase font-bold">Priority Queue (5 Live)</span>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]">filter_list</span> Sort: Round
+            </span>
+</div>
+</div>
+<!-- Candidate Item 1: SELECTED / ACTIVE -->
+<div class="bg-surface-container-low border-2 border-primary-container rounded-xl p-4 shadow-sm relative cursor-pointer flex flex-col gap-2.5">
+<div class="absolute left-0 top-3 bottom-3 w-1.5 bg-primary-container rounded-r-md"></div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm font-bold flex items-center justify-center shadow-xs">
+                RM
+              </div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Rohan Mehta</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Final Year CSE-A • USN: 1DS22CS402</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">Strong Hire</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant pt-1 border-t border-primary-fixed-dim/40">
+<span class="px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-semibold">Round 2: System Design</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">4.7 / 5.0</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Panel: Marcus V. &amp; Vikram S.</span>
+<span class="text-tertiary font-medium">25m ago</span>
+</div>
+</div>
+<!-- Candidate Item 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant hover:border-outline rounded-xl p-4 shadow-xs hover:shadow-sm cursor-pointer flex flex-col gap-2.5 transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-fixed font-headline-sm text-headline-sm font-bold flex items-center justify-center">
+                AI
+              </div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Ananya Iyer</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Final Year CSE-B • USN: 1DS22CS388</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-label-sm text-label-sm font-semibold">Hire (R2 Next)</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant pt-1 border-t border-outline-variant/50">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Round 1: Concurrency &amp; DSA</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">4.2 / 5.0</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Panel: Sarah Jenkins</span>
+<span>1h ago</span>
+</div>
+</div>
+<!-- Candidate Item 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant hover:border-outline rounded-xl p-4 shadow-xs hover:shadow-sm cursor-pointer flex flex-col gap-2.5 transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-primary font-headline-sm text-headline-sm font-bold flex items-center justify-center">
+                PH
+              </div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Pooja Hegde</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Final Year CSE-A • USN: 1DS22CS415</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">Strong Hire</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant pt-1 border-t border-outline-variant/50">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Round 2: Distributed Core</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">4.5 / 5.0</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Panel: Marcus Vance</span>
+<span>3h ago</span>
+</div>
+</div>
+<!-- Candidate Item 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant hover:border-outline rounded-xl p-4 shadow-xs hover:shadow-sm cursor-pointer flex flex-col gap-2.5 transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed text-on-secondary-fixed font-headline-sm text-headline-sm font-bold flex items-center justify-center">
+                VR
+              </div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Vikramaditya Rao</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">3rd Year CSE-A • USN: 1DS23CS012</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-label-sm text-label-sm font-semibold">Hold / Review</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant pt-1 border-t border-outline-variant/50">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Round 1: DSA Trees &amp; Graphs</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">3.6 / 5.0</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Panel: Tanmay Bhatia</span>
+<span>4h ago</span>
+</div>
+</div>
+<!-- Candidate Item 5 -->
+<div class="bg-surface-container-lowest border border-outline-variant hover:border-outline rounded-xl p-4 shadow-xs hover:shadow-sm cursor-pointer flex flex-col gap-2.5 transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-error-container text-on-error-container font-headline-sm text-headline-sm font-bold flex items-center justify-center">
+                SS
+              </div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Sahil Sharma</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Final Year CSE-B • USN: 1DS22CS490</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-label-sm text-label-sm font-semibold">Non-Select</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant pt-1 border-t border-outline-variant/50">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Round 1: DSA Dynamic Prog</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">2.9 / 5.0</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Panel: Sarah Jenkins</span>
+<span>Yesterday</span>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Evaluation Studio (8-cols) -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<!-- 3A. Candidate Header & Verification Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-5">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-start gap-4">
+<div class="w-14 h-14 rounded-xl bg-primary-container text-on-primary font-headline-lg text-headline-lg font-bold flex items-center justify-center shadow-md">
+                RM
+              </div>
+<div class="space-y-1">
+<div class="flex items-center gap-3 flex-wrap">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Rohan Mehta</h2>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Strong Hire (Super Dream)
+                  </span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-semibold">USN: 1DS22CS402</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                  Final Year B.Tech CSE (Cloud Architecture) • CGPA: <strong>9.24 / 10</strong> • Dayananda Sagar CE
+                </p>
+<p class="font-label-md text-label-md text-primary font-semibold">
+                  Target Track: SDE-1 Cloud Platform (24 - 28 LPA Super Dream Tier)
+                </p>
+</div>
+</div>
+<!-- Composite Score Badge -->
+<div class="flex flex-col items-end justify-center bg-surface-container-low border border-primary-container/30 px-5 py-3 rounded-xl min-w-[150px]">
+<span class="font-label-sm text-label-sm uppercase font-bold text-on-surface-variant">Composite Score</span>
+<span class="font-metric-val text-metric-val font-bold text-primary">4.7 <span class="text-sm font-normal text-on-surface-variant">/ 5.0</span></span>
+<span class="font-label-sm text-label-sm text-tertiary font-bold">Top 2% of Cohort</span>
+</div>
+</div>
+<!-- Fast verification banner & quick links -->
+<div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-outline-variant">
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-outline text-[18px]">group</span>
+<span>Interview Panel: <strong>Marcus Vance</strong> (Campus TA) &amp; <strong>Vikram Singhania</strong> (Senior SWE)</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-9 px-3 rounded-lg border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+<span>Resume (PDF)</span>
+</button>
+<button class="h-9 px-3 rounded-lg border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">school</span>
+<span>Faculty Scorecard (4.35)</span>
+</button>
+<button class="h-9 px-3.5 bg-tertiary text-on-tertiary hover:bg-tertiary-container rounded-lg font-label-md text-label-md font-bold flex items-center gap-1.5 shadow-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Extend Super Dream Offer (28 LPA)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 3B. Technical Competency Rubric Matrix -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">fact_check</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Technical Competency Evaluation Rubric</h3>
+</div>
+<span class="px-2.5 py-1 rounded bg-surface-container text-primary font-label-sm text-label-sm font-bold">Round 2: System Architecture</span>
+</div>
+<div class="space-y-4">
+<!-- Criterion 1 -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface/50 space-y-2.5">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">1. System Architecture &amp; Scalability</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Distributed caching, partition tolerance, and load balancing topologies.</p>
+</div>
+<!-- Score Segmented 1-5 -->
+<div class="flex items-center gap-1 bg-surface-container-lowest p-1 rounded-lg border border-outline-variant">
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">1.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">2.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">3.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">4.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">4.5</button>
+<button class="w-8 h-8 rounded bg-primary-container text-on-primary font-label-sm text-label-sm font-bold shadow-xs">5.0</button>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/50 text-body-sm font-body-sm text-on-surface">
+<span class="font-label-sm text-label-sm font-bold text-primary uppercase mr-2">Evaluator Note:</span>
+                Demonstrated exceptional intuition for distributed caching and Redis cluster failover under simulated burst conditions.
+              </div>
+</div>
+<!-- Criterion 2 -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface/50 space-y-2.5">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">2. Concurrency Primitives &amp; Thread Safety</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Goroutines, channels, mutexes, memory barriers, and distributed locks.</p>
+</div>
+<!-- Score Segmented 1-5 -->
+<div class="flex items-center gap-1 bg-surface-container-lowest p-1 rounded-lg border border-outline-variant">
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">1.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">2.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">3.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">4.0</button>
+<button class="w-8 h-8 rounded bg-primary-container text-on-primary font-label-sm text-label-sm font-bold shadow-xs">4.5</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">5.0</button>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/50 text-body-sm font-body-sm text-on-surface">
+<span class="font-label-sm text-label-sm font-bold text-primary uppercase mr-2">Evaluator Note:</span>
+                Identified race condition in cache eviction and implemented single-flight pattern with versioned fencing tokens.
+              </div>
+</div>
+<!-- Criterion 3 -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface/50 space-y-2.5">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">3. Low-Level Design &amp; Code Cleanliness</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Modularity, domain abstractions, exception handling, and API idiomatic style.</p>
+</div>
+<!-- Score Segmented 1-5 -->
+<div class="flex items-center gap-1 bg-surface-container-lowest p-1 rounded-lg border border-outline-variant">
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">1.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">2.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">3.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">4.0</button>
+<button class="w-8 h-8 rounded bg-primary-container text-on-primary font-label-sm text-label-sm font-bold shadow-xs">4.8</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">5.0</button>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/50 text-body-sm font-body-sm text-on-surface">
+<span class="font-label-sm text-label-sm font-bold text-primary uppercase mr-2">Evaluator Note:</span>
+                Idiomatic Go code for the rate limiter. Very clean abstractions.
+              </div>
+</div>
+<!-- Criterion 4 -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface/50 space-y-2.5">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">4. STAR Behavioral &amp; Leadership Principles</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ownership, engineering trade-off justification, and cross-functional empathy.</p>
+</div>
+<!-- Score Segmented 1-5 -->
+<div class="flex items-center gap-1 bg-surface-container-lowest p-1 rounded-lg border border-outline-variant">
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">1.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">2.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">3.0</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">4.0</button>
+<button class="w-8 h-8 rounded bg-primary-container text-on-primary font-label-sm text-label-sm font-bold shadow-xs">4.6</button>
+<button class="w-8 h-8 rounded text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container">5.0</button>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/50 text-body-sm font-body-sm text-on-surface">
+<span class="font-label-sm text-label-sm font-bold text-primary uppercase mr-2">Evaluator Note:</span>
+                Articulated engineering trade-offs with high clarity and technical humility.
+              </div>
+</div>
+</div>
+</div>
+<!-- 3C. Constructive Candidate Feedback Studio -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">feedback</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Constructive Feedback for Rohan</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Dispatched to Student Portal &amp; Placement Cell upon approval</span>
+</div>
+<!-- Rich Text Feedback Content Container -->
+<div class="border border-outline-variant rounded-xl overflow-hidden bg-surface">
+<!-- Mock Toolbar -->
+<div class="px-4 py-2 bg-surface-container-low border-b border-outline-variant flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary font-bold text-label-sm">B</button>
+<button class="hover:text-primary italic text-label-sm">I</button>
+<button class="hover:text-primary underline text-label-sm">U</button>
+<span class="w-[1px] h-4 bg-outline-variant"></span>
+<button class="material-symbols-outlined text-[16px] hover:text-primary">format_list_bulleted</button>
+<button class="material-symbols-outlined text-[16px] hover:text-primary">format_list_numbered</button>
+<button class="material-symbols-outlined text-[16px] hover:text-primary">code</button>
+<span class="w-[1px] h-4 bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-outline">Automated Rubric Assist: Active</span>
+</div>
+<div class="p-4 space-y-3 font-body-md text-body-md text-on-surface">
+<p>
+                Rohan demonstrated rare depth in distributed systems engineering fundamentals for an undergraduate candidate. His live implementation of the sliding window rate limiter was production-grade.
+              </p>
+<div>
+<p class="font-label-md text-label-md font-bold text-primary mb-1">Key Strengths:</p>
+<ul class="list-disc pl-5 space-y-1 text-on-surface-variant font-body-sm text-body-sm">
+<li>Flawless understanding of Redis ZSET time-window mechanics.</li>
+<li>Excellent communication of latency vs consistency trade-offs.</li>
+</ul>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold text-primary mb-1">Areas for Continuous Growth:</p>
+<ol class="list-decimal pl-5 space-y-1 text-on-surface-variant font-body-sm text-body-sm">
+<li>Gain hands-on exposure with Kubernetes operator controllers and eBPF observability in production.</li>
+<li>Study distributed consensus protocols (Raft/Paxos) in multi-region active-active architectures.</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<!-- 3D. Final Decision & ATS Sync Toolbar -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-5">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Final Hiring Recommendation</h3>
+<span class="font-label-sm text-label-sm text-primary font-bold">Round 2 Closure</span>
+</div>
+<!-- Decision Radio Selection Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<label class="flex items-center gap-3 p-3.5 rounded-xl border-2 border-primary bg-surface-container-low cursor-pointer transition-colors">
+<input checked="" class="w-4 h-4 text-primary focus:ring-primary" name="hiring_recommendation" type="radio"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-primary">Strong Hire — Super Dream Offer</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">28 LPA Tier • Direct placement</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl border border-outline-variant hover:border-outline cursor-pointer transition-colors">
+<input class="w-4 h-4 text-primary focus:ring-primary" name="hiring_recommendation" type="radio"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">Hire — Core SDE-1 Offer</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">24 LPA Tier • Standard placement</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl border border-outline-variant hover:border-outline cursor-pointer transition-colors">
+<input class="w-4 h-4 text-primary focus:ring-primary" name="hiring_recommendation" type="radio"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">Hold for Second Technical Review</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Requires cross-panel arbitration</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl border border-outline-variant hover:border-outline cursor-pointer transition-colors">
+<input class="w-4 h-4 text-primary focus:ring-primary" name="hiring_recommendation" type="radio"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">Non-Select</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Dispatch constructive feedback report</span>
+</div>
+</label>
+</div>
+<!-- Verification Checkboxes -->
+<div class="space-y-2 pt-2 border-t border-outline-variant">
+<label class="flex items-center gap-2 cursor-pointer text-body-sm font-body-sm text-on-surface">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-primary border-outline-variant" type="checkbox"/>
+<span>Sync scorecard and qualitative notes directly into Workday ATS (Job Req: <strong>#WD-9841</strong>)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer text-body-sm font-body-sm text-on-surface">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-primary border-outline-variant" type="checkbox"/>
+<span>Send official hiring commendation to University Placement Cell (Prof. Neha Sharma)</span>
+</label>
+</div>
+<!-- Bottom Action Buttons Toolbar -->
+<div class="flex flex-wrap items-center justify-between gap-3 pt-3">
+<div class="flex items-center gap-2">
+<button class="h-10 px-4 rounded-lg border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors">
+                Save Draft
+              </button>
+<button class="h-10 px-4 rounded-lg border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors">
+                Request Co-Panelist Sign-off
+              </button>
+</div>
+<button class="h-10 px-5 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-lg text-label-lg font-bold flex items-center gap-2 shadow-sm transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+<span>Finalize Scorecard &amp; Dispatch to Student Portal (Ctrl+Enter)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

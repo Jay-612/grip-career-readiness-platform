@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP — Alumni Mentor &amp; Contributor Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#cbdbf5",
+            "on-tertiary": "#ffffff",
+            "outline-variant": "#c4c5d7",
+            "on-surface-variant": "#434655",
+            "on-primary-fixed": "#001551",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed": "#131b2e",
+            "tertiary": "#004f35",
+            "surface-container-low": "#eff4ff",
+            "secondary-container": "#dae2fd",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed-dim": "#68dba9",
+            "on-primary-fixed-variant": "#0039b5",
+            "surface-tint": "#2151da",
+            "inverse-primary": "#b7c4ff",
+            "error": "#ba1a1a",
+            "primary": "#0037b0",
+            "tertiary-fixed": "#85f8c4",
+            "on-secondary-container": "#5c647a",
+            "on-tertiary-fixed-variant": "#005137",
+            "surface": "#f8f9ff",
+            "surface-container-highest": "#d3e4fe",
+            "surface-variant": "#d3e4fe",
+            "surface-bright": "#f8f9ff",
+            "secondary-fixed-dim": "#bec6e0",
+            "on-background": "#0b1c30",
+            "outline": "#747686",
+            "primary-fixed": "#dce1ff",
+            "secondary-fixed": "#dae2fd",
+            "primary-container": "#1d4ed8",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-primary-container": "#cad3ff",
+            "on-primary": "#ffffff",
+            "primary-fixed-dim": "#b7c4ff",
+            "on-tertiary-fixed": "#002114",
+            "error-container": "#ffdad6",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-high": "#dce9ff",
+            "background": "#f8f9ff",
+            "inverse-on-surface": "#eaf1ff",
+            "on-surface": "#0b1c30",
+            "tertiary-container": "#006948",
+            "surface-container": "#e5eeff",
+            "secondary": "#565e74",
+            "on-tertiary-container": "#76eab6",
+            "on-error": "#ffffff",
+            "inverse-surface": "#213145"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "gutter": "1.5rem",
+            "margin": "2rem",
+            "space-xl": "2.5rem",
+            "space-sm": "0.5rem",
+            "gutter-sm": "1rem",
+            "margin-sm": "1rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "body-sm": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+            "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "metric-val": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+            "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "headline-sm": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+            "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+            "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+            "display-lg-mobile": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F8FAFC;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] font-body-md text-body-md antialiased min-h-screen flex selection:bg-primary-container selection:text-white">
+<!-- LEFT SIDEBAR -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-[#E2E8F0] shadow-sm">
+<div class="flex flex-col h-full overflow-y-auto">
+<!-- Brand Header -->
+<div class="px-5 pt-5 pb-4 border-b border-[#E2E8F0] flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-white shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="school">school</span>
+</div>
+<div>
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">GRIP</span>
+<span class="block text-[10px] font-label-sm uppercase tracking-wider text-secondary">Institutional</span>
+</div>
+</div>
+<span class="bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] font-label-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">
+          ALUMNI MENTOR
+        </span>
+</div>
+<!-- Profile Snapshot Card -->
+<div class="p-3.5 mx-3.5 my-3 rounded-xl bg-slate-50 border border-slate-200">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-headline-sm text-headline-sm font-bold shadow-xs">
+            VS
+          </div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-lg text-label-lg font-bold text-slate-900 truncate">Vikram Singhania</h4>
+<p class="font-body-sm text-body-sm text-slate-500 truncate">Senior SWE @ TechCorp • CSE '21</p>
+</div>
+</div>
+<div class="mt-3 pt-2.5 border-t border-slate-200/80 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-[11px] font-label-sm text-[#059669] font-medium">Accepting Mentees (2 Slots)</span>
+</div>
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="lock_open">lock_open</span>
+</div>
+</div>
+<!-- Navigation Menu -->
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center justify-between px-3 py-2.5 rounded-r-lg bg-surface-container-low text-primary font-label-lg text-label-lg font-semibold border-l-4 border-primary" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary" data-icon="dashboard">dashboard</span>
+<span>Alumni Dashboard</span>
+</div>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-500" data-icon="edit_note">edit_note</span>
+<span>Experience Publisher</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-500" data-icon="forum">forum</span>
+<span>Mentorship Inbox</span>
+</div>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] border border-blue-200 text-[11px] font-semibold px-2 py-0.5 rounded-full">4 Unread</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-500" data-icon="work">work</span>
+<span class="truncate">Campus Referrals</span>
+</div>
+<span class="bg-slate-100 text-slate-700 text-[11px] font-medium px-2 py-0.5 rounded-md border border-slate-200">TechCorp</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-500" data-icon="quiz">quiz</span>
+<span>Mock Interview Hub</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-500" data-icon="groups">groups</span>
+<span>Alumni Network</span>
+</a>
+<div class="pt-3 my-2 border-t border-[#E2E8F0]">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-500" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Bottom Impact Milestone Card -->
+<div class="p-3.5 m-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/70 border border-blue-200 shadow-xs">
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-md bg-[#1D4ED8] text-white flex items-center justify-center shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-[16px] fill-icon" data-icon="stars" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<div>
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md font-bold text-slate-900">Top 5% Contributor</span>
+</div>
+<p class="text-[12px] font-body-sm text-slate-600 mt-1 leading-snug">
+<span class="font-semibold text-primary">18 Students Placed</span> via your verified mentorship &amp; company referrals.
+            </p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER (Offset for Sidebar) -->
+<div class="flex-1 ml-[260px] min-h-screen flex flex-col">
+<!-- TOP BAR -->
+<header class="sticky top-0 right-0 z-30 w-full h-16 bg-white border-b border-[#E2E8F0] px-8 flex items-center justify-between shadow-sm">
+<!-- Breadcrumb -->
+<div class="flex items-center gap-2 text-slate-500 font-label-md text-label-md">
+<span class="hover:text-primary cursor-pointer transition-colors">Portal</span>
+<span class="material-symbols-outlined text-[16px] text-slate-400" data-icon="chevron_right">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Alumni Network</span>
+<span class="material-symbols-outlined text-[16px] text-slate-400" data-icon="chevron_right">chevron_right</span>
+<span class="text-slate-900 font-semibold">Mentor &amp; Contributor Dashboard</span>
+</div>
+<!-- Center Search Bar -->
+<div class="relative w-[380px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400" data-icon="search">search</span>
+<input class="w-full h-9 pl-9 pr-12 text-body-sm bg-slate-50 border border-[#E2E8F0] rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search students, skill portfolios, interview queries..." type="text"/>
+<kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px] font-label-sm text-slate-500 shadow-2xs">Ctrl K</kbd>
+</div>
+<!-- Right Header Controls -->
+<div class="flex items-center gap-3.5">
+<!-- Mentoring Open Badge -->
+<div class="flex items-center gap-1.5 bg-[#ECFDF5] border border-[#A7F3D0] px-3 py-1 rounded-full text-label-sm text-[#059669] font-medium">
+<span class="h-2 w-2 rounded-full bg-[#059669]"></span>
+<span>1:1 Mentoring: Open</span>
+</div>
+<!-- Primary CTA -->
+<button class="h-9 px-3.5 bg-primary-container hover:bg-[#1E40AF] text-white font-label-lg text-label-lg font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+<span>Publish Experience</span>
+</button>
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Notification Bell -->
+<button class="relative p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[22px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+</button>
+<!-- Help Icon -->
+<button class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[22px]" data-icon="help_outline">help_outline</span>
+</button>
+<!-- Avatar Thumbnail -->
+<div class="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-label-sm font-bold shadow-xs cursor-pointer ring-2 ring-transparent hover:ring-primary-fixed-dim transition-all">
+          VS
+        </div>
+</div>
+</header>
+<!-- MAIN SCROLLABLE CONTENT -->
+<main class="flex-1 p-8 max-w-[1440px] space-y-6">
+<!-- A. HEADER WELCOME SECTION -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E8F0] p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg font-bold text-[#0F172A] tracking-tight">Welcome back, Vikram!</h1>
+<span class="inline-flex items-center gap-1 bg-[#EFF6FF] text-[#1D4ED8] border border-blue-200 text-label-sm px-2.5 py-0.5 rounded-full font-semibold">
+<span class="material-symbols-outlined text-[14px] fill-icon" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+              Verified TechCorp Alumni
+            </span>
+<span class="inline-flex items-center gap-1 bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] text-label-sm px-2.5 py-0.5 rounded-full font-semibold">
+<span class="material-symbols-outlined text-[14px] fill-icon" data-icon="workspace_premium" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+              Super Mentor (50+ Hours)
+            </span>
+</div>
+<p class="font-body-md text-body-md text-slate-500 mt-1">
+            Empowering the next generation of software engineers from your alma mater (Dept. of CSE, Class of 2026).
+          </p>
+</div>
+<div class="flex items-center gap-2.5 self-start md:self-auto">
+<button class="h-9 px-3.5 bg-white border border-[#E2E8F0] hover:bg-slate-50 text-slate-700 font-label-md text-label-md font-semibold rounded-lg shadow-2xs flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px] text-slate-500" data-icon="calendar_month">calendar_month</span>
+            Sync Calendar
+          </button>
+<button class="h-9 px-3.5 bg-white border border-[#E2E8F0] hover:bg-slate-50 text-slate-700 font-label-md text-label-md font-semibold rounded-lg shadow-2xs flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px] text-slate-500" data-icon="tune">tune</span>
+            Office Hours Settings
+          </button>
+</div>
+</div>
+<!-- B. 4 KPI IMPACT METRIC CARDS -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-sm hover:border-slate-300 transition-all">
+<div class="flex items-center justify-between text-slate-500 mb-2">
+<span class="font-label-md text-label-md font-medium text-slate-600 uppercase tracking-wider">Students Mentored</span>
+<span class="material-symbols-outlined text-[20px] text-primary" data-icon="school">school</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val font-bold text-slate-900">24 Students</span>
+</div>
+<div class="mt-2.5 flex items-center justify-between text-body-sm text-slate-500">
+<span>+4 this month</span>
+<span class="inline-flex items-center text-[11px] font-label-sm font-semibold text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-full border border-[#A7F3D0]">
+<span class="material-symbols-outlined text-[12px]" data-icon="arrow_upward">arrow_upward</span> +16.6%
+            </span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-sm hover:border-slate-300 transition-all">
+<div class="flex items-center justify-between text-slate-500 mb-2">
+<span class="font-label-md text-label-md font-medium text-slate-600 uppercase tracking-wider">Campus Referrals</span>
+<span class="material-symbols-outlined text-[20px] text-[#059669]" data-icon="forward_to_inbox">forward_to_inbox</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val font-bold text-slate-900">14 Submitted</span>
+</div>
+<div class="mt-2.5 flex items-center justify-between text-body-sm text-slate-500">
+<span class="truncate">35.7% placement rate</span>
+<span class="inline-flex items-center text-[11px] font-label-sm font-semibold text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-full border border-[#A7F3D0]">
+              5 Placed
+            </span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-sm hover:border-slate-300 transition-all">
+<div class="flex items-center justify-between text-slate-500 mb-2">
+<span class="font-label-md text-label-md font-medium text-slate-600 uppercase tracking-wider">Published Guides</span>
+<span class="material-symbols-outlined text-[20px] text-blue-600" data-icon="article">article</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val font-bold text-slate-900">6 Published</span>
+</div>
+<div class="mt-2.5 flex items-center justify-between text-body-sm text-slate-500">
+<span>4,820 Reads • 312 Saves</span>
+<span class="inline-flex items-center text-[11px] font-label-sm font-semibold text-[#1D4ED8] bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-blue-200">
+              Top Read
+            </span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-sm hover:border-slate-300 transition-all">
+<div class="flex items-center justify-between text-slate-500 mb-2">
+<span class="font-label-md text-label-md font-medium text-slate-600 uppercase tracking-wider">Mentorship Rating</span>
+<span class="material-symbols-outlined text-[20px] text-amber-500 fill-icon" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val font-bold text-slate-900">4.96</span>
+<span class="text-body-sm text-slate-500">/ 5.0</span>
+</div>
+<div class="mt-2.5 flex items-center justify-between text-body-sm text-slate-500">
+<span>28 Reviews</span>
+<div class="flex items-center text-amber-400">
+<span class="material-symbols-outlined text-[14px] fill-icon" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] fill-icon" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] fill-icon" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] fill-icon" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px] fill-icon" data-icon="star_half" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+</div>
+</div>
+</div>
+<!-- C. MIDDLE SECTION (60% / 40% SPLIT) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left: Upcoming Mentorship & Mock Interviews (7 Cols = ~58%) -->
+<div class="lg:col-span-7 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-slate-900">Upcoming Mentorship &amp; Mock Interview Sessions</h3>
+<p class="font-body-sm text-body-sm text-slate-500 mt-0.5">Confirmed 1:1 sessions with placement-bound final year students</p>
+</div>
+<span class="bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A] text-label-sm font-semibold px-2.5 py-1 rounded-full">
+                2 Scheduled Today
+              </span>
+</div>
+<!-- Session Items List -->
+<div class="mt-4 space-y-4">
+<!-- Item 1 -->
+<div class="p-4 rounded-xl border border-blue-200 bg-blue-50/30 hover:border-blue-300 transition-colors">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-11 h-11 rounded-full bg-primary text-white font-headline-sm flex items-center justify-center font-bold shrink-0">
+                      RM
+                    </div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-label-lg text-label-lg font-bold text-slate-900">Rohan Mehta</h4>
+<span class="text-slate-400">•</span>
+<span class="font-body-sm text-body-sm text-slate-600">Final Year CSE-A (9.24 CGPA)</span>
+</div>
+<p class="font-body-sm text-body-sm text-slate-500">Targeting: <span class="font-semibold text-slate-700">Tier-1 SDE / TechCorp Cloud</span></p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A] text-[11px] font-label-sm font-semibold px-2.5 py-1 rounded-full shrink-0">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+                    Today • 6:30 PM - 7:15 PM (In 45m)
+                  </span>
+</div>
+<!-- Topic & Readiness -->
+<div class="mt-3.5 pt-3 border-t border-blue-100/70 grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+<div>
+<span class="text-[11px] font-label-sm uppercase tracking-wider text-slate-400">Focus Topic</span>
+<p class="font-body-sm text-body-sm font-semibold text-slate-800 truncate">TechCorp SDE-1: Distributed Caching &amp; Partitioning</p>
+</div>
+<div>
+<div class="flex justify-between items-center text-[12px] mb-1">
+<span class="text-slate-500">Readiness Score</span>
+<span class="font-semibold text-[#059669]">88.4% Ready</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#059669] h-full rounded-full" style="width: 88.4%"></div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="mt-4 flex items-center gap-2.5">
+<button class="h-9 px-4 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white font-label-md text-label-md font-semibold rounded-lg shadow-sm flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]" data-icon="videocam">videocam</span>
+                    Launch Video Room
+                  </button>
+<button class="h-9 px-3.5 bg-white border border-[#E2E8F0] hover:bg-slate-50 text-slate-700 font-label-md text-label-md font-semibold rounded-lg shadow-2xs flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px] text-slate-400" data-icon="person_search">person_search</span>
+                    View Candidate Dossier
+                  </button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-colors">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-11 h-11 rounded-full bg-slate-800 text-white font-headline-sm flex items-center justify-center font-bold shrink-0">
+                      AI
+                    </div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-label-lg text-label-lg font-bold text-slate-900">Ananya Iyer</h4>
+<span class="text-slate-400">•</span>
+<span class="font-body-sm text-body-sm text-slate-600">Final Year CSE-B (8.91 CGPA)</span>
+</div>
+<p class="font-body-sm text-body-sm text-slate-500">Targeting: <span class="font-semibold text-slate-700">Fintech Apex / Core Backend</span></p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-label-sm font-semibold px-2.5 py-1 rounded-full shrink-0">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span>
+                    Tomorrow • 7:00 PM - 7:45 PM
+                  </span>
+</div>
+<!-- Topic & Readiness -->
+<div class="mt-3.5 pt-3 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+<div>
+<span class="text-[11px] font-label-sm uppercase tracking-wider text-slate-400">Focus Topic</span>
+<p class="font-body-sm text-body-sm font-semibold text-slate-800 truncate">Distributed Transaction Isolation &amp; ACID at Scale</p>
+</div>
+<div>
+<div class="flex justify-between items-center text-[12px] mb-1">
+<span class="text-slate-500">Readiness Score</span>
+<span class="font-semibold text-[#059669]">84.2% Ready</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#059669] h-full rounded-full" style="width: 84.2%"></div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="mt-4 flex items-center gap-2.5">
+<button class="h-9 px-3.5 bg-white border border-[#E2E8F0] hover:bg-slate-50 text-slate-700 font-label-md text-label-md font-semibold rounded-lg shadow-2xs flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px] text-slate-500" data-icon="assignment">assignment</span>
+                    Prepare Rubric
+                  </button>
+<button class="h-9 px-3 text-slate-500 hover:text-slate-800 font-label-md text-label-md font-medium transition-colors">
+                    Reschedule
+                  </button>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-2 border-t border-slate-100 flex justify-end">
+<a class="text-primary hover:underline font-label-md text-label-md font-semibold inline-flex items-center gap-1" href="#">
+              Manage Full Calendar &amp; Office Hours (8 slots total)
+              <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Right: AI Pre-Matched Candidates for TechCorp (5 Cols = ~42%) -->
+<div class="lg:col-span-5 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-slate-900">AI Pre-Matched for TechCorp</h3>
+<p class="font-body-sm text-body-sm text-slate-500 mt-0.5">Vetted students meeting your team's bar</p>
+</div>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] border border-blue-200 text-label-sm font-semibold px-2 py-0.5 rounded-full">
+                Campus Verified
+              </span>
+</div>
+<div class="mt-4 space-y-4">
+<!-- Candidate 1 -->
+<div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+                      RM
+                    </div>
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-slate-900">Rohan Mehta</h4>
+<p class="text-[11px] font-body-sm text-slate-500">Dept. of CSE-A • 9.24 CGPA</p>
+</div>
+</div>
+<span class="bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] text-[11px] font-label-sm font-semibold px-2 py-0.5 rounded-full">
+                    96% Team Match
+                  </span>
+</div>
+<div class="bg-white p-2.5 rounded-lg border border-slate-200 text-body-sm text-slate-700 space-y-1">
+<p class="flex items-center gap-1.5 text-xs">
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+                    Solved Distributed Cache Invalidation bug in capstone
+                  </p>
+<p class="flex items-center gap-1.5 text-xs">
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+                    Faculty Rubric: 4.35/5.0 in Systems Architecture
+                  </p>
+</div>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-xs text-slate-500">TechCorp Cloud Platform Team</span>
+<button class="h-8 px-3 bg-[#059669] hover:bg-emerald-700 text-white font-label-sm text-label-sm font-semibold rounded-lg flex items-center gap-1 transition-all shadow-xs">
+<span class="material-symbols-outlined text-[15px]" data-icon="send">send</span>
+                    Refer to Portal
+                  </button>
+</div>
+</div>
+<!-- Candidate 2 -->
+<div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-teal-700 text-white font-bold flex items-center justify-center text-xs">
+                      PH
+                    </div>
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-slate-900">Pooja Hegde</h4>
+<p class="text-[11px] font-body-sm text-slate-500">Dept. of CSE-A • 8.65 CGPA</p>
+</div>
+</div>
+<span class="bg-[#F0FDFA] text-[#0D9488] border border-teal-200 text-[11px] font-label-sm font-semibold px-2 py-0.5 rounded-full">
+                    91% Team Match
+                  </span>
+</div>
+<div class="bg-white p-2.5 rounded-lg border border-slate-200 text-body-sm text-slate-700 space-y-1">
+<p class="flex items-center gap-1.5 text-xs">
+<span class="material-symbols-outlined text-[14px] text-teal-600" data-icon="check_circle">check_circle</span>
+                    Specialized in Low-level Design &amp; Concurrency
+                  </p>
+<p class="flex items-center gap-1.5 text-xs">
+<span class="material-symbols-outlined text-[14px] text-teal-600" data-icon="check_circle">check_circle</span>
+                    Completed 180+ LeetCode Medium/Hard algorithmic tests
+                  </p>
+</div>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-xs text-slate-500">TechCorp Backend Core Team</span>
+<button class="h-8 px-3 bg-white border border-[#CBD5E1] hover:bg-slate-50 text-slate-800 font-label-sm text-label-sm font-semibold rounded-lg flex items-center gap-1 transition-all">
+<span class="material-symbols-outlined text-[15px] text-slate-500" data-icon="visibility">visibility</span>
+                    Review &amp; Refer
+                  </button>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-2 border-t border-slate-100 flex justify-end">
+<a class="text-primary hover:underline font-label-md text-label-md font-semibold inline-flex items-center gap-1" href="#">
+              View 12 More Matched Candidates
+              <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- D. BOTTOM SECTION (55% / 45% SPLIT) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left: Published Experiences & Community Impact (7 Cols = ~55%) -->
+<div class="lg:col-span-7 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-slate-900">Your Published Experiences &amp; Breakdown Guides</h3>
+<p class="font-body-sm text-body-sm text-slate-500 mt-0.5">High-impact tactical guides read across campus cohorts</p>
+</div>
+<button class="h-8 px-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-label-sm text-label-sm font-semibold rounded-lg flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+                Write New Guide
+              </button>
+</div>
+<!-- Articles List -->
+<div class="mt-4 space-y-3.5">
+<!-- Post 1 -->
+<div class="p-3.5 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50/50 transition-all flex flex-col justify-between gap-2">
+<div class="flex items-start justify-between gap-4">
+<a class="font-label-lg text-label-lg font-bold text-slate-900 hover:text-primary transition-colors leading-tight" href="#">
+                    Deconstructing the TechCorp SDE-1 System Design Interview: What We Really Look For
+                  </a>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] border border-blue-200 text-[10px] font-label-sm font-semibold px-2 py-0.5 rounded shrink-0">
+                    System Design
+                  </span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="visibility">visibility</span>
+                      2,410 Reads
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="bookmark">bookmark</span>
+                      148 Bookmarks
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="thumb_up">thumb_up</span>
+                      32 Upvotes
+                    </span>
+</div>
+<span>Published 2 weeks ago</span>
+</div>
+</div>
+<!-- Post 2 -->
+<div class="p-3.5 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50/50 transition-all flex flex-col justify-between gap-2">
+<div class="flex items-start justify-between gap-4">
+<a class="font-label-lg text-label-lg font-bold text-slate-900 hover:text-primary transition-colors leading-tight" href="#">
+                    Transitioning from College Mini-Projects to Production Microservices at Scale
+                  </a>
+<span class="bg-[#F0FDFA] text-[#0D9488] border border-teal-200 text-[10px] font-label-sm font-semibold px-2 py-0.5 rounded shrink-0">
+                    Career Transition
+                  </span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="visibility">visibility</span>
+                      1,890 Reads
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="bookmark">bookmark</span>
+                      114 Bookmarks
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="thumb_up">thumb_up</span>
+                      24 Upvotes
+                    </span>
+</div>
+<span>Published 1 month ago</span>
+</div>
+</div>
+<!-- Post 3 -->
+<div class="p-3.5 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50/50 transition-all flex flex-col justify-between gap-2">
+<div class="flex items-start justify-between gap-4">
+<a class="font-label-lg text-label-lg font-bold text-slate-900 hover:text-primary transition-colors leading-tight" href="#">
+                    Mastering Concurrency &amp; Goroutines for High-Throughput Payment Rails
+                  </a>
+<span class="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-label-sm font-semibold px-2 py-0.5 rounded shrink-0">
+                    Go / Backend
+                  </span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="visibility">visibility</span>
+                      520 Reads
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-slate-400" data-icon="bookmark">bookmark</span>
+                      50 Bookmarks
+                    </span>
+</div>
+<span>Published 3 days ago</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-3 border-t border-slate-100 flex justify-end">
+<a class="text-primary hover:underline font-label-md text-label-md font-semibold inline-flex items-center gap-1" href="#">
+              View All 6 Published Articles &amp; Analytics
+              <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Right: Recent Student Domain Questions (5 Cols = ~45%) -->
+<div class="lg:col-span-5 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-slate-900">Student Q&amp;A in Your Domain</h3>
+<p class="font-body-sm text-body-sm text-slate-500 mt-0.5">Targeted queries on TechCorp hiring bars</p>
+</div>
+<span class="bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A] text-label-sm font-semibold px-2.5 py-0.5 rounded-full">
+                4 Awaiting Response
+              </span>
+</div>
+<div class="mt-4 space-y-4">
+<!-- Question 1 -->
+<div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-slate-300 transition-all">
+<p class="font-body-sm text-body-sm font-semibold text-slate-900">
+                  "How critical is Kubernetes hands-on knowledge for entry-level SDE at TechCorp?"
+                </p>
+<div class="flex items-center justify-between text-xs text-slate-500 mt-2 mb-3">
+<span class="flex items-center gap-1.5 font-medium text-slate-700">
+<span class="w-5 h-5 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center text-[10px] font-bold">SS</span>
+                    Sahil Sharma (CSE-B)
+                  </span>
+<span>2h ago</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-7 px-3 bg-primary hover:bg-[#1E40AF] text-white font-label-sm text-[11px] font-semibold rounded flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]" data-icon="reply">reply</span>
+                    Quick Reply
+                  </button>
+<button class="h-7 px-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-label-sm text-[11px] font-semibold rounded flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px] text-slate-400" data-icon="bookmark_add">bookmark_add</span>
+                    Mark for Office Hours
+                  </button>
+</div>
+</div>
+<!-- Question 2 -->
+<div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-slate-300 transition-all">
+<p class="font-body-sm text-body-sm font-semibold text-slate-900">
+                  "Tips on structuring behavioral STAR stories for TechCorp Leadership Principles?"
+                </p>
+<div class="flex items-center justify-between text-xs text-slate-500 mt-2 mb-3">
+<span class="flex items-center gap-1.5 font-medium text-slate-700">
+<span class="w-5 h-5 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center text-[10px] font-bold">VR</span>
+                    Vikramaditya Rao (CSE-A)
+                  </span>
+<span>5h ago</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-7 px-3 bg-primary hover:bg-[#1E40AF] text-white font-label-sm text-[11px] font-semibold rounded flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]" data-icon="reply">reply</span>
+                    Quick Reply
+                  </button>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-3 border-t border-slate-100 flex justify-end">
+<a class="text-primary hover:underline font-label-md text-label-md font-semibold inline-flex items-center gap-1" href="#">
+              View all 14 pending community queries in Mentorship Inbox
+              <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
