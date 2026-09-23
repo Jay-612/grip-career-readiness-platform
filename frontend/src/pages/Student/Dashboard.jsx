@@ -254,7 +254,7 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center justify-between pt-1 border-t border-grip-border text-xs">
             <span className="text-grip-muted">Dept. Seminar Lab 3</span>
-            <Link to="/student/mentorship" className="font-semibold text-grip-blue hover:underline inline-flex items-center gap-1">
+            <Link to="/student/guidance" className="font-semibold text-grip-blue hover:underline inline-flex items-center gap-1">
               View Prep Sheet →
             </Link>
           </div>
@@ -468,7 +468,7 @@ const Dashboard = () => {
                 </svg>
                 <h3 className="text-sm font-bold text-grip-dark">Scheduled Sessions</h3>
               </div>
-              <Link to="/student/mentorship" className="text-xs text-grip-muted hover:text-grip-blue font-medium">
+              <Link to="/student/guidance" className="text-xs text-grip-muted hover:text-grip-blue font-medium">
                 Calendar →
               </Link>
             </div>
@@ -609,7 +609,7 @@ const Dashboard = () => {
               Real-time updates from faculty evaluations and alumni mock reviews
             </p>
           </div>
-          <Link to="/student/mentorship" className="text-xs font-semibold text-grip-blue hover:underline">
+          <Link to="/student/guidance" className="text-xs font-semibold text-grip-blue hover:underline">
             View All Activity History →
           </Link>
         </div>

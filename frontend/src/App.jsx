@@ -9,6 +9,9 @@ import RegisterPage from './pages/Auth/RegisterPage';
 import StudentDashboard from './pages/Student/Dashboard';
 import ProfileSkillsPage from './pages/Student/ProfileSkillsPage';
 import CareerCompassPage from './pages/Student/CareerCompassPage';
+import GoalTrackerPage from './pages/Student/GoalTrackerPage';
+import GuidancePage from './pages/Student/GuidancePage';
+import InterviewCenterPage from './pages/Student/InterviewCenterPage';
 import Button from './components/common/Button';
 import Badge from './components/common/Badge';
 import { GraduationCap, LogOut, CheckCircle, ArrowLeft } from 'lucide-react';
@@ -165,9 +168,12 @@ const App = () => {
             <Route path="profile" element={<ProfileSkillsPage />} />
             <Route path="career-compass" element={<CareerCompassPage />} />
             <Route path="career" element={<Navigate to="/student/career-compass" replace />} />
-            <Route path="goals" element={<PlaceholderScreen title="Goal Tracker" />} />
-            <Route path="mentorship" element={<PlaceholderScreen title="Mentorship & Q&A Hub" />} />
-            <Route path="interview-readiness" element={<PlaceholderScreen title="Interview & Readiness Center" />} />
+            <Route path="goals" element={<GoalTrackerPage />} />
+            <Route path="guidance" element={<GuidancePage />} />
+            <Route path="mentorship" element={<Navigate to="/student/guidance" replace />} />
+            <Route path="interviews" element={<InterviewCenterPage />} />
+            <Route path="interview-readiness" element={<Navigate to="/student/interviews" replace />} />
+            <Route path="readiness" element={<Navigate to="/student/interviews" replace />} />
           </Route>
 
           {/* Faculty Protected Routes */}
