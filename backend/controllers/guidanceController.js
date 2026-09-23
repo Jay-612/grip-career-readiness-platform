@@ -235,6 +235,7 @@ export const getMentorRecommendations = async (req, res) => {
     const facultyMentors = facultyProfiles
       .filter((f) => f.facultyId && f.facultyId.name)
       .map((f) => ({
+        id: f.facultyId._id,
         name: f.facultyId.name,
         role: 'Faculty',
         careerTag: f.department || 'Faculty',
@@ -243,6 +244,7 @@ export const getMentorRecommendations = async (req, res) => {
     const alumniMentors = alumniProfiles
       .filter((a) => a.alumniId && a.alumniId.name)
       .map((a) => ({
+        id: a.alumniId._id,
         name: a.alumniId.name,
         role: 'Alumni',
         careerTag: a.jobRole || a.currentCompany || 'Alumni',

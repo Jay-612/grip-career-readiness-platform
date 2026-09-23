@@ -46,8 +46,8 @@ const Sidebar = ({
       { name: 'Profile & Skills', path: '/student/profile', icon: UserCheck },
       { name: 'Career Compass', path: '/student/career-compass', icon: Compass },
       { name: 'Goal Tracker', path: '/student/goals', icon: Target, badge: 'Sprint' },
-      { name: 'Mentorship & Q&A', path: '/student/mentorship', icon: Users },
-      { name: 'Interview & Readiness', path: '/student/interview-readiness', icon: Award },
+      { name: 'Mentorship & Q&A', path: '/student/guidance', icon: Users },
+      { name: 'Interview & Readiness', path: '/student/interviews', icon: Award },
     ],
     faculty: [
       { name: 'Dashboard', path: '/faculty/dashboard', icon: LayoutDashboard },

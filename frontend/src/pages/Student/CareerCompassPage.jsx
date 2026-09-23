@@ -811,7 +811,7 @@ export const CareerCompassPage = () => {
                 </p>
               </div>
               <Link
-                to="/student/interview-readiness"
+                to="/student/interviews"
                 className="h-8 px-3 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold whitespace-nowrap flex items-center justify-center gap-1.5 transition-colors self-start sm:self-center"
               >
                 <span>Complete Assessment Lab</span>
