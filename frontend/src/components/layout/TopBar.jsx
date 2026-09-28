@@ -24,9 +24,9 @@ const TopBar = ({
     navigate('/login', { replace: true });
   };
 
-  const displayName = user?.name || 'Verified Student';
-  const displayEmail = user?.email || 'student@campus.edu';
   const displayRole = user?.role || 'student';
+  const displayName = user?.name || (displayRole === 'faculty' ? 'Faculty Member' : 'Verified Student');
+  const displayEmail = user?.email || `${displayRole}@campus.edu`;
 
   return (
     <header

@@ -51,9 +51,9 @@ const Sidebar = ({
     ],
     faculty: [
       { name: 'Dashboard', path: '/faculty/dashboard', icon: LayoutDashboard },
-      { name: 'Interview Evaluation', path: '/faculty/evaluations', icon: FileCheck, badge: '3 pending' },
-      { name: 'Guidance Inbox', path: '/faculty/guidance-inbox', icon: Send, badge: '5 unread' },
-      { name: 'HOD Analytics', path: '/faculty/hod-analytics', icon: BarChart3, badge: 'HOD' },
+      { name: 'Interview Evaluation', path: '/faculty/interviews', icon: FileCheck },
+      { name: 'Guidance Inbox', path: '/faculty/guidance', icon: Send },
+      { name: 'Analytics', path: '/faculty/analytics', icon: BarChart3 },
     ],
     alumni: [
       { name: 'Dashboard', path: '/alumni/dashboard', icon: LayoutDashboard },
@@ -134,7 +134,7 @@ const Sidebar = ({
             <div className="min-w-0">
               <p className="text-sm font-semibold text-grip-dark truncate">{displayName}</p>
               <p className="text-[11px] font-medium text-grip-muted flex items-center gap-1 truncate">
-                <span>STUDENT</span>
+                <span className="uppercase">{activeRole}</span>
                 <span>•</span>
                 <span className="truncate">Campus Portal</span>
               </p>

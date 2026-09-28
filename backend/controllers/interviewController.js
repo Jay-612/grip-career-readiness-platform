@@ -96,7 +96,23 @@ export const getAppointments = async (req, res) => {
         id: apt._id,
         date: dateStr,
         time: timeStr,
+        dateTime: apt.dateTime,
         status: apt.status,
+        meetLink: apt.meetLink || '',
+        student: apt.studentId
+          ? {
+              id: apt.studentId._id,
+              name: apt.studentId.name,
+              email: apt.studentId.email,
+            }
+          : null,
+        interviewer: apt.interviewerId
+          ? {
+              id: apt.interviewerId._id,
+              name: apt.interviewerId.name,
+              email: apt.interviewerId.email,
+            }
+          : null,
       };
     });
 

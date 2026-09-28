@@ -12,12 +12,18 @@ import CareerCompassPage from './pages/Student/CareerCompassPage';
 import GoalTrackerPage from './pages/Student/GoalTrackerPage';
 import GuidancePage from './pages/Student/GuidancePage';
 import InterviewCenterPage from './pages/Student/InterviewCenterPage';
+import FacultyDashboard from './pages/Faculty/Dashboard';
 import Button from './components/common/Button';
 import Badge from './components/common/Badge';
 import { GraduationCap, LogOut, CheckCircle, ArrowLeft } from 'lucide-react';
 
-// Clean placeholder for upcoming student screens (Goals, Compass, Mentorship, etc.)
-const PlaceholderScreen = ({ title }) => {
+// Clean placeholder for upcoming screens (Goals, Compass, Mentorship, Faculty Interviews, etc.)
+const PlaceholderScreen = ({ title, backPath }) => {
+  const { user } = useAuth();
+  const targetBackPath =
+    backPath ||
+    (user?.role === 'faculty' ? '/faculty/dashboard' : '/student/dashboard');
+
   return (
     <div className="p-8 sm:p-12 rounded-3xl bg-white border border-slate-200 shadow-card flex flex-col items-center text-center gap-4 my-6">
       <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
@@ -34,7 +40,7 @@ const PlaceholderScreen = ({ title }) => {
           This section is scaffolded and ready for role-specific implementation.
         </p>
       </div>
-      <Link to="/student/dashboard" className="mt-2">
+      <Link to={targetBackPath} className="mt-2">
         <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}>
           Back to Dashboard
         </Button>
@@ -176,15 +182,71 @@ const App = () => {
             <Route path="readiness" element={<Navigate to="/student/interviews" replace />} />
           </Route>
 
-          {/* Faculty Protected Routes */}
+          {/* Faculty Authenticated Layout & Nested Routes */}
           <Route
-            path="/faculty/*"
+            path="/faculty"
             element={
               <ProtectedRoute allowedRoles={['faculty', 'admin']}>
-                <RoleDashboardPlaceholder title="Faculty Mentorship & Analytics Portal" roleRequired="faculty" />
+                <DashboardLayout
+                  role="faculty"
+                  breadcrumbs={['Portal', 'Faculty Dashboard']}
+                  statusBadge={
+                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[11px] font-semibold text-blue-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Available for Mocks</span>
+                    </div>
+                  }
+                  quickAction={
+                    <Link to="/faculty/guidance">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        Guidance Inbox
+                      </Button>
+                    </Link>
+                  }
+                  primaryAction={
+                    <Link to="/faculty/interviews">
+                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
+                        + Evaluate Student
+                      </Button>
+                    </Link>
+                  }
+                />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<Navigate to="/faculty/dashboard" replace />} />
+            <Route path="dashboard" element={<FacultyDashboard />} />
+            <Route
+              path="interviews"
+              element={
+                <PlaceholderScreen
+                  title="Interview Evaluation Panel"
+                  backPath="/faculty/dashboard"
+                />
+              }
+            />
+            <Route path="evaluations" element={<Navigate to="/faculty/interviews" replace />} />
+            <Route
+              path="guidance"
+              element={
+                <PlaceholderScreen
+                  title="Guidance Inbox"
+                  backPath="/faculty/dashboard"
+                />
+              }
+            />
+            <Route path="guidance-inbox" element={<Navigate to="/faculty/guidance" replace />} />
+            <Route
+              path="analytics"
+              element={
+                <PlaceholderScreen
+                  title="HOD & Department Analytics"
+                  backPath="/faculty/dashboard"
+                />
+              }
+            />
+            <Route path="hod-analytics" element={<Navigate to="/faculty/analytics" replace />} />
+          </Route>
 
           {/* Alumni Protected Routes */}
           <Route
