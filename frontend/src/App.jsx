@@ -17,6 +17,8 @@ import InterviewEvaluationPage from './pages/Faculty/InterviewEvaluationPage';
 import GuidanceInboxPage from './pages/Faculty/GuidanceInboxPage';
 import HodAnalyticsPage from './pages/Faculty/HodAnalyticsPage';
 import AlumniDashboard from './pages/Alumni/AlumniDashboard';
+import ExperiencePublisherPage from './pages/Alumni/ExperiencePublisherPage';
+import MentorshipInboxPage from './pages/Alumni/MentorshipInboxPage';
 import Button from './components/common/Button';
 import Badge from './components/common/Badge';
 import { GraduationCap, LogOut, CheckCircle, ArrowLeft } from 'lucide-react';
@@ -276,25 +278,10 @@ const App = () => {
           >
             <Route index element={<Navigate to="/alumni/dashboard" replace />} />
             <Route path="dashboard" element={<AlumniDashboard />} />
-            <Route
-              path="experience"
-              element={
-                <PlaceholderScreen
-                  title="Experience Publisher Module"
-                  backPath="/alumni/dashboard"
-                />
-              }
-            />
+            <Route path="experience" element={<ExperiencePublisherPage />} />
             <Route path="experience-publisher" element={<Navigate to="/alumni/experience" replace />} />
-            <Route
-              path="mentorship"
-              element={
-                <PlaceholderScreen
-                  title="Alumni Mentorship Inbox"
-                  backPath="/alumni/dashboard"
-                />
-              }
-            />
+            <Route path="mentorship" element={<MentorshipInboxPage />} />
+            <Route path="mentorship/:requestId" element={<MentorshipInboxPage />} />
             <Route path="mentorship-inbox" element={<Navigate to="/alumni/mentorship" replace />} />
           </Route>
 

@@ -36,6 +36,12 @@ const alumniService = {
     return response.data;
   },
 
+  // Update an existing mentorship reply authored by this alumni
+  updateGuidanceReply: async (replyId, answerText) => {
+    const response = await apiClient.put(`/guidance/reply/${replyId}`, { answerText });
+    return response.data;
+  },
+
   // List all alumni experience posts with optional filters (e.g. tag)
   getPosts: async (params = {}) => {
     const response = await apiClient.get('/alumni/posts', { params });

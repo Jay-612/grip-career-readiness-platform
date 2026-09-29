@@ -8,6 +8,7 @@ import { Skeleton } from '../../components/common/Skeleton';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
 import Modal from '../../components/common/Modal';
+import ErrorBoundary from '../../components/common/ErrorBoundary';
 import {
   GraduationCap,
   Sparkles,
@@ -446,12 +447,18 @@ export const AlumniDashboard = () => {
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                        <Link
+                          to={`/alumni/mentorship/${reqItem.id}`}
+                          className="h-8 px-2.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors"
+                        >
+                          <span>Open Thread</span>
+                        </Link>
                         <button
                           onClick={() => openReplyModal(reqItem)}
-                          className="h-8 px-3.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+                          className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
                         >
                           <Send className="w-3.5 h-3.5" />
-                          <span>Reply</span>
+                          <span>Quick Reply</span>
                         </button>
                       </div>
                     </div>
@@ -554,13 +561,21 @@ export const AlumniDashboard = () => {
                           {reqItem.replyCount || (reqItem.latestReply ? 1 : 0)}{' '}
                           {reqItem.replyCount === 1 ? 'reply' : 'replies'}
                         </span>
-                        <button
-                          onClick={() => openReplyModal(reqItem)}
-                          className="font-semibold text-blue-600 hover:underline flex items-center gap-1"
-                        >
-                          <span>{isReplied ? 'Add Follow-Up Reply' : 'Post Reply'}</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            to={`/alumni/mentorship/${reqItem.id}`}
+                            className="font-semibold text-slate-500 hover:text-blue-600 flex items-center gap-0.5"
+                          >
+                            <span>Open Thread</span>
+                          </Link>
+                          <button
+                            onClick={() => openReplyModal(reqItem)}
+                            className="font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                          >
+                            <span>{isReplied ? 'Add Follow-Up' : 'Post Reply'}</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -919,4 +934,11 @@ export const AlumniDashboard = () => {
   );
 };
 
-export default AlumniDashboard;
+const SafeAlumniDashboard = (props) => (
+  <ErrorBoundary fallbackTitle="Alumni Dashboard Error">
+    <AlumniDashboard {...props} />
+  </ErrorBoundary>
+);
+
+export default SafeAlumniDashboard;
+
