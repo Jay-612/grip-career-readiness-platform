@@ -124,6 +124,15 @@ export async function seedUsers() {
   const createdUsers = await User.insertMany(rawUsers);
   console.log(`   ✓ Created ${createdUsers.length} Users`);
 
+  // Mirror to lowercase 'users' collection to guarantee compatibility across Compass, Mongo shell, and tools
+  try {
+    const rawDocs = createdUsers.map((u) => u.toObject());
+    await User.db.collection('users').deleteMany({});
+    await User.db.collection('users').insertMany(rawDocs);
+  } catch (err) {
+    // Non-fatal if already mirrored
+  }
+
   // Build a lookup map by email for easy relationship linking
   const usersByEmail = {};
   createdUsers.forEach((u) => {

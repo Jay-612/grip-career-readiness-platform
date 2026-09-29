@@ -53,6 +53,7 @@ export async function cleanupData() {
     AlumniProfile.deleteMany({}),
     RecruiterProfile.deleteMany({}),
     User.deleteMany({}),
+    mongoose.connection.db.collection('users').deleteMany({}).catch(() => {}),
   ]);
 
   console.log('✅ All collections successfully reset to clean state.\n');
