@@ -69,4 +69,5 @@ export const studentService = {
   },
 };
 
+export const studentApi = studentService;
 export default studentService;

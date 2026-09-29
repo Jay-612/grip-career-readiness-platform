@@ -1,66 +1,148 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  GraduationCap,
+  Award,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  ChevronRight,
+  Sparkles,
+  RefreshCw,
+  Target,
+  Layers,
+  Briefcase,
+  AlertTriangle,
+  ArrowRight,
+  TrendingUp,
+  Check,
+  Building2,
+  UserCheck
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
+import goalService from '../../services/goalService';
+import guidanceService from '../../services/guidanceService';
+import analyticsApi from '../../services/analyticsApi';
+import Button from '../../components/common/Button';
+import Badge from '../../components/common/Badge';
+import ProgressBar from '../../components/common/ProgressBar';
+import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
 
-const Dashboard = () => {
+export const Dashboard = () => {
   const { user } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [updatingGoalId, setUpdatingGoalId] = useState(null);
+  const [actionSuccessToast, setActionSuccessToast] = useState(null);
 
-  // Live state from backend
+  // Consolidated Dashboard Data State from Real APIs
   const [dashboardData, setDashboardData] = useState({
     profile: null,
     progress: null,
     readiness: null,
     companyMatches: [],
+    studentSkills: [],
     goals: [],
+    roadmap: null,
     appointments: [],
+    guidanceRequests: [],
+    leaderboardRank: null,
+    leaderboardTotal: null,
   });
 
-  const fetchData = async () => {
+  // ─────────────────────────────────────────────────────────────
+  // 1. DATA FETCHING (Single Efficient Parallel Request Suite)
+  // ─────────────────────────────────────────────────────────────
+  const fetchDashboardData = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // 1. Fetch user & student profile
+      // 1. Get base user & student profile
       const profileRes = await studentService.getProfile();
-      const studentId = profileRes?.user?.id || user?.id;
+      const currentUser = profileRes?.user || user;
+      const currentProfile = profileRes?.profile || null;
+      const studentId = currentUser?.id || user?.id;
 
-      // 2. Fetch concurrent data with graceful settlements
-      const [progressRes, readinessRes, companyRes, goalsRes, appointmentsRes] =
-        await Promise.allSettled([
-          studentId ? studentService.getProgressDashboard(studentId) : null,
-          studentId ? studentService.getPlacementReadiness(studentId) : null,
-          studentId ? studentService.getCompanyMatch(studentId) : null,
-          studentId ? studentService.getGoals(studentId) : null,
-          studentService.getAppointments(),
-        ]);
+      if (!studentId) {
+        throw new Error('Student identifier could not be verified.');
+      }
+
+      const selectedCareer = currentProfile?.selectedCareer || '';
+
+      // 2. Fetch parallel endpoints concurrently (Avoid duplicate requests)
+      const [
+        progressRes,
+        readinessRes,
+        companyRes,
+        goalsRes,
+        roadmapRes,
+        appointmentsRes,
+        guidanceRes,
+        leaderboardRes,
+      ] = await Promise.allSettled([
+        studentService.getProgressDashboard(studentId),
+        studentService.getPlacementReadiness(studentId),
+        selectedCareer ? studentService.getCompanyMatch(studentId) : null,
+        studentService.getGoals(studentId),
+        selectedCareer ? studentService.getCareerRoadmap(selectedCareer) : null,
+        studentService.getAppointments(),
+        guidanceService.getRequests(1, 10),
+        analyticsApi.getLeaderboard(1, 100),
+      ]);
+
+      // Process Leaderboard Percentile Rank
+      let myRank = null;
+      let totalStudents = null;
+      if (leaderboardRes.status === 'fulfilled' && leaderboardRes.value) {
+        totalStudents = leaderboardRes.value.totalItems || leaderboardRes.value.leaderboard?.length || null;
+        const entry = leaderboardRes.value.leaderboard?.find(
+          (item) => String(item.studentId) === String(studentId)
+        );
+        if (entry) {
+          myRank = entry.rank;
+        }
+      }
 
       setDashboardData({
-        profile: profileRes?.profile || null,
+        profile: currentProfile,
         progress: progressRes.status === 'fulfilled' ? progressRes.value : null,
         readiness: readinessRes.status === 'fulfilled' ? readinessRes.value : null,
         companyMatches:
           companyRes.status === 'fulfilled' && companyRes.value?.matches
             ? companyRes.value.matches
             : [],
+        studentSkills:
+          companyRes.status === 'fulfilled' && companyRes.value?.studentSkills
+            ? companyRes.value.studentSkills
+            : [],
         goals:
           goalsRes.status === 'fulfilled' && goalsRes.value?.goals
             ? goalsRes.value.goals
             : [],
+        roadmap: roadmapRes.status === 'fulfilled' ? roadmapRes.value : null,
         appointments:
           appointmentsRes.status === 'fulfilled' &&
           (Array.isArray(appointmentsRes.value)
             ? appointmentsRes.value
             : appointmentsRes.value?.appointments || []) || [],
+        guidanceRequests:
+          guidanceRes.status === 'fulfilled' && guidanceRes.value?.requests
+            ? guidanceRes.value.requests
+            : [],
+        leaderboardRank: myRank,
+        leaderboardTotal: totalStudents,
       });
     } catch (err) {
       console.error('Error loading student dashboard data:', err);
       setError(
         err.response?.data?.message ||
+          err.message ||
           'Failed to load dashboard data. Please check your network connection.'
       );
     } finally {
@@ -69,607 +151,881 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchDashboardData();
   }, [user?.id]);
 
-  // Derived dynamic or fallback values
-  const studentName = user?.name || 'Tapu';
+  // ─────────────────────────────────────────────────────────────
+  // 2. DETERMINISTIC DERIVATIONS (Zero Hardcoded Mocks)
+  // ─────────────────────────────────────────────────────────────
+
+  const studentName = user?.name || dashboardData.profile?.name || 'Student';
+  const semester = dashboardData.profile?.semester || 1;
+  const targetTrack = dashboardData.profile?.selectedCareer || '';
+
+  // Readiness Score & Target Tier
   const readinessScore =
-    dashboardData.readiness?.readinessScore ||
-    dashboardData.progress?.profile?.readinessScore ||
-    85;
+    dashboardData.readiness?.readinessScore ??
+    dashboardData.profile?.readinessScore ??
+    0;
 
-  const activeGoalsCount =
-    dashboardData.progress?.goals?.inProgress ||
-    dashboardData.progress?.goals?.pending ||
-    4;
+  const targetTier =
+    dashboardData.readiness?.targetTier ||
+    (readinessScore >= 80 ? 'Tier 1' : readinessScore >= 60 ? 'Tier 2' : 'General');
 
-  const targetTrack =
-    dashboardData.profile?.selectedCareer ||
-    'Distributed Systems & Cloud Backend Engineer';
+  // Placement Percentile Rank
+  const placementPercentile = useMemo(() => {
+    if (dashboardData.leaderboardRank && dashboardData.leaderboardTotal) {
+      const pct = Math.max(
+        1,
+        Math.round((dashboardData.leaderboardRank / dashboardData.leaderboardTotal) * 100)
+      );
+      return `Top ${pct}%`;
+    }
+    return targetTier ? `${targetTier} Eligible` : 'Candidate';
+  }, [dashboardData.leaderboardRank, dashboardData.leaderboardTotal, targetTier]);
 
+  // Active Goals (in-progress + pending)
+  const activeGoals = useMemo(() => {
+    return dashboardData.goals.filter(
+      (g) => g.status === 'in-progress' || g.status === 'pending'
+    );
+  }, [dashboardData.goals]);
+
+  // Completed Goals
+  const completedGoals = useMemo(() => {
+    return dashboardData.goals.filter((g) => g.status === 'completed');
+  }, [dashboardData.goals]);
+
+  // Goal Completion Rate
+  const goalCompletionRate = useMemo(() => {
+    if (dashboardData.goals.length === 0) return 0;
+    return Math.round((completedGoals.length / dashboardData.goals.length) * 100);
+  }, [dashboardData.goals.length, completedGoals.length]);
+
+  // Goals Due Soon (within 7 days and not completed)
+  const dueSoonGoalsCount = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const in7Days = new Date(today);
+    in7Days.setDate(in7Days.getDate() + 7);
+
+    return dashboardData.goals.filter((g) => {
+      if (g.status === 'completed' || !g.dueDate) return false;
+      const due = new Date(g.dueDate);
+      return due >= today && due <= in7Days;
+    }).length;
+  }, [dashboardData.goals]);
+
+  // Top Active Priorities (sorted by nearest due date)
+  const priorityGoals = useMemo(() => {
+    return [...activeGoals]
+      .sort((a, b) => {
+        const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        return da - db;
+      })
+      .slice(0, 3);
+  }, [activeGoals]);
+
+  // Next Upcoming Scheduled Session
+  const nextSession = useMemo(() => {
+    const scheduled = dashboardData.appointments.filter(
+      (a) => a.status === 'scheduled'
+    );
+    if (scheduled.length === 0) return null;
+
+    // Sort chronologically by date/time
+    return scheduled.sort((a, b) => {
+      const da = a.dateTime ? new Date(a.dateTime).getTime() : 0;
+      const db = b.dateTime ? new Date(b.dateTime).getTime() : 0;
+      return da - db;
+    })[0];
+  }, [dashboardData.appointments]);
+
+  // Roadmap Progress (derived from semester / 8)
+  const roadmapProgress = useMemo(() => {
+    return Math.min(100, Math.round((semester / 8) * 100));
+  }, [semester]);
+
+  // Recent Feedback items (combining mentor replies and evaluations)
+  const recentFeedbackList = useMemo(() => {
+    const list = [];
+
+    // From Guidance Requests with replies
+    dashboardData.guidanceRequests.forEach((req) => {
+      if (req.latestReply) {
+        list.push({
+          id: `guidance-${req.id}`,
+          author: req.latestReply.mentorName || 'Faculty Advisor',
+          title: `Guidance Reply: ${req.question}`,
+          content: req.latestReply.answerText,
+          date: req.date,
+          type: 'guidance',
+        });
+      }
+    });
+
+    return list.slice(0, 2);
+  }, [dashboardData.guidanceRequests]);
+
+  // Helper: Format Dates safely
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Flexible';
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString;
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Helper: Get Deadline Status
+  const getDeadlineBadge = (dueDate) => {
+    if (!dueDate) return { text: 'Flexible', variant: 'neutral' };
+    const due = new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDay = new Date(due);
+    dueDay.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.round((dueDay - today) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { text: `Overdue by ${Math.abs(diffDays)}d`, variant: 'danger' };
+    if (diffDays === 0) return { text: 'Due Today', variant: 'warning' };
+    if (diffDays === 1) return { text: 'Due Tomorrow', variant: 'warning' };
+    if (diffDays <= 7) return { text: `${diffDays}d Left`, variant: 'info' };
+    return { text: `${diffDays}d Left`, variant: 'neutral' };
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 3. QUICK GOAL STATUS UPDATE (PUT /api/goals/:goalId)
+  // ─────────────────────────────────────────────────────────────
+  const handleQuickCompleteGoal = async (goalId) => {
+    if (updatingGoalId) return;
+    setUpdatingGoalId(goalId);
+
+    // Optimistic local update
+    const previousGoals = [...dashboardData.goals];
+    setDashboardData((prev) => ({
+      ...prev,
+      goals: prev.goals.map((g) =>
+        g.id === goalId ? { ...g, status: 'completed' } : g
+      ),
+    }));
+
+    try {
+      await goalService.updateGoalStatus(goalId, 'completed');
+      setActionSuccessToast('Goal marked as completed! Platform readiness updated.');
+      setTimeout(() => setActionSuccessToast(null), 3500);
+      // Refresh background readiness & progress stats
+      const studentId = user?.id;
+      if (studentId) {
+        const [readinessRes, progressRes] = await Promise.allSettled([
+          studentService.getPlacementReadiness(studentId),
+          studentService.getProgressDashboard(studentId),
+        ]);
+        if (readinessRes.status === 'fulfilled') {
+          setDashboardData((prev) => ({ ...prev, readiness: readinessRes.value }));
+        }
+        if (progressRes.status === 'fulfilled') {
+          setDashboardData((prev) => ({ ...prev, progress: progressRes.value }));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update goal:', err);
+      setDashboardData((prev) => ({ ...prev, goals: previousGoals }));
+      alert(err.response?.data?.message || 'Failed to complete goal.');
+    } finally {
+      setUpdatingGoalId(null);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 4. LOADING & ERROR STATES
+  // ─────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        {/* Hero Banner Skeleton */}
-        <div className="h-44 rounded-2xl bg-slate-200/80" />
-
-        {/* 3 Top Cards Skeleton */}
+      <div className="space-y-6 antialiased pb-12">
+        <Skeleton variant="card" className="h-44" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="h-36 rounded-xl bg-slate-200/80" />
-          <div className="h-36 rounded-xl bg-slate-200/80" />
-          <div className="h-36 rounded-xl bg-slate-200/80" />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
-
-        {/* Main 2-Column Grid Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 space-y-6">
-            <div className="h-80 rounded-2xl bg-slate-200/80" />
-            <div className="h-64 rounded-2xl bg-slate-200/80" />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
           <div className="lg:col-span-4 space-y-6">
-            <div className="h-80 rounded-2xl bg-slate-200/80" />
-            <div className="h-96 rounded-2xl bg-slate-200/80" />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !dashboardData.profile) {
     return (
       <ErrorState
         title="Student Dashboard Unavailable"
         message={error}
-        onRetry={fetchData}
+        onRetry={fetchDashboardData}
         retryText="Reload Dashboard"
       />
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* BEGIN: CompactHeroBanner */}
+    <div className="space-y-6 pb-12 antialiased">
+      {/* Toast Alert */}
+      {actionSuccessToast && (
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-fadeIn">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{actionSuccessToast}</span>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          1. COMPACT HERO BANNER (Authenticated Student)
+      ───────────────────────────────────────────────────────────── */}
       <section
-        className="relative rounded-2xl bg-gradient-to-r from-blue-700 via-grip-blue to-indigo-700 text-white p-6 shadow-md overflow-hidden"
+        className="relative rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-600 to-slate-900 text-white p-6 shadow-card overflow-hidden"
         data-purpose="welcome-hero"
       >
-        {/* Subtle Background Glows */}
         <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute top-0 right-1/4 w-40 h-40 bg-blue-400/20 rounded-full blur-xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-          {/* Left Text Details */}
+          {/* Left Details */}
           <div className="space-y-2 max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-sm text-blue-100 border border-white/20">
-              <span>🎓</span>
-              <span>Institutional Accreditation: Computer Science & Engineering</span>
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Campus Career Readiness Platform</span>
             </span>
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-white">
-              Good Morning, {studentName}! Keep progressing.
+              Welcome back, {studentName}!
             </h1>
             <p className="text-xs md:text-sm text-blue-100/90 leading-relaxed font-normal">
-              Target Track: <strong className="font-semibold text-white">{targetTrack}</strong> • Tier-1 Placement Cycle 2026 • Semester 5 of 8
+              {targetTrack ? (
+                <>
+                  Target Track: <strong className="font-semibold text-white">{targetTrack}</strong>
+                </>
+              ) : (
+                <span className="italic text-amber-200">No career track chosen yet</span>
+              )}{' '}
+              • Semester {semester} of 8
             </p>
           </div>
 
-          {/* Right Compact Highlight & CTA */}
+          {/* Right Highlight & CTA */}
           <div className="flex md:flex-col items-start md:items-end justify-between md:justify-center gap-3 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shrink-0">
             <div>
               <span className="block text-[11px] uppercase tracking-wider text-blue-200 font-bold">
-                Placement Ranking
+                Placement Status
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-xl font-extrabold text-white">Top 4%</span>
-                <span className="text-[11px] font-semibold text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-400/30">
-                  ✨ Super Dream Eligible
+                <span className="text-xl font-extrabold text-white font-mono">
+                  {placementPercentile}
                 </span>
+                {readinessScore >= 80 ? (
+                  <span className="text-[11px] font-semibold text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-400/30">
+                    ✨ Super Dream
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-semibold text-blue-200 bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-400/30">
+                    {targetTier}
+                  </span>
+                )}
               </div>
             </div>
             <Link to="/student/goals">
-              <button
-                type="button"
-                className="px-4 py-2 text-xs font-semibold bg-white text-grip-blue rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
-              >
-                Resume Active Sprint →
-              </button>
+              <Button variant="secondary" size="xs" className="bg-white text-blue-700 hover:bg-blue-50">
+                Weekly Sprint Workspace →
+              </Button>
             </Link>
           </div>
         </div>
       </section>
-      {/* END: CompactHeroBanner */}
 
-      {/* BEGIN: KeyMetricsCards */}
+      {/* ─────────────────────────────────────────────────────────────
+          2. KEY SUMMARY METRICS (Derived from Real Backend Records)
+      ───────────────────────────────────────────────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-5" data-purpose="summary-metrics">
-        {/* Card 1: Overall Readiness */}
-        <article className="bg-white rounded-xl border border-grip-border p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-xs font-medium text-grip-muted mb-2">
-            <span>Overall Readiness Score</span>
-            <span className="p-1.5 rounded-lg bg-blue-50 text-grip-blue">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </span>
+        {/* Card 1: Overall Placement Readiness */}
+        <article className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-2">
+              <span className="font-semibold text-slate-700">Placement Readiness Score</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+                <Award className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
+                {readinessScore}%
+              </span>
+              <Badge variant={readinessScore >= 80 ? 'tier1' : readinessScore >= 60 ? 'tier2' : 'neutral'} size="sm">
+                {targetTier}
+              </Badge>
+            </div>
+            <div className="mt-3">
+              <ProgressBar
+                value={readinessScore}
+                max={100}
+                variant={readinessScore >= 80 ? 'success' : 'primary'}
+                size="xs"
+              />
+            </div>
           </div>
-          <div className="flex items-baseline gap-2.5">
-            <span className="text-3xl font-extrabold text-grip-dark tracking-tight">{readinessScore}%</span>
-            <span className="inline-flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-              +12% this sem
-            </span>
+          <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between mt-3">
+            <span>Goals (30%) • Interviews (40%) • Feedback (30%)</span>
           </div>
-          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden my-3">
-            <div className="bg-grip-blue h-2 rounded-full" style={{ width: `${readinessScore}%` }} />
-          </div>
-          <p className="text-xs text-grip-muted flex items-center justify-between">
-            <span>Tier-1 Benchmark: <strong>78%</strong></span>
-            <span className="font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">7/8 Rubrics Met</span>
-          </p>
         </article>
 
-        {/* Card 2: Active Goals & Sprint */}
-        <article className="bg-white rounded-xl border border-grip-border p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-xs font-medium text-grip-muted mb-2">
-            <span>Active Semester Goals</span>
-            <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
+        {/* Card 2: Active Goals & Sprint Velocity */}
+        <article className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-2">
+              <span className="font-semibold text-slate-700">Active Weekly Goals</span>
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                <Target className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
+                {activeGoals.length}
+              </span>
+              {dueSoonGoalsCount > 0 ? (
+                <Badge variant="warning" size="sm">
+                  {dueSoonGoalsCount} Due Soon
+                </Badge>
+              ) : (
+                <Badge variant="neutral" size="sm">
+                  All Scheduled
+                </Badge>
+              )}
+            </div>
+            <div className="mt-3">
+              <ProgressBar
+                value={goalCompletionRate}
+                max={100}
+                variant={goalCompletionRate >= 75 ? 'success' : 'primary'}
+                size="xs"
+              />
+            </div>
+          </div>
+          <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between mt-3">
+            <span>
+              {completedGoals.length} of {dashboardData.goals.length} completed
             </span>
+            <span className="font-mono font-semibold text-slate-700">{goalCompletionRate}% Velocity</span>
           </div>
-          <div className="flex items-baseline gap-2.5">
-            <span className="text-3xl font-extrabold text-grip-dark tracking-tight">{activeGoalsCount} Goals</span>
-            <span className="inline-flex items-center text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-              3 Due Soon
-            </span>
-          </div>
-          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden my-3">
-            <div className="bg-amber-500 h-2 rounded-full" style={{ width: '68%' }} />
-          </div>
-          <p className="text-xs text-grip-muted flex items-center justify-between">
-            <span>Sprint: <strong className="text-grip-dark font-medium">Distributed Caching</strong></span>
-            <span className="font-mono text-grip-dark font-semibold">68%</span>
-          </p>
         </article>
 
-        {/* Card 3: Next Scheduled Session */}
-        <article className="bg-white rounded-xl border border-grip-border p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-xs font-medium text-grip-muted mb-2">
-            <span>Mentorship &amp; Mock Interview</span>
-            <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </span>
+        {/* Card 3: Next Scheduled Mock Interview / Appointment */}
+        <article className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-2">
+              <span className="font-semibold text-slate-700">Next Scheduled Session</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                <Calendar className="w-4 h-4" />
+              </div>
+            </div>
+
+            {nextSession ? (
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-bold text-slate-900">
+                    {formatDate(nextSession.date)}
+                  </span>
+                  {nextSession.time && (
+                    <Badge variant="info" size="xs">
+                      {nextSession.time}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 mt-1.5 truncate">
+                  Evaluator: <strong>{nextSession.interviewer?.name || 'Faculty Mentor'}</strong>
+                </p>
+                <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                  {nextSession.meetLink ? 'Online Video Meeting' : 'Campus Evaluation Lab'}
+                </p>
+              </div>
+            ) : (
+              <div className="py-2">
+                <span className="text-sm font-semibold text-slate-700 block">
+                  No Upcoming Sessions
+                </span>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Book a faculty mock interview to benchmark your competencies.
+                </p>
+              </div>
+            )}
           </div>
-          <div className="flex items-baseline gap-2.5">
-            <span className="text-2xl lg:text-3xl font-extrabold text-grip-dark tracking-tight">Tomorrow</span>
-            <span className="inline-flex items-center text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
-              4:00 PM
-            </span>
-          </div>
-          <div className="my-3 py-1">
-            <p className="text-xs text-grip-slate truncate">
-              Topic: <strong>Technical Interview Prep</strong> w/ Prof. Neha Sharma
-            </p>
-          </div>
-          <div className="flex items-center justify-between pt-1 border-t border-grip-border text-xs">
-            <span className="text-grip-muted">Dept. Seminar Lab 3</span>
-            <Link to="/student/guidance" className="font-semibold text-grip-blue hover:underline inline-flex items-center gap-1">
-              View Prep Sheet →
-            </Link>
+
+          <div className="pt-3 border-t border-slate-100 text-xs flex items-center justify-between mt-3">
+            {nextSession ? (
+              <Link
+                to="/student/mock-interview"
+                className="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              >
+                <span>View Session Details →</span>
+              </Link>
+            ) : (
+              <Link
+                to="/student/mock-interview"
+                className="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              >
+                <span>Book Evaluation Session →</span>
+              </Link>
+            )}
           </div>
         </article>
       </section>
-      {/* END: KeyMetricsCards */}
 
-      {/* BEGIN: TwoColumnDashboardGrid */}
+      {/* ─────────────────────────────────────────────────────────────
+          3. MAIN 2-COLUMN WORKSPACE (70% Left / 30% Right)
+      ───────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* ================= LEFT COLUMN: 70% (8 COLS) ================= */}
+        {/* ================= LEFT COLUMN: 8 COLS ================= */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Section A: Today's Priorities */}
-          <section className="bg-white rounded-2xl border border-grip-border p-6 shadow-sm" data-purpose="todays-priorities">
-            <div className="flex items-center justify-between pb-4 border-b border-grip-border">
+          {/* Section A: Today's Priorities / Active Goals */}
+          <section
+            className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card"
+            data-purpose="todays-priorities"
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
-                <h2 className="text-base font-bold text-grip-dark tracking-tight">Today's Focus &amp; Sprints</h2>
-                <p className="text-xs text-grip-muted mt-0.5">3 priority tasks requiring milestone submissions or assessments</p>
+                <h2 className="text-base font-bold text-slate-900 tracking-tight">
+                  Immediate Sprint Priorities
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Active milestones sorted chronologically by nearest completion date
+                </p>
               </div>
-              <Link to="/student/goals" className="text-xs font-semibold text-grip-blue hover:underline inline-flex items-center gap-1">
-                View All Goals ({dashboardData.goals?.length || 8}) →
+              <Link
+                to="/student/goals"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              >
+                <span>Goal Workspace ({activeGoals.length} Active) →</span>
               </Link>
             </div>
 
-            {/* Priority List Items */}
-            <div className="divide-y divide-grip-border">
-              {/* Item 1: High Priority Capstone Draft */}
-              <article className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-grip-blue rounded">
-                      URGENT / CAPSTONE
-                    </span>
-                    <span className="text-xs font-medium text-slate-400">• Due Oct 02</span>
-                  </div>
-                  <h3 className="text-sm font-semibold text-grip-dark group-hover:text-grip-blue transition-colors">
-                    Submit Microservices Capstone Architecture Document
-                  </h3>
-                  <p className="text-xs text-grip-muted leading-relaxed">
-                    Detailed gRPC API contracts, event bus schema, and multi-region replication strategy.
-                  </p>
-                  {/* Progress Bar & Status */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <div className="w-36 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-grip-blue h-1.5 rounded-full" style={{ width: '50%' }} />
-                    </div>
-                    <span className="text-[11px] font-mono text-grip-slate font-medium">50% Complete</span>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <button
-                    type="button"
-                    className="w-full sm:w-auto px-3.5 py-1.5 text-xs font-semibold text-white bg-grip-blue hover:bg-grip-blue-hover rounded-lg transition-colors shadow-sm"
+            {priorityGoals.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircle2 className="w-6 h-6 text-emerald-500 stroke-[1.5]" />}
+                title="No Pending Priorities"
+                description="You are caught up on all commitments. Create a new weekly goal to maintain progress toward your placement readiness."
+                action={
+                  <Button
+                    as={Link}
+                    to="/student/goals"
+                    variant="primary"
+                    size="xs"
+                    leftIcon={<Plus className="w-3.5 h-3.5" />}
                   >
-                    Continue Draft
-                  </button>
-                </div>
-              </article>
+                    Add Weekly Goal
+                  </Button>
+                }
+                compact
+              />
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {priorityGoals.map((goal) => {
+                  const deadline = getDeadlineBadge(goal.dueDate);
+                  const isUpdating = updatingGoalId === goal.id;
 
-              {/* Item 2: Coding Practice Sprint */}
-              <article className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 rounded">
-                      CODING SPRINT
-                    </span>
-                    <span className="text-xs font-medium text-slate-400">• Due Tomorrow</span>
-                  </div>
-                  <h3 className="text-sm font-semibold text-grip-dark group-hover:text-grip-blue transition-colors">
-                    Solve Dynamic Programming Problem Set
-                  </h3>
-                  <p className="text-xs text-grip-muted leading-relaxed">
-                    Focusing on multi-dimensional DP &amp; Knapsack variations for Day-1 Online Assessments.
-                  </p>
-                  <div className="flex items-center gap-3 pt-1">
-                    <div className="w-36 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '71%' }} />
-                    </div>
-                    <span className="text-[11px] font-mono text-grip-slate font-medium">32 / 45 Solved (71%)</span>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <button
-                    type="button"
-                    className="w-full sm:w-auto px-3.5 py-1.5 text-xs font-semibold text-grip-dark bg-slate-100 hover:bg-slate-200 border border-grip-border rounded-lg transition-colors"
-                  >
-                    Practice Set
-                  </button>
-                </div>
-              </article>
+                  return (
+                    <article
+                      key={goal.id}
+                      className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                    >
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant={deadline.variant} size="xs">
+                            {deadline.text}
+                          </Badge>
+                          <span className="text-xs text-slate-400">
+                            • Target: {formatDate(goal.dueDate)}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                          {goal.title}
+                        </h3>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          <Badge variant="neutral" size="xs">
+                            {goal.status}
+                          </Badge>
+                          <span>• Weekly Sprint Commitment</span>
+                        </div>
+                      </div>
 
-              {/* Item 3: Completed Mock Interview */}
-              <article className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 rounded">
-                      COMPLETED
-                    </span>
-                    <span className="text-xs font-medium text-slate-400">• Reviewed Friday</span>
-                  </div>
-                  <h3 className="text-sm font-semibold text-grip-dark">
-                    Complete Mock Behavioral &amp; Situational Interview
-                  </h3>
-                  <p className="text-xs text-grip-muted leading-relaxed">
-                    STAR Method practice with Faculty Advisor Prof. Neha Sharma. Evaluated with 8.5/10 Rubric score.
-                  </p>
-                  <div className="flex items-center gap-3 pt-1">
-                    <div className="w-36 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '100%' }} />
-                    </div>
-                    <span className="text-[11px] font-mono text-emerald-700 font-semibold">100% • Score 8.5/10</span>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <button
-                    type="button"
-                    className="w-full sm:w-auto px-3.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg cursor-default"
-                  >
-                    Verified ✓
-                  </button>
-                </div>
-              </article>
-            </div>
+                      <div className="shrink-0 flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          disabled={isUpdating}
+                          isLoading={isUpdating}
+                          onClick={() => handleQuickCompleteGoal(goal.id)}
+                          leftIcon={<Check className="w-3.5 h-3.5 text-emerald-600" />}
+                          className="text-emerald-700 hover:bg-emerald-50"
+                        >
+                          Mark Complete
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
-          {/* Section B: Academic & Career Roadmap */}
-          <section className="bg-white rounded-2xl border border-grip-border p-6 shadow-sm" data-purpose="track-roadmap">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-5 border-b border-grip-border">
+          {/* Section B: Curriculum & Semester Roadmap */}
+          <section
+            className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card"
+            data-purpose="track-roadmap"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-5 border-b border-slate-100">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-grip-blue bg-blue-50 px-2 py-0.5 rounded">
-                    Semester 5 of 8
-                  </span>
-                  <span className="text-xs text-grip-muted">Academic Year 2024-25</span>
+                  <Badge variant="primary" size="sm">
+                    Semester {semester} of 8
+                  </Badge>
+                  <span className="text-xs text-slate-400">Accredited Syllabus</span>
                 </div>
-                <h2 className="text-base font-bold text-grip-dark mt-1">
-                  Distributed Systems &amp; Cloud Backend Engineering Track
+                <h2 className="text-base font-bold text-slate-900 mt-1">
+                  {dashboardData.roadmap?.career || targetTrack || 'Curriculum Track Roadmap'}
                 </h2>
               </div>
               <div className="text-right">
-                <span className="text-sm font-extrabold text-grip-blue">60%</span>
-                <p className="text-[11px] text-grip-muted uppercase font-semibold">Track Progress</p>
+                <span className="text-sm font-extrabold text-blue-700 font-mono">
+                  {roadmapProgress}%
+                </span>
+                <p className="text-[11px] text-slate-400 uppercase font-semibold">
+                  Degree Progress
+                </p>
               </div>
             </div>
 
-            {/* Horizontal Milestone Stepper Line */}
-            <div className="pt-6 pb-2 overflow-x-auto custom-scrollbar">
-              <div className="min-w-[560px] relative flex items-center justify-between">
-                {/* Background Connection Track Line */}
-                <div className="absolute left-6 right-6 top-4 -translate-y-1/2 h-1 bg-slate-200 z-0" />
-                {/* Active Progress Indicator Fill Line (up to 50%) */}
-                <div className="absolute left-6 top-4 -translate-y-1/2 h-1 bg-grip-blue z-0" style={{ width: '50%' }} />
-
-                {/* Step 1: Completed Sem 3 */}
-                <div className="relative z-10 flex flex-col items-center text-center w-24">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-4 ring-white">
-                    ✓
-                  </div>
-                  <span className="text-xs font-bold text-grip-dark mt-2">Sem 3</span>
-                  <span className="text-[10px] text-grip-muted leading-tight">DSA &amp; Algos</span>
-                </div>
-
-                {/* Step 2: Completed Sem 4 */}
-                <div className="relative z-10 flex flex-col items-center text-center w-24">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-4 ring-white">
-                    ✓
-                  </div>
-                  <span className="text-xs font-bold text-grip-dark mt-2">Sem 4</span>
-                  <span className="text-[10px] text-grip-muted leading-tight">Database &amp; OS</span>
-                </div>
-
-                {/* Step 3: Current Sem 5 (Active) */}
-                <div className="relative z-10 flex flex-col items-center text-center w-28">
-                  <div className="w-8 h-8 rounded-full bg-grip-blue text-white flex items-center justify-center font-bold text-xs shadow-md ring-4 ring-blue-100 animate-pulse">
-                    5
-                  </div>
-                  <span className="text-xs font-bold text-grip-blue mt-2">Sem 5 (Current)</span>
-                  <span className="text-[10px] text-grip-dark font-medium leading-tight">Full-Stack Microservices</span>
-                </div>
-
-                {/* Step 4: Upcoming Sem 6 */}
-                <div className="relative z-10 flex flex-col items-center text-center w-24">
-                  <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-semibold text-xs ring-4 ring-white">
-                    6
-                  </div>
-                  <span className="text-xs font-medium text-slate-500 mt-2">Sem 6</span>
-                  <span className="text-[10px] text-grip-muted leading-tight">Scalability Capstone</span>
-                </div>
-
-                {/* Step 5: Target Sem 7 Placements */}
-                <div className="relative z-10 flex flex-col items-center text-center w-24">
-                  <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-semibold text-xs ring-4 ring-white">
-                    7
-                  </div>
-                  <span className="text-xs font-medium text-slate-500 mt-2">Sem 7</span>
-                  <span className="text-[10px] text-grip-muted leading-tight">Tier-1 Placements</span>
+            {dashboardData.roadmap?.steps && dashboardData.roadmap.steps.length > 0 ? (
+              <div className="pt-4 space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {dashboardData.roadmap.steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 flex items-start gap-3 text-xs"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-blue-600 font-bold flex items-center justify-center shrink-0 shadow-2xs text-[11px] font-mono mt-0.5">
+                        {idx + 1}
+                      </div>
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="font-semibold text-slate-800 leading-snug">
+                          {step}
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          Curriculum Benchmark • Placement Syllabus
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            ) : (
+              <EmptyState
+                icon={<BookOpen className="w-6 h-6 text-slate-400" />}
+                title="No Career Roadmap Configured"
+                description={
+                  targetTrack
+                    ? `No semester roadmap plan configured for: ${targetTrack}.`
+                    : 'Select a career track in your profile to load semester milestone plans.'
+                }
+                action={
+                  <Button
+                    as={Link}
+                    to="/student/profile"
+                    variant="outline"
+                    size="xs"
+                  >
+                    Configure Career Track
+                  </Button>
+                }
+                compact
+              />
+            )}
           </section>
         </div>
-        {/* ================= END LEFT COLUMN ================= */}
 
-        {/* ================= RIGHT COLUMN: 30% (4 COLS) ================= */}
+        {/* ================= RIGHT COLUMN: 4 COLS ================= */}
         <div className="lg:col-span-4 space-y-6">
-          {/* Card 1: Scheduled Sessions */}
-          <section className="bg-white rounded-2xl border border-grip-border p-5 shadow-sm" data-purpose="scheduled-sessions">
-            <div className="flex items-center justify-between pb-3.5 border-b border-grip-border">
+          {/* Right Card 1: Scheduled Sessions */}
+          <section
+            className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card"
+            data-purpose="scheduled-sessions"
+          >
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-grip-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-                <h3 className="text-sm font-bold text-grip-dark">Scheduled Sessions</h3>
+                <Calendar className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                  Scheduled Sessions
+                </h3>
               </div>
-              <Link to="/student/guidance" className="text-xs text-grip-muted hover:text-grip-blue font-medium">
+              <Link
+                to="/student/mock-interview"
+                className="text-xs text-slate-500 hover:text-blue-600 font-medium"
+              >
                 Calendar →
               </Link>
             </div>
 
-            {/* Session Items List */}
-            <div className="space-y-4 mt-4">
-              {/* Session 1: Tomorrow's Session */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded">Scheduled</span>
-                  <span className="text-[11px] font-medium text-grip-muted">Tue, 19 Sep • 4:00 PM</span>
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-grip-dark">Prof. Neha Sharma</h4>
-                  <p className="text-[11px] text-grip-slate">Dept. Seminar Lab 3</p>
-                  <p className="text-xs text-slate-600 mt-1 font-medium leading-tight">
-                    Topic: Technical Interview Prep &amp; Distributed Systems Architecture
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="w-full py-1.5 text-xs font-semibold text-grip-blue bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  View Prep Sheet
-                </button>
+            {dashboardData.appointments.length === 0 ? (
+              <EmptyState
+                icon={<Calendar className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
+                title="No Sessions Scheduled"
+                description="Book a mock interview with department faculty to benchmark your readiness."
+                action={
+                  <Button
+                    as={Link}
+                    to="/student/mock-interview"
+                    variant="outline"
+                    size="xs"
+                  >
+                    Schedule Session
+                  </Button>
+                }
+                compact
+              />
+            ) : (
+              <div className="space-y-3 mt-4">
+                {dashboardData.appointments.slice(0, 3).map((apt) => (
+                  <div
+                    key={apt.id}
+                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Badge
+                        variant={apt.status === 'scheduled' ? 'info' : 'neutral'}
+                        size="xs"
+                      >
+                        {apt.status}
+                      </Badge>
+                      <span className="text-[11px] font-medium text-slate-500">
+                        {formatDate(apt.date)} • {apt.time || 'TBD'}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">
+                        {apt.interviewer?.name || 'Faculty Evaluator'}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {apt.meetLink ? 'Online Video Interview' : 'Department Evaluation Lab'}
+                      </p>
+                    </div>
+                    <Link to="/student/mock-interview">
+                      <Button variant="secondary" size="xs" className="w-full mt-1">
+                        View Appointment
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
               </div>
-
-              {/* Session 2: Upcoming Industry Mentor */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-grip-blue rounded">Confirmed</span>
-                  <span className="text-[11px] font-medium text-grip-muted">Fri, 22 Sep • 2:30 PM</span>
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-grip-dark">Amit Verma</h4>
-                  <p className="text-[11px] text-grip-slate">Staff SWE @ TechCorp • Alumni '19</p>
-                  <p className="text-xs text-slate-600 mt-1 font-medium leading-tight">
-                    Topic: Live SDE Coding &amp; Problem-Solving Screen
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="w-full py-1.5 text-xs font-semibold text-white bg-grip-blue hover:bg-grip-blue-hover rounded-lg transition-colors shadow-sm"
-                >
-                  Join Room
-                </button>
-              </div>
-            </div>
+            )}
           </section>
 
-          {/* Card 2: Placement Readiness & Recruiter Pulse */}
-          <section className="bg-white rounded-2xl border border-grip-border p-5 shadow-sm" data-purpose="placement-pulse">
-            <div className="flex items-center justify-between pb-3.5 border-b border-grip-border">
-              <h3 className="text-sm font-bold text-grip-dark">Placement Pulse</h3>
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-purple-100 text-purple-800 rounded">
-                Tier-1 Ready
-              </span>
+          {/* Right Card 2: Placement Pulse & Recruiter Matching */}
+          <section
+            className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card"
+            data-purpose="placement-pulse"
+          >
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                Placement Pulse
+              </h3>
+              <Badge variant={readinessScore >= 80 ? 'tier1' : 'neutral'} size="xs">
+                {targetTier}
+              </Badge>
             </div>
 
-            {/* Compact Donut Radial Meter */}
-            <div className="py-4 flex items-center justify-center gap-5">
-              <div className="relative w-24 h-24 shrink-0 flex items-center justify-center">
-                <svg className="w-24 h-24" viewBox="0 0 100 100">
-                  {/* Background Track */}
-                  <circle cx="50" cy="50" fill="transparent" r="42" stroke="#f1f5f9" strokeWidth="8" />
-                  {/* Filled Percentage Circle */}
-                  <circle
-                    className="donut-circle"
-                    cx="50"
-                    cy="50"
-                    fill="transparent"
-                    r="42"
-                    stroke="#1D61E7"
-                    strokeLinecap="round"
-                    strokeWidth="8"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-lg font-extrabold text-grip-dark leading-none">{readinessScore}%</span>
-                  <span className="text-[9px] uppercase font-bold text-grip-muted tracking-tight">Tier-1 Fit</span>
+            {/* Live Company Matches Count */}
+            {dashboardData.companyMatches.length > 0 ? (
+              <div className="space-y-4 pt-3">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Building2 className="w-5 h-5 text-blue-600 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">
+                        {dashboardData.companyMatches.length} Matching Companies
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        Eligible hiring criteria for {targetTrack}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1 text-xs">
-                <p className="font-bold text-grip-dark">3 Visiting Recruiters</p>
-                <p className="text-[11px] text-grip-muted leading-relaxed">
-                  TechCorp Global, FinTech Apex, and CloudSys evaluated your public repo.
-                </p>
-                <span className="inline-block text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">
-                  Eligible for Day 1 Drive
-                </span>
-              </div>
-            </div>
+                {/* Top Matched Companies */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Top Company Matches
+                  </span>
+                  {dashboardData.companyMatches.slice(0, 3).map((comp, idx) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-lg border border-slate-200/70 bg-white flex items-center justify-between text-xs"
+                    >
+                      <span className="font-semibold text-slate-800">
+                        {comp.companyName}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-blue-700">
+                          {comp.matchPercentage}%
+                        </span>
+                        {comp.isEligible && (
+                          <Badge variant="success" size="xs">
+                            Eligible
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-            {/* Verified Competencies Pills */}
-            <div className="pt-3 border-t border-grip-border">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-grip-muted block mb-2">
-                Verified Competencies
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                <span className="px-2 py-1 text-[11px] font-medium bg-slate-100 text-grip-dark rounded-md">
-                  React (Verified)
-                </span>
-                <span className="px-2 py-1 text-[11px] font-medium bg-slate-100 text-grip-dark rounded-md">
-                  Node.js (v18)
-                </span>
-                <span className="px-2 py-1 text-[11px] font-medium bg-slate-100 text-grip-dark rounded-md">
-                  System Design
-                </span>
-                <span className="px-2 py-1 text-[11px] font-medium bg-slate-100 text-grip-dark rounded-md">
-                  Docker/K8s
-                </span>
+                {/* Real Verified Competencies */}
+                {dashboardData.studentSkills.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                      Required Track Competencies
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {dashboardData.studentSkills.slice(0, 6).map((sk, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-700 rounded-md border border-slate-200/60"
+                        >
+                          {sk}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            ) : (
+              <EmptyState
+                icon={<Building2 className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
+                title="No Placement Matches Yet"
+                description={
+                  targetTrack
+                    ? 'Computing company eligibility against active recruiter criteria.'
+                    : 'Set a target career track in your profile to view matching companies.'
+                }
+                action={
+                  <Button
+                    as={Link}
+                    to="/student/profile"
+                    variant="outline"
+                    size="xs"
+                  >
+                    Select Career Track
+                  </Button>
+                }
+                compact
+              />
+            )}
 
-            <div className="mt-4 pt-3 border-t border-grip-border text-center">
-              <Link to="/student/career-compass" className="text-xs font-semibold text-grip-blue hover:underline">
-                Explore Placement Matches →
+            <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+              <Link
+                to="/student/career-compass"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              >
+                <span>Explore Placement Matches →</span>
               </Link>
             </div>
           </section>
         </div>
-        {/* ================= END RIGHT COLUMN ================= */}
       </div>
-      {/* END: TwoColumnDashboardGrid */}
 
-      {/* BEGIN: RecentActivityFeed (Full Width) */}
-      <section className="bg-white rounded-2xl border border-grip-border p-6 shadow-sm" data-purpose="recent-feedback">
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-grip-border">
+      {/* ─────────────────────────────────────────────────────────────
+          4. RECENT FEEDBACK & INSTITUTIONAL ACTIVITY (Full Width)
+      ───────────────────────────────────────────────────────────── */}
+      <section
+        className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card"
+        data-purpose="recent-feedback"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-grip-dark">Recent Feedback &amp; Institutional Activity</h3>
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase bg-blue-50 text-grip-blue rounded">
-                Live Institutional Feed
-              </span>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Recent Feedback &amp; Institutional Activity
+              </h3>
+              <Badge variant="primary" size="sm">
+                Live Feed
+              </Badge>
             </div>
-            <p className="text-xs text-grip-muted mt-0.5">
-              Real-time updates from faculty evaluations and alumni mock reviews
+            <p className="text-xs text-slate-500 mt-0.5">
+              Verified evaluations and guidance replies from faculty and alumni mentors
             </p>
           </div>
-          <Link to="/student/guidance" className="text-xs font-semibold text-grip-blue hover:underline">
-            View All Activity History →
+          <Link
+            to="/student/guidance"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+          >
+            <span>Ask a Mentor →</span>
           </Link>
         </div>
 
-        {/* Feedback Grid Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {/* Feedback Card 1 */}
-          <article className="p-4 rounded-xl border border-grip-border bg-slate-50/60 hover:bg-slate-50 transition-colors flex items-start gap-3.5">
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-grip-blue flex items-center justify-center shrink-0 mt-0.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-            </div>
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold text-grip-dark truncate">Prof. Neha Sharma</span>
-                <span className="text-[11px] text-grip-muted shrink-0">2 hours ago</span>
-              </div>
-              <p className="text-xs text-grip-slate font-medium">
-                Approved System Design Milestone: Redis Architecture
-              </p>
-              <blockquote className="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200/80 italic">
-                "Excellent fault-tolerance analysis. The failover handling and replication quorum logic are thoroughly justified."
-              </blockquote>
-            </div>
-          </article>
-
-          {/* Feedback Card 2 */}
-          <article className="p-4 rounded-xl border border-grip-border bg-slate-50/60 hover:bg-slate-50 transition-colors flex items-start gap-3.5">
-            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-            </div>
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold text-grip-dark truncate">Amit Verma (Alumni Mentor)</span>
-                <span className="text-[11px] text-grip-muted shrink-0">Yesterday</span>
-              </div>
-              <p className="text-xs text-grip-slate font-medium">
-                Shared technical interview rubric for CloudSys Tier-1 screen
-              </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Includes 12 scenario-based questions covering Kafka partitioning, consumer lag balancing, and idempotent event sourcing.
-              </p>
-            </div>
-          </article>
-        </div>
+        {recentFeedbackList.length === 0 ? (
+          <EmptyState
+            icon={<UserCheck className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
+            title="No Recent Feedback Recorded"
+            description="Responses to your guidance requests and mock interview evaluation remarks will appear here once submitted by your mentors."
+            action={
+              <Button
+                as={Link}
+                to="/student/guidance"
+                variant="outline"
+                size="xs"
+              >
+                Request Guidance
+              </Button>
+            }
+            compact
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {recentFeedbackList.map((item) => (
+              <article
+                key={item.id}
+                className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/60 flex items-start gap-3.5"
+              >
+                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
+                  {item.author[0]}
+                </div>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-900 truncate">
+                      {item.author}
+                    </span>
+                    <span className="text-[11px] text-slate-400 shrink-0">
+                      {formatDate(item.date)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-700 font-medium truncate">
+                    {item.title}
+                  </p>
+                  <blockquote className="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200/80 italic mt-1 leading-relaxed">
+                    "{item.content}"
+                  </blockquote>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
-      {/* END: RecentActivityFeed */}
     </div>
   );
 };

@@ -7,27 +7,21 @@ import {
   AlertTriangle,
   Plus,
   Search,
-  Filter,
   Calendar,
   ChevronRight,
-  TrendingUp,
   Sparkles,
   RefreshCw,
   Award,
   BookOpen,
-  ArrowRight,
-  ShieldCheck,
   Check,
   Flame,
-  ListTodo
+  ListTodo,
+  FolderX
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import goalService from '../../services/goalService';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
-import Card, { CardHeader, CardTitle, CardContent } from '../../components/common/Card';
-import Input from '../../components/common/Input';
-import Select from '../../components/common/Select';
 import Modal from '../../components/common/Modal';
 import ProgressBar from '../../components/common/ProgressBar';
 import EmptyState from '../../components/common/EmptyState';
@@ -39,13 +33,6 @@ export const GoalTrackerPage = () => {
 
   // Primary Data States
   const [goals, setGoals] = useState([]);
-  const [summary, setSummary] = useState({
-    total: 0,
-    completed: 0,
-    inProgress: 0,
-    pending: 0,
-    completionRate: 0,
-  });
   const [studentProfile, setStudentProfile] = useState(null);
   const [roadmap, setRoadmap] = useState(null);
   const [readinessData, setReadinessData] = useState(null);
@@ -58,7 +45,7 @@ export const GoalTrackerPage = () => {
   const [successToast, setSuccessToast] = useState(null);
 
   // Filtering & Search
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'in-progress' | 'pending' | 'completed'
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'due-this-week' | 'in-progress' | 'pending' | 'completed'
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('dueDateAsc'); // 'dueDateAsc' | 'dueDateDesc' | 'titleAsc'
 
@@ -93,7 +80,6 @@ export const GoalTrackerPage = () => {
     if (!dueDate) return { isOverdue: false, text: 'Flexible deadline', variant: 'neutral' };
     const due = new Date(dueDate);
     const today = new Date();
-    // Normalize to start of day
     today.setHours(0, 0, 0, 0);
     const dueDay = new Date(due);
     dueDay.setHours(0, 0, 0, 0);
@@ -123,7 +109,9 @@ export const GoalTrackerPage = () => {
     return { isOverdue: false, text: `${diffDays} days left`, variant: 'neutral' };
   };
 
-  // Initial Data Fetching
+  // ─────────────────────────────────────────────────────────────
+  // 1. DATA FETCHING (Authenticated Student)
+  // ─────────────────────────────────────────────────────────────
   const fetchGoalData = async () => {
     setIsLoading(true);
     setError(null);
@@ -139,22 +127,19 @@ export const GoalTrackerPage = () => {
         throw new Error('Student identifier could not be verified from authentication context.');
       }
 
-      // 2. Fetch parallel endpoints: goals analysis, progress dashboard, readiness, and roadmap
-      const selectedCareer = profile?.selectedCareer || 'Distributed Systems & Cloud Backend Engineer';
+      const selectedCareer = profile?.selectedCareer || '';
 
+      // 2. Fetch parallel endpoints: goals analysis, progress dashboard, readiness, and roadmap
       const [goalsRes, progressRes, readinessRes, roadmapRes] = await Promise.allSettled([
         goalService.getGoals(resolvedStudentId),
         goalService.getProgressDashboard(resolvedStudentId),
         goalService.getPlacementReadiness(resolvedStudentId),
-        goalService.getCareerRoadmap(selectedCareer),
+        selectedCareer ? goalService.getCareerRoadmap(selectedCareer) : Promise.resolve(null),
       ]);
 
-      // Set goals and summary from real backend response
+      // Set goals from real backend response
       if (goalsRes.status === 'fulfilled' && goalsRes.value) {
         setGoals(goalsRes.value.goals || []);
-        if (goalsRes.value.summary) {
-          setSummary(goalsRes.value.summary);
-        }
       }
 
       // Set progress dashboard data (action plans)
@@ -173,6 +158,8 @@ export const GoalTrackerPage = () => {
       // Set career roadmap
       if (roadmapRes.status === 'fulfilled' && roadmapRes.value) {
         setRoadmap(roadmapRes.value);
+      } else {
+        setRoadmap(null);
       }
     } catch (err) {
       console.error('Failed to load goal tracker data:', err);
@@ -190,8 +177,56 @@ export const GoalTrackerPage = () => {
     fetchGoalData();
   }, [user?.id]);
 
-  // Derived Summary Metric: Overdue Goals Count
-  const overdueGoalsCount = useMemo(() => {
+  // ─────────────────────────────────────────────────────────────
+  // 2. DETERMINISTIC DERIVED METRICS (Calculated from Real Records)
+  // ─────────────────────────────────────────────────────────────
+
+  // Active Goals: in-progress + pending
+  const activeGoals = useMemo(() => {
+    return goals.filter((g) => g.status === 'in-progress' || g.status === 'pending');
+  }, [goals]);
+
+  const inProgressGoals = useMemo(() => {
+    return goals.filter((g) => g.status === 'in-progress');
+  }, [goals]);
+
+  const pendingGoals = useMemo(() => {
+    return goals.filter((g) => g.status === 'pending');
+  }, [goals]);
+
+  // Completed Goals
+  const completedGoals = useMemo(() => {
+    return goals.filter((g) => g.status === 'completed');
+  }, [goals]);
+
+  // Completion Percentage
+  const completionRate = useMemo(() => {
+    if (goals.length === 0) return 0;
+    return Math.round((completedGoals.length / goals.length) * 100);
+  }, [goals.length, completedGoals.length]);
+
+  // Due This Week: Goals with real due dates occurring within the current week sprint
+  const dueThisWeekGoals = useMemo(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    return goals.filter((g) => {
+      if (g.status === 'completed' || !g.dueDate) return false;
+      const due = new Date(g.dueDate);
+      return due >= startOfWeek && due <= endOfWeek;
+    });
+  }, [goals]);
+
+  // Overdue Goals: target completion date passed and not completed
+  const overdueGoals = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return goals.filter((g) => {
@@ -199,15 +234,10 @@ export const GoalTrackerPage = () => {
       const due = new Date(g.dueDate);
       due.setHours(0, 0, 0, 0);
       return due < today;
-    }).length;
+    });
   }, [goals]);
 
-  // Derived Active Goals Count (in-progress + pending)
-  const activeGoalsCount = useMemo(() => {
-    return goals.filter((g) => g.status === 'in-progress' || g.status === 'pending').length;
-  }, [goals]);
-
-  // Current Priorities: Top active goals sorted by nearest due date
+  // Immediate Priorities: Top active goals sorted by nearest due date
   const currentPriorities = useMemo(() => {
     return [...goals]
       .filter((g) => g.status !== 'completed')
@@ -219,13 +249,30 @@ export const GoalTrackerPage = () => {
       .slice(0, 3);
   }, [goals]);
 
-  // Filtered and Sorted Goals List
+  // Filtered and Sorted Goals List for Workspace
   const filteredGoals = useMemo(() => {
     let result = [...goals];
 
     // Status Filter
     if (statusFilter === 'active') {
       result = result.filter((g) => g.status === 'in-progress' || g.status === 'pending');
+    } else if (statusFilter === 'due-this-week') {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(diffToMonday);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(endOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      result = result.filter((g) => {
+        if (!g.dueDate) return false;
+        const due = new Date(g.dueDate);
+        return due >= startOfWeek && due <= endOfWeek;
+      });
     } else if (statusFilter !== 'all') {
       result = result.filter((g) => g.status === statusFilter);
     }
@@ -257,52 +304,38 @@ export const GoalTrackerPage = () => {
     return result;
   }, [goals, statusFilter, searchQuery, sortBy]);
 
-  // Status Change Handler (Dispatches PUT /api/goals/:goalId)
+  // ─────────────────────────────────────────────────────────────
+  // 3. STATUS UPDATE HANDLER (PUT /api/goals/:goalId)
+  // ─────────────────────────────────────────────────────────────
   const handleStatusChange = async (goalId, newStatus) => {
-    if (updatingGoalId) return; // Prevent concurrent modifications
+    if (updatingGoalId) return;
     setUpdatingGoalId(goalId);
 
     // Optimistic state backup
     const previousGoals = [...goals];
-    const previousSummary = { ...summary };
 
     // Apply optimistic update locally
     setGoals((prev) =>
       prev.map((g) => (g.id === goalId ? { ...g, status: newStatus } : g))
     );
 
-    // Recalculate summary metrics optimistically
-    const updatedGoals = goals.map((g) => (g.id === goalId ? { ...g, status: newStatus } : g));
-    const total = updatedGoals.length;
-    const completed = updatedGoals.filter((g) => g.status === 'completed').length;
-    const inProgress = updatedGoals.filter((g) => g.status === 'in-progress').length;
-    const pending = updatedGoals.filter((g) => g.status === 'pending').length;
-    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    setSummary({
-      total,
-      completed,
-      inProgress,
-      pending,
-      completionRate,
-    });
-
     try {
       await goalService.updateGoalStatus(goalId, newStatus);
-      setSuccessToast(`Goal marked as "${newStatus}" successfully.`);
-      setTimeout(() => setSuccessToast(null), 3500);
+      setSuccessToast(`Goal marked as "${newStatus}".`);
+      setTimeout(() => setSuccessToast(null), 3000);
     } catch (err) {
       console.error('Failed to update goal status:', err);
       // Rollback on failure
       setGoals(previousGoals);
-      setSummary(previousSummary);
       alert(err.response?.data?.message || 'Failed to update goal status. Please try again.');
     } finally {
       setUpdatingGoalId(null);
     }
   };
 
-  // Form Validation for New Goal
+  // ─────────────────────────────────────────────────────────────
+  // 4. CREATE GOAL SUBMISSION (POST /api/goals)
+  // ─────────────────────────────────────────────────────────────
   const validateCreateForm = () => {
     const errors = {};
     if (!createFormData.title.trim()) {
@@ -322,7 +355,6 @@ export const GoalTrackerPage = () => {
     return Object.keys(errors).length === 0;
   };
 
-  // Create Goal Submit Handler (Dispatches POST /api/goals)
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!validateCreateForm()) return;
@@ -363,7 +395,6 @@ export const GoalTrackerPage = () => {
     }
   };
 
-  // Set default due date (7 days from today) when opening modal
   const handleOpenCreateModal = () => {
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
@@ -408,11 +439,12 @@ export const GoalTrackerPage = () => {
     }
   };
 
-  // Loading Skeleton View
+  // ─────────────────────────────────────────────────────────────
+  // 5. LOADING & ERROR VIEWS
+  // ─────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-fadeIn">
-        {/* Header Skeleton */}
+      <div className="space-y-6 antialiased pb-12">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-2">
             <Skeleton variant="text" width="220px" height="28px" />
@@ -421,7 +453,6 @@ export const GoalTrackerPage = () => {
           <Skeleton variant="rectangular" width="130px" height="40px" />
         </div>
 
-        {/* Metric Cards Skeleton */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SkeletonCard />
           <SkeletonCard />
@@ -429,7 +460,6 @@ export const GoalTrackerPage = () => {
           <SkeletonCard />
         </div>
 
-        {/* Priorities Skeleton */}
         <div className="space-y-3">
           <Skeleton variant="text" width="180px" height="20px" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -439,7 +469,6 @@ export const GoalTrackerPage = () => {
           </div>
         </div>
 
-        {/* Goals List Skeleton */}
         <div className="space-y-3">
           <Skeleton variant="text" width="150px" height="20px" />
           <div className="space-y-2.5">
@@ -452,7 +481,6 @@ export const GoalTrackerPage = () => {
     );
   }
 
-  // Error State View
   if (error && goals.length === 0) {
     return (
       <ErrorState
@@ -463,6 +491,8 @@ export const GoalTrackerPage = () => {
       />
     );
   }
+
+  const selectedCareer = studentProfile?.profile?.selectedCareer;
 
   return (
     <div className="space-y-6 pb-12 antialiased">
@@ -484,7 +514,7 @@ export const GoalTrackerPage = () => {
               Goal Tracker
             </h1>
             <Badge variant="primary" size="sm" className="hidden sm:inline-flex">
-              Academic Sprints
+              Weekly Commitments
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
@@ -499,7 +529,7 @@ export const GoalTrackerPage = () => {
             size="sm"
             onClick={fetchGoalData}
             leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-            title="Refresh goals"
+            title="Refresh goals from server"
           >
             Refresh
           </Button>
@@ -515,9 +545,7 @@ export const GoalTrackerPage = () => {
         </div>
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          PLACEMENT READINESS CONNECTION NOTE
-      ───────────────────────────────────────────────────────────── */}
+      {/* Placement Readiness Weighted Correlation Banner */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-100 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
@@ -537,11 +565,11 @@ export const GoalTrackerPage = () => {
           <div className="flex items-center gap-2 self-end md:self-center bg-white px-3 py-1.5 rounded-xl border border-blue-200/80 shadow-xs shrink-0">
             <Award className="w-4 h-4 text-blue-600" />
             <span className="text-[11px] text-slate-500 font-medium">Platform Readiness:</span>
-            <span className="text-xs font-bold text-blue-700">
+            <span className="text-xs font-bold text-blue-700 font-mono">
               {readinessData.readinessScore || 0}%
             </span>
             {readinessData.targetTier && (
-              <Badge variant="tier1" size="xs">
+              <Badge variant={readinessData.readinessScore >= 80 ? 'tier1' : 'neutral'} size="xs">
                 {readinessData.targetTier}
               </Badge>
             )}
@@ -550,10 +578,10 @@ export const GoalTrackerPage = () => {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. COMPACT GOAL SUMMARY (Real API Data Only)
+          2. DETERMINISTIC GOAL SUMMARY (Calculated from Real Records)
       ───────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Active Goals */}
+        {/* Card 1: Active Goals */}
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col">
@@ -562,10 +590,10 @@ export const GoalTrackerPage = () => {
               </span>
               <div className="flex items-baseline gap-2 mt-1.5">
                 <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
-                  {activeGoalsCount}
+                  {activeGoals.length}
                 </span>
                 <Badge variant="neutral" size="sm">
-                  {summary.inProgress} in-progress
+                  {inProgressGoals.length} in-progress
                 </Badge>
               </div>
             </div>
@@ -574,66 +602,66 @@ export const GoalTrackerPage = () => {
             </div>
           </div>
           <span className="text-[11px] text-slate-400 mt-2">
-            {summary.pending} pending initial kickoff
+            {pendingGoals.length} pending kickoff
           </span>
         </div>
 
-        {/* Completed Goals */}
+        {/* Card 2: Due This Week */}
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col">
+              <span className="text-xs font-semibold text-slate-500 tracking-tight">
+                Due This Week
+              </span>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
+                  {dueThisWeekGoals.length}
+                </span>
+                <Badge variant={dueThisWeekGoals.length > 0 ? 'warning' : 'neutral'} size="sm">
+                  Current Sprint
+                </Badge>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <span className="text-[11px] text-slate-400 mt-2">
+            Expiring by end of current week
+          </span>
+        </div>
+
+        {/* Card 3: Completed Goals */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col w-full">
               <span className="text-xs font-semibold text-slate-500 tracking-tight">
                 Completed Goals
               </span>
               <div className="flex items-baseline gap-2 mt-1.5">
                 <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
-                  {summary.completed}
+                  {completedGoals.length}
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
-                  of {summary.total} total
+                  of {goals.length} total ({completionRate}%)
                 </span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="text-[11px] text-emerald-600 font-medium mt-2">
-            Archived and verified milestones
-          </span>
-        </div>
-
-        {/* Weekly Completion Rate */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col w-full">
-              <span className="text-xs font-semibold text-slate-500 tracking-tight">
-                Completion Velocity
-              </span>
-              <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
-                  {summary.completionRate}%
-                </span>
-                <Badge
-                  variant={summary.completionRate >= 75 ? 'success' : summary.completionRate >= 50 ? 'warning' : 'neutral'}
-                  size="sm"
-                >
-                  {summary.completionRate >= 75 ? 'Optimal' : summary.completionRate >= 50 ? 'On Track' : 'Needs Focus'}
-                </Badge>
               </div>
               <div className="mt-2.5">
                 <ProgressBar
-                  value={summary.completionRate}
+                  value={completionRate}
                   max={100}
-                  variant={summary.completionRate >= 75 ? 'success' : 'primary'}
+                  variant={completionRate >= 75 ? 'success' : 'primary'}
                   size="xs"
                 />
               </div>
             </div>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
           </div>
         </div>
 
-        {/* Overdue Goals */}
+        {/* Card 4: Overdue Goals */}
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col">
@@ -643,12 +671,12 @@ export const GoalTrackerPage = () => {
               <div className="flex items-baseline gap-2 mt-1.5">
                 <span
                   className={`text-2xl sm:text-3xl font-extrabold tracking-tight font-mono ${
-                    overdueGoalsCount > 0 ? 'text-rose-600' : 'text-slate-900'
+                    overdueGoals.length > 0 ? 'text-rose-600' : 'text-slate-900'
                   }`}
                 >
-                  {overdueGoalsCount}
+                  {overdueGoals.length}
                 </span>
-                {overdueGoalsCount > 0 ? (
+                {overdueGoals.length > 0 ? (
                   <Badge variant="danger" size="sm">
                     Action Required
                   </Badge>
@@ -661,7 +689,7 @@ export const GoalTrackerPage = () => {
             </div>
             <div
               className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                overdueGoalsCount > 0
+                overdueGoals.length > 0
                   ? 'bg-rose-50 border border-rose-100 text-rose-600'
                   : 'bg-slate-50 border border-slate-100 text-slate-400'
               }`}
@@ -670,7 +698,7 @@ export const GoalTrackerPage = () => {
             </div>
           </div>
           <span className="text-[11px] text-slate-400 mt-2">
-            Based on target completion dates
+            Target completion dates passed
           </span>
         </div>
       </div>
@@ -686,7 +714,7 @@ export const GoalTrackerPage = () => {
               Immediate Priorities
             </h2>
             <span className="text-xs text-slate-400 font-normal">
-              (Sorted by nearest target date)
+              (Ranked by nearest deadline)
             </span>
           </div>
           {currentPriorities.length > 0 && (
@@ -697,23 +725,22 @@ export const GoalTrackerPage = () => {
         </div>
 
         {currentPriorities.length === 0 ? (
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-card text-center flex flex-col items-center gap-2">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500 stroke-[1.5]" />
-            <h3 className="text-sm font-semibold text-slate-800">No Pending High-Priority Deadlines</h3>
-            <p className="text-xs text-slate-500 max-w-md">
-              You have completed all active commitments or have no goals scheduled. Create a new
-              weekly goal to keep progressing.
-            </p>
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={handleOpenCreateModal}
-              leftIcon={<Plus className="w-3.5 h-3.5" />}
-              className="mt-1"
-            >
-              Add Weekly Goal
-            </Button>
-          </div>
+          <EmptyState
+            icon={<CheckCircle2 className="w-6 h-6 text-emerald-500 stroke-[1.5]" />}
+            title="No Pending High-Priority Deadlines"
+            description="You have completed all active commitments or have no goals scheduled. Create a new weekly goal to keep progressing."
+            action={
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={handleOpenCreateModal}
+                leftIcon={<Plus className="w-3.5 h-3.5" />}
+              >
+                Add Weekly Goal
+              </Button>
+            }
+            compact
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {currentPriorities.map((goal) => {
@@ -774,12 +801,16 @@ export const GoalTrackerPage = () => {
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-blue-600" />
             <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-              Curriculum & Semester Milestones
+              Curriculum &amp; Semester Milestones
             </h2>
           </div>
-          {studentProfile?.profile?.selectedCareer && (
+          {selectedCareer ? (
             <Badge variant="neutral" size="sm" className="max-w-xs truncate">
-              Track: {studentProfile.profile.selectedCareer}
+              Track: {selectedCareer}
+            </Badge>
+          ) : (
+            <Badge variant="warning" size="sm">
+              No Track Selected
             </Badge>
           )}
         </div>
@@ -788,10 +819,10 @@ export const GoalTrackerPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div className="flex flex-col">
               <span className="text-xs font-semibold text-slate-800">
-                {roadmap?.career || 'General Engineering Roadmap'}
+                {roadmap?.career || (selectedCareer ? `${selectedCareer} Roadmap` : 'Curriculum Roadmap')}
               </span>
               <p className="text-[11px] text-slate-500">
-                Semester phases mapped from Department Curriculum & Placement Syllabi
+                Semester phases mapped from Department Curriculum &amp; Placement Syllabi
               </p>
             </div>
             <Link
@@ -811,7 +842,7 @@ export const GoalTrackerPage = () => {
                   key={idx}
                   className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70 flex items-start gap-3 text-xs"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-blue-600 font-bold flex items-center justify-center shrink-0 shadow-2xs text-[11px]">
+                  <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-blue-600 font-bold flex items-center justify-center shrink-0 shadow-2xs text-[11px] font-mono">
                     {idx + 1}
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
@@ -826,12 +857,29 @@ export const GoalTrackerPage = () => {
               ))}
             </div>
           ) : (
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 text-center">
-              No formal semester milestone plans configured for this track yet.
-            </div>
+            <EmptyState
+              icon={<FolderX className="w-6 h-6 text-slate-400" />}
+              title="No Semester Milestones Configured"
+              description={
+                selectedCareer
+                  ? `No formal semester plans configured for track: ${selectedCareer}.`
+                  : 'Select an accredited career track in your profile to load curriculum and semester benchmarks.'
+              }
+              action={
+                <Button
+                  as={Link}
+                  to="/student/profile"
+                  variant="outline"
+                  size="xs"
+                >
+                  Configure Career Track
+                </Button>
+              }
+              compact
+            />
           )}
 
-          {/* Targeted Action Plans (from Weak Skill Diagnostic Model) */}
+          {/* Targeted Action Plans (from Diagnostic Weak Skills Model) */}
           {actionPlans.length > 0 && (
             <div className="pt-3 border-t border-slate-100 space-y-2">
               <span className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
@@ -920,10 +968,11 @@ export const GoalTrackerPage = () => {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {[
             { id: 'all', label: 'All Goals', count: goals.length },
-            { id: 'active', label: 'Active', count: activeGoalsCount },
-            { id: 'in-progress', label: 'In Progress', count: summary.inProgress },
-            { id: 'pending', label: 'Pending', count: summary.pending },
-            { id: 'completed', label: 'Completed', count: summary.completed },
+            { id: 'active', label: 'Active', count: activeGoals.length },
+            { id: 'due-this-week', label: 'Due This Week', count: dueThisWeekGoals.length },
+            { id: 'in-progress', label: 'In Progress', count: inProgressGoals.length },
+            { id: 'pending', label: 'Pending', count: pendingGoals.length },
+            { id: 'completed', label: 'Completed', count: completedGoals.length },
           ].map((tab) => {
             const isActive = statusFilter === tab.id;
             return (
@@ -962,7 +1011,7 @@ export const GoalTrackerPage = () => {
               searchQuery
                 ? `No goals matching "${searchQuery}"`
                 : statusFilter !== 'all'
-                ? `No goals with status "${statusFilter}"`
+                ? `No goals under "${statusFilter}"`
                 : 'No Weekly Goals Recorded'
             }
             description={
@@ -1077,7 +1126,7 @@ export const GoalTrackerPage = () => {
         isOpen={isCreateModalOpen}
         onClose={() => !isSubmitting && setIsCreateModalOpen(false)}
         title="Create New Weekly Goal"
-        description="Add a measurable goal for this sprint. Weekly goal completions directly update your placement readiness profile."
+        description="Add a measurable goal for this sprint. Weekly goal completions directly update your placement readiness score."
         size="md"
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4 pt-2">
