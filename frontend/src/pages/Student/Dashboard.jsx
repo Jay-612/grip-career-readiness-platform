@@ -18,7 +18,8 @@ import {
   TrendingUp,
   Check,
   Building2,
-  UserCheck
+  UserCheck,
+  Plus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
@@ -572,14 +573,14 @@ export const Dashboard = () => {
           <div className="pt-3 border-t border-slate-100 text-xs flex items-center justify-between mt-3">
             {nextSession ? (
               <Link
-                to="/student/mock-interview"
+                to="/student/interviews"
                 className="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
               >
                 <span>View Session Details →</span>
               </Link>
             ) : (
               <Link
-                to="/student/mock-interview"
+                to="/student/interviews"
                 className="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
               >
                 <span>Book Evaluation Session →</span>
@@ -776,7 +777,7 @@ export const Dashboard = () => {
                 </h3>
               </div>
               <Link
-                to="/student/mock-interview"
+                to="/student/interviews"
                 className="text-xs text-slate-500 hover:text-blue-600 font-medium"
               >
                 Calendar →
@@ -791,7 +792,7 @@ export const Dashboard = () => {
                 action={
                   <Button
                     as={Link}
-                    to="/student/mock-interview"
+                    to="/student/interviews"
                     variant="outline"
                     size="xs"
                   >
@@ -826,7 +827,7 @@ export const Dashboard = () => {
                         {apt.meetLink ? 'Online Video Interview' : 'Department Evaluation Lab'}
                       </p>
                     </div>
-                    <Link to="/student/mock-interview">
+                    <Link to="/student/interviews">
                       <Button variant="secondary" size="xs" className="w-full mt-1">
                         View Appointment
                       </Button>

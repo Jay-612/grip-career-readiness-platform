@@ -46,7 +46,7 @@ const CAREER_TRACK_OPTIONS = [
 ];
 
 export const ProfileSkillsPage = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   // Primary Data States
   const [isLoading, setIsLoading] = useState(true);
@@ -239,6 +239,9 @@ export const ProfileSkillsPage = () => {
 
       const res = await studentService.updateProfile(payload);
       if (res.success) {
+        if (res.user && updateUser) {
+          updateUser(res.user);
+        }
         setSaveSuccessMessage('Profile and academic trajectory updated successfully!');
         setIsEditModalOpen(false);
         // Refresh all profile data and newly mapped career skills
@@ -759,7 +762,7 @@ export const ProfileSkillsPage = () => {
                 action={
                   <Button
                     as={Link}
-                    to="/student/mock-interview"
+                    to="/student/interviews"
                     variant="primary"
                     size="xs"
                     leftIcon={<Plus className="w-3.5 h-3.5" />}
@@ -838,7 +841,7 @@ export const ProfileSkillsPage = () => {
               <span>Validated by Institutional Faculty</span>
             </span>
             <Link
-              to="/student/mock-interview"
+              to="/student/interviews"
               className="text-blue-600 font-semibold hover:underline"
             >
               Interview Hub →

@@ -25,7 +25,13 @@ const TopBar = ({
   };
 
   const displayRole = user?.role || 'student';
-  const displayName = user?.name || (displayRole === 'faculty' ? 'Faculty Member' : 'Verified Student');
+  const displayName =
+    user?.name ||
+    (displayRole === 'faculty'
+      ? 'Faculty Member'
+      : displayRole === 'alumni'
+      ? 'Alumni Mentor'
+      : 'Verified Student');
   const displayEmail = user?.email || `${displayRole}@campus.edu`;
 
   return (

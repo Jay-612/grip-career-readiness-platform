@@ -16,6 +16,7 @@ import FacultyDashboard from './pages/Faculty/Dashboard';
 import InterviewEvaluationPage from './pages/Faculty/InterviewEvaluationPage';
 import GuidanceInboxPage from './pages/Faculty/GuidanceInboxPage';
 import HodAnalyticsPage from './pages/Faculty/HodAnalyticsPage';
+import AlumniDashboard from './pages/Alumni/AlumniDashboard';
 import Button from './components/common/Button';
 import Badge from './components/common/Badge';
 import { GraduationCap, LogOut, CheckCircle, ArrowLeft } from 'lucide-react';
@@ -25,7 +26,11 @@ const PlaceholderScreen = ({ title, backPath }) => {
   const { user } = useAuth();
   const targetBackPath =
     backPath ||
-    (user?.role === 'faculty' ? '/faculty/dashboard' : '/student/dashboard');
+    (user?.role === 'alumni'
+      ? '/alumni/dashboard'
+      : user?.role === 'faculty'
+      ? '/faculty/dashboard'
+      : '/student/dashboard');
 
   return (
     <div className="p-8 sm:p-12 rounded-3xl bg-white border border-slate-200 shadow-card flex flex-col items-center text-center gap-4 my-6">
@@ -159,14 +164,18 @@ const App = () => {
                     </div>
                   }
                   quickAction={
-                    <Button variant="outline" size="sm" className="text-xs">
-                      + Log Progress
-                    </Button>
+                    <Link to="/student/goals">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        + Log Progress
+                      </Button>
+                    </Link>
                   }
                   primaryAction={
-                    <Button variant="primary" size="sm" className="text-xs shadow-xs">
-                      Request Mentorship
-                    </Button>
+                    <Link to="/student/guidance">
+                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
+                        Request Mentorship
+                      </Button>
+                    </Link>
                   }
                 />
               </ProtectedRoute>
@@ -183,6 +192,8 @@ const App = () => {
             <Route path="interviews" element={<InterviewCenterPage />} />
             <Route path="interview-readiness" element={<Navigate to="/student/interviews" replace />} />
             <Route path="readiness" element={<Navigate to="/student/interviews" replace />} />
+            <Route path="mock-interview" element={<Navigate to="/student/interviews" replace />} />
+            <Route path="mock-interviews" element={<Navigate to="/student/interviews" replace />} />
           </Route>
 
           {/* Faculty Authenticated Layout & Nested Routes */}
@@ -231,15 +242,61 @@ const App = () => {
             <Route path="hod-analytics" element={<Navigate to="/faculty/analytics" replace />} />
           </Route>
 
-          {/* Alumni Protected Routes */}
+          {/* Alumni Authenticated Layout & Nested Routes */}
           <Route
-            path="/alumni/*"
+            path="/alumni"
             element={
               <ProtectedRoute allowedRoles={['alumni']}>
-                <RoleDashboardPlaceholder title="Alumni Advisor & Network Portal" roleRequired="alumni" />
+                <DashboardLayout
+                  role="alumni"
+                  breadcrumbs={['Portal', 'Alumni Advisor Hub']}
+                  statusBadge={
+                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold text-emerald-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Alumni Mentor Network</span>
+                    </div>
+                  }
+                  quickAction={
+                    <Link to="/alumni/experience">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        + Share Experience
+                      </Button>
+                    </Link>
+                  }
+                  primaryAction={
+                    <Link to="/alumni/mentorship">
+                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
+                        Mentorship Inbox
+                      </Button>
+                    </Link>
+                  }
+                />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<Navigate to="/alumni/dashboard" replace />} />
+            <Route path="dashboard" element={<AlumniDashboard />} />
+            <Route
+              path="experience"
+              element={
+                <PlaceholderScreen
+                  title="Experience Publisher Module"
+                  backPath="/alumni/dashboard"
+                />
+              }
+            />
+            <Route path="experience-publisher" element={<Navigate to="/alumni/experience" replace />} />
+            <Route
+              path="mentorship"
+              element={
+                <PlaceholderScreen
+                  title="Alumni Mentorship Inbox"
+                  backPath="/alumni/dashboard"
+                />
+              }
+            />
+            <Route path="mentorship-inbox" element={<Navigate to="/alumni/mentorship" replace />} />
+          </Route>
 
           {/* Recruiter Protected Routes */}
           <Route

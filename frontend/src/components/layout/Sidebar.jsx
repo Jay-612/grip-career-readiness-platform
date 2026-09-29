@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -19,6 +19,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import studentService from '../../services/studentService';
 
 const Sidebar = ({
   role: propRole,
@@ -33,6 +34,28 @@ const Sidebar = ({
 
   const activeRole = propRole || authRole || 'student';
   const currentUser = propUser || authUser || {};
+
+  const [studentReadiness, setStudentReadiness] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const studentId = currentUser?.id || authUser?.id;
+    if (activeRole === 'student' && studentId) {
+      studentService
+        .getPlacementReadiness(studentId)
+        .then((res) => {
+          if (isMounted && res?.readinessScore !== undefined) {
+            setStudentReadiness(res);
+          }
+        })
+        .catch(() => {
+          // Keep null if unavailable
+        });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [activeRole, currentUser?.id, authUser?.id]);
 
   const handleSignOut = () => {
     logout();
@@ -57,8 +80,8 @@ const Sidebar = ({
     ],
     alumni: [
       { name: 'Dashboard', path: '/alumni/dashboard', icon: LayoutDashboard },
-      { name: 'Experience Publisher', path: '/alumni/experience-publisher', icon: BookOpen },
-      { name: 'Mentorship Inbox', path: '/alumni/mentorship-inbox', icon: Send, badge: '4 unread' },
+      { name: 'Experience Publisher', path: '/alumni/experience', icon: BookOpen },
+      { name: 'Mentorship Inbox', path: '/alumni/mentorship', icon: Send },
     ],
     recruiter: [
       { name: 'Dashboard', path: '/recruiter/dashboard', icon: LayoutDashboard },
@@ -70,10 +93,10 @@ const Sidebar = ({
   const navItems = navConfigs[activeRole] || navConfigs.student;
 
   const defaultUserMeta = {
-    student: { name: 'Rohan Mehta', roleSubtitle: '3rd Year • CSE Track', initials: 'RM' },
-    faculty: { name: 'Prof. Neha Sharma', roleSubtitle: 'Associate Prof • CSE', initials: 'NS' },
-    alumni: { name: 'Vikram Singhania', roleSubtitle: 'Senior SWE @ TechCorp', initials: 'VS' },
-    recruiter: { name: 'Marcus Vance', roleSubtitle: 'Campus TA Lead • TechCorp', initials: 'MV' },
+    student: { name: 'Student', roleSubtitle: 'Student • Campus Portal', initials: 'ST' },
+    faculty: { name: 'Faculty Member', roleSubtitle: 'Faculty • Campus Portal', initials: 'FA' },
+    alumni: { name: 'Alumni Mentor', roleSubtitle: 'Alumni • Campus Portal', initials: 'AL' },
+    recruiter: { name: 'Recruiter Partner', roleSubtitle: 'Recruiter • Campus Portal', initials: 'RC' },
   };
 
   const currentRoleMeta = defaultUserMeta[activeRole] || defaultUserMeta.student;
@@ -181,18 +204,35 @@ const Sidebar = ({
             <div className="p-3 bg-slate-50 rounded-xl border border-grip-border mb-4">
               <div className="flex items-center justify-between text-xs mb-1.5">
                 <span className="font-semibold text-grip-dark">Placement Ready</span>
-                <span className="font-mono text-emerald-600 font-bold text-[11px]">+12% vs prior</span>
+                {studentReadiness?.readinessScore !== undefined ? (
+                  <span className="font-mono text-blue-600 font-bold text-[11px]">
+                    {studentReadiness.targetTier || (studentReadiness.readinessScore >= 80 ? 'Tier 1' : studentReadiness.readinessScore >= 60 ? 'Tier 2' : 'General')}
+                  </span>
+                ) : (
+                  <span className="font-mono text-slate-400 font-medium text-[10px]">Evaluating</span>
+                )}
               </div>
               <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden mb-2">
-                <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '85%' }} />
+                <div
+                  className="bg-emerald-500 h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, studentReadiness?.readinessScore !== undefined ? studentReadiness.readinessScore : 0))}%`,
+                  }}
+                />
               </div>
               <div className="flex items-center justify-between text-[11px] text-grip-muted">
-                <span className="font-mono font-semibold text-grip-dark">85%</span>
-                <span>7 of 8 Rubrics Done</span>
+                <span className="font-mono font-semibold text-grip-dark">
+                  {studentReadiness?.readinessScore !== undefined ? `${studentReadiness.readinessScore}%` : 'In Progress'}
+                </span>
+                <span>
+                  {studentReadiness?.details
+                    ? `${studentReadiness.details.completedGoals || 0} Goals • ${studentReadiness.details.completedInterviews || 0} Mocks`
+                    : 'Rubrics In Progress'}
+                </span>
               </div>
               <div className="mt-2 pt-2 border-t border-slate-200 flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
-                <span className="truncate">TechCorp Partner Verified</span>
+                <span className="truncate">Institutional Rubrics Aligned</span>
               </div>
             </div>
           )}
@@ -210,12 +250,12 @@ const Sidebar = ({
 
           {activeRole === 'alumni' && (
             <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col gap-1">
-              <div className="flex items-center gap-1 text-[11px] font-semibold text-blue-700">
-                <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-                <span>Top 5% Contributor</span>
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Verified Alumni Mentor</span>
               </div>
               <span className="text-[10px] text-slate-500 leading-tight">
-                18 Students Placed via your verified mentorship & referrals.
+                Institutional Network Member • Guidance &amp; Career Contributor
               </span>
             </div>
           )}
