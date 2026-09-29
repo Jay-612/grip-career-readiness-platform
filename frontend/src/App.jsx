@@ -19,6 +19,9 @@ import HodAnalyticsPage from './pages/Faculty/HodAnalyticsPage';
 import AlumniDashboard from './pages/Alumni/AlumniDashboard';
 import ExperiencePublisherPage from './pages/Alumni/ExperiencePublisherPage';
 import MentorshipInboxPage from './pages/Alumni/MentorshipInboxPage';
+import RecruiterDashboard from './pages/Recruiter/RecruiterDashboard';
+import CompanyProfilePage from './pages/Recruiter/CompanyProfilePage';
+import StudentFeedbackPortalPage from './pages/Recruiter/StudentFeedbackPortalPage';
 import Button from './components/common/Button';
 import Badge from './components/common/Badge';
 import { GraduationCap, LogOut, CheckCircle, ArrowLeft } from 'lucide-react';
@@ -30,6 +33,8 @@ const PlaceholderScreen = ({ title, backPath }) => {
     backPath ||
     (user?.role === 'alumni'
       ? '/alumni/dashboard'
+      : user?.role === 'recruiter'
+      ? '/recruiter/dashboard'
       : user?.role === 'faculty'
       ? '/faculty/dashboard'
       : '/student/dashboard');
@@ -285,15 +290,47 @@ const App = () => {
             <Route path="mentorship-inbox" element={<Navigate to="/alumni/mentorship" replace />} />
           </Route>
 
-          {/* Recruiter Protected Routes */}
+          {/* Recruiter Protected Layout & Nested Routes */}
           <Route
-            path="/recruiter/*"
+            path="/recruiter"
             element={
               <ProtectedRoute allowedRoles={['recruiter']}>
-                <RoleDashboardPlaceholder title="Campus Recruiter Hiring Hub" roleRequired="recruiter" />
+                <DashboardLayout
+                  role="recruiter"
+                  breadcrumbs={['Portal', 'Recruiter Hub']}
+                  statusBadge={
+                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[11px] font-semibold text-blue-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                      <span>Hiring Partner Active</span>
+                    </div>
+                  }
+                  quickAction={
+                    <Link to="/recruiter/company">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        Company Profile
+                      </Button>
+                    </Link>
+                  }
+                  primaryAction={
+                    <Link to="/recruiter/feedback">
+                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
+                        + Review Candidate
+                      </Button>
+                    </Link>
+                  }
+                />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<Navigate to="/recruiter/dashboard" replace />} />
+            <Route path="dashboard" element={<RecruiterDashboard />} />
+            <Route path="company" element={<CompanyProfilePage />} />
+            <Route path="company-profile" element={<Navigate to="/recruiter/company" replace />} />
+            <Route path="feedback" element={<StudentFeedbackPortalPage />} />
+            <Route path="feedback/:studentId" element={<StudentFeedbackPortalPage />} />
+            <Route path="student-feedback" element={<Navigate to="/recruiter/feedback" replace />} />
+            <Route path="student-feedback/:studentId" element={<Navigate to="/recruiter/feedback" replace />} />
+          </Route>
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

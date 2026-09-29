@@ -31,6 +31,8 @@ const TopBar = ({
       ? 'Faculty Member'
       : displayRole === 'alumni'
       ? 'Alumni Mentor'
+      : displayRole === 'recruiter'
+      ? 'Campus Recruiter'
       : 'Verified Student');
   const displayEmail = user?.email || `${displayRole}@campus.edu`;
 

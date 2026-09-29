@@ -85,8 +85,8 @@ const Sidebar = ({
     ],
     recruiter: [
       { name: 'Dashboard', path: '/recruiter/dashboard', icon: LayoutDashboard },
-      { name: 'Company Profile', path: '/recruiter/company-profile', icon: Building2 },
-      { name: 'Student Feedback', path: '/recruiter/feedback', icon: FileCheck, badge: '14 Pending' },
+      { name: 'Company Profile', path: '/recruiter/company', icon: Building2 },
+      { name: 'Student Feedback', path: '/recruiter/feedback', icon: FileCheck },
     ],
   };
 
