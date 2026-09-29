@@ -13,6 +13,9 @@ import GoalTrackerPage from './pages/Student/GoalTrackerPage';
 import GuidancePage from './pages/Student/GuidancePage';
 import InterviewCenterPage from './pages/Student/InterviewCenterPage';
 import FacultyDashboard from './pages/Faculty/Dashboard';
+import InterviewEvaluationPage from './pages/Faculty/InterviewEvaluationPage';
+import GuidanceInboxPage from './pages/Faculty/GuidanceInboxPage';
+import HodAnalyticsPage from './pages/Faculty/HodAnalyticsPage';
 import Button from './components/common/Button';
 import Badge from './components/common/Badge';
 import { GraduationCap, LogOut, CheckCircle, ArrowLeft } from 'lucide-react';
@@ -216,35 +219,15 @@ const App = () => {
           >
             <Route index element={<Navigate to="/faculty/dashboard" replace />} />
             <Route path="dashboard" element={<FacultyDashboard />} />
-            <Route
-              path="interviews"
-              element={
-                <PlaceholderScreen
-                  title="Interview Evaluation Panel"
-                  backPath="/faculty/dashboard"
-                />
-              }
-            />
+            <Route path="interviews" element={<InterviewEvaluationPage />} />
+            <Route path="interviews/:id" element={<InterviewEvaluationPage />} />
             <Route path="evaluations" element={<Navigate to="/faculty/interviews" replace />} />
-            <Route
-              path="guidance"
-              element={
-                <PlaceholderScreen
-                  title="Guidance Inbox"
-                  backPath="/faculty/dashboard"
-                />
-              }
-            />
+            <Route path="evaluations/:id" element={<InterviewEvaluationPage />} />
+            <Route path="guidance" element={<GuidanceInboxPage />} />
+            <Route path="guidance/:requestId" element={<GuidanceInboxPage />} />
             <Route path="guidance-inbox" element={<Navigate to="/faculty/guidance" replace />} />
-            <Route
-              path="analytics"
-              element={
-                <PlaceholderScreen
-                  title="HOD & Department Analytics"
-                  backPath="/faculty/dashboard"
-                />
-              }
-            />
+            <Route path="guidance-inbox/:requestId" element={<GuidanceInboxPage />} />
+            <Route path="analytics" element={<HodAnalyticsPage />} />
             <Route path="hod-analytics" element={<Navigate to="/faculty/analytics" replace />} />
           </Route>
 

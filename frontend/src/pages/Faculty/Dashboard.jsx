@@ -161,7 +161,7 @@ const FacultyDashboard = () => {
       severity: 'warning',
       badge: 'Unanswered Request',
       actionText: 'Reply in Inbox',
-      actionLink: '/faculty/guidance',
+      actionLink: `/faculty/guidance/${topGuidance.id}`,
     });
   }
 
@@ -178,7 +178,7 @@ const FacultyDashboard = () => {
       severity: 'info',
       badge: nextInterview.time ? `${nextInterview.time} Today` : 'Scheduled',
       actionText: 'Prepare Session',
-      actionLink: '/faculty/interviews',
+      actionLink: `/faculty/interviews/${nextInterview.id}`,
     });
   }
 
@@ -195,7 +195,7 @@ const FacultyDashboard = () => {
       severity: 'danger',
       badge: 'Awaiting Score',
       actionText: 'Evaluate Now',
-      actionLink: '/faculty/interviews',
+      actionLink: `/faculty/interviews/${evalTarget.id}`,
     });
   }
 
@@ -212,7 +212,7 @@ const FacultyDashboard = () => {
       severity: 'warning',
       badge: 'Pending Review',
       actionText: 'Review Inquiries',
-      actionLink: '/faculty/guidance',
+      actionLink: `/faculty/guidance/${secondGuidance.id}`,
     });
   }
 
@@ -689,16 +689,17 @@ const FacultyDashboard = () => {
 
                   {/* Event 2: Recent guidance inquiry */}
                   {pendingGuidance.slice(0, 2).map((guidance, idx) => (
-                    <div
+                    <Link
                       key={`activity-g-${guidance.id || idx}`}
-                      className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 flex items-start gap-3"
+                      to={`/faculty/guidance/${guidance.id}`}
+                      className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 flex items-start gap-3 hover:bg-amber-50/50 hover:border-amber-200 transition-colors group"
                     >
-                      <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-amber-200 transition-colors">
                         <MessageSquare className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0 flex-1 space-y-0.5">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-semibold text-slate-800">
+                          <p className="text-xs font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">
                             Student Guidance Request Logged
                           </p>
                           <span className="text-[10px] text-slate-400 font-mono">
@@ -709,7 +710,7 @@ const FacultyDashboard = () => {
                           Inquiry from <span className="font-medium text-slate-900">{guidance.studentName}</span>: "{guidance.question}"
                         </p>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </>
               )}
@@ -795,13 +796,13 @@ const FacultyDashboard = () => {
 
                     <div className="pt-2 border-t border-blue-100 flex items-center gap-2">
                       <Link
-                        to="/faculty/interviews"
+                        to={interview.id ? `/faculty/interviews/${interview.id}` : "/faculty/interviews"}
                         className="flex-1 text-center py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
                       >
                         Start / Evaluate
                       </Link>
                       <Link
-                        to="/faculty/interviews"
+                        to={interview.id ? `/faculty/interviews/${interview.id}` : "/faculty/interviews"}
                         className="flex-1 text-center py-1.5 px-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
                       >
                         View Details

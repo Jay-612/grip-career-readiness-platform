@@ -53,7 +53,7 @@ const Sidebar = ({
       { name: 'Dashboard', path: '/faculty/dashboard', icon: LayoutDashboard },
       { name: 'Interview Evaluation', path: '/faculty/interviews', icon: FileCheck },
       { name: 'Guidance Inbox', path: '/faculty/guidance', icon: Send },
-      { name: 'Analytics', path: '/faculty/analytics', icon: BarChart3 },
+      { name: 'HOD Analytics', path: '/faculty/analytics', icon: BarChart3, badge: 'HOD' },
     ],
     alumni: [
       { name: 'Dashboard', path: '/alumni/dashboard', icon: LayoutDashboard },

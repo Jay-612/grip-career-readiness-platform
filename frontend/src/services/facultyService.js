@@ -88,6 +88,13 @@ export const facultyService = {
     return response.data;
   },
 
+  // Get student's interview history and past evaluation scores
+  // GET /api/progress/interviews/:studentId
+  getStudentInterviewAnalysis: async (studentId) => {
+    const response = await apiClient.get(`/progress/interviews/${studentId}`);
+    return response.data;
+  },
+
   // Optional: Get department placement stats (HOD-only)
   // GET /api/department/placement-stats
   getDepartmentPlacementStats: async () => {
@@ -116,6 +123,17 @@ export const facultyService = {
   getDepartmentAnalytics: async () => {
     try {
       const response = await apiClient.get('/department/analytics');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
+  // Optional: Get department career distribution (HOD-only)
+  // GET /api/department/career-distribution
+  getDepartmentCareerDistribution: async () => {
+    try {
+      const response = await apiClient.get('/department/career-distribution');
       return response.data;
     } catch {
       return null;
