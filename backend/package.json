@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed": "node seed/seed.js",
+    "seed:reset": "node seed/cleanup.js"
   },
   "type": "module",
   "keywords": [],

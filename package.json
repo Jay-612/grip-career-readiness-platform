@@ -4,7 +4,9 @@
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "frontend": "cd frontend && npm run dev",
-    "client": "cd frontend && npm run dev"
+    "client": "cd frontend && npm run dev",
+    "seed": "cd backend && npm run seed",
+    "seed:reset": "cd backend && npm run seed:reset"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
