@@ -38,12 +38,10 @@ import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
 
-// Available Department Roadmaps for quick selection
-const CAREER_TRACK_OPTIONS = [
-  'Distributed Systems & Cloud Backend Engineer',
-  'Full-Stack Product Engineering',
-  'DevOps & Site Reliability Engineer',
-];
+import { CAREER_TRACK_NAMES } from '../../constants/careerTracks';
+
+// Available Department Roadmaps for selection (canonical 4 tracks)
+const CAREER_TRACK_OPTIONS = CAREER_TRACK_NAMES;
 
 export const ProfileSkillsPage = () => {
   const { user, updateUser } = useAuth();

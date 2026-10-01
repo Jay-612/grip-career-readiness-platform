@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
 import {
   saveWeeklyGoals,
   updateGoalStatus,
@@ -7,10 +7,10 @@ import {
 
 const router = express.Router();
 
-// POST /api/goals — Save weekly goals for student
-router.post('/', protect, saveWeeklyGoals);
+// POST /api/goals — Save weekly goals for student (Students can save for self, admin for any)
+router.post('/', protect, authorize('student', 'admin'), saveWeeklyGoals);
 
-// PUT /api/goals/:goalId — Update goal status (e.g. Done/Pending/completed)
-router.put('/:goalId', protect, updateGoalStatus);
+// PUT /api/goals/:goalId — Update goal status (Students own goals or Admin)
+router.put('/:goalId', protect, authorize('student', 'admin'), updateGoalStatus);
 
 export default router;

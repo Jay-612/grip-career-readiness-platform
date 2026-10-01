@@ -33,9 +33,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  const getRoleDashboardPath = (role) => {
+  const getRoleDashboardPath = (role, userObj) => {
     switch (role?.toLowerCase()) {
       case 'student':
+        if (userObj && !userObj.selectedCareer) {
+          return '/student/career-compass?takeQuiz=true';
+        }
         return '/student/dashboard';
       case 'faculty':
         return '/faculty/dashboard';
@@ -68,7 +71,7 @@ export const AuthProvider = ({ children }) => {
           success: true,
           token: receivedToken,
           user: receivedUser,
-          redirectPath: getRoleDashboardPath(receivedUser.role),
+          redirectPath: getRoleDashboardPath(receivedUser.role, receivedUser),
         };
       } else {
         throw new Error(response.data?.message || 'Login failed');
@@ -106,7 +109,7 @@ export const AuthProvider = ({ children }) => {
           success: true,
           token: receivedToken,
           user: receivedUser,
-          redirectPath: getRoleDashboardPath(receivedUser.role),
+          redirectPath: getRoleDashboardPath(receivedUser.role, receivedUser),
         };
       } else {
         throw new Error(response.data?.message || 'Registration failed');

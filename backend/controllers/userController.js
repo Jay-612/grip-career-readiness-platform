@@ -104,13 +104,29 @@ export const updateProfile = async (req, res) => {
     // Update role-specific profile
     let profile = null;
     switch (role) {
-      case 'student':
+      case 'student': {
+        // Security: Whitelist allowed fields to prevent arbitrary readinessScore overwrites
+        const sanitizedData = {};
+        if (profileData.semester !== undefined) sanitizedData.semester = profileData.semester;
+        if (profileData.selectedCareer !== undefined) sanitizedData.selectedCareer = profileData.selectedCareer;
+
+        const updateOps = { $set: sanitizedData };
+        if (sanitizedData.selectedCareer) {
+          updateOps.$push = {
+            careerHistory: {
+              career: sanitizedData.selectedCareer,
+              date: new Date(),
+              source: profileData.source || 'manual',
+            },
+          };
+        }
         profile = await StudentProfile.findOneAndUpdate(
           { studentId: userId },
-          { $set: profileData },
+          updateOps,
           { new: true, runValidators: true, upsert: true }
         );
         break;
+      }
       case 'faculty':
         profile = await FacultyProfile.findOneAndUpdate(
           { facultyId: userId },

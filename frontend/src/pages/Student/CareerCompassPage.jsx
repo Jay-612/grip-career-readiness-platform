@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import Button from '../../components/common/Button';
@@ -44,6 +44,7 @@ import {
 export const CareerCompassPage = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // State variables
   const [profileData, setProfileData] = useState(null);
@@ -64,6 +65,13 @@ export const CareerCompassPage = () => {
   const [quizStrengths, setQuizStrengths] = useState(['backend', 'system design', 'docker']);
   const [quizResult, setQuizResult] = useState(null);
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
+
+  // Automatically open quiz if triggered via query param (e.g. redirected right after login)
+  useEffect(() => {
+    if (searchParams.get('takeQuiz') === 'true') {
+      setQuizModalOpen(true);
+    }
+  }, [searchParams]);
 
   // Curricular Career Tracks Definition (Curriculum Specifications)
   const CAREER_TRACKS = [
@@ -99,8 +107,8 @@ export const CareerCompassPage = () => {
     },
     {
       id: 'devops-sre',
-      title: 'DevOps & Site Reliability Engineer',
-      shortTitle: 'DevOps & SRE Track',
+      title: 'DevOps & Cloud Infrastructure Specialist',
+      shortTitle: 'DevOps & Cloud Infrastructure',
       roleType: 'Alternative Trajectory',
       description: 'Infrastructure automation, production resilience, CI/CD and telemetry pipelines.',
       ctcRange: '₹16 – 26 LPA',
@@ -111,6 +119,21 @@ export const CareerCompassPage = () => {
       topPartners: ['CloudSys', 'InfraScale', 'DataMesh'],
       techFocus: 'CI/CD Automation, Kubernetes, Terraform IaC, Observability & Incident Response.',
       interviewWeighting: '30% OS/Networking • 40% DevOps Stack • 30% Coding',
+    },
+    {
+      id: 'ai-data-systems',
+      title: 'AI & Data Systems Engineer',
+      shortTitle: 'AI & Data Systems',
+      roleType: 'High Growth Trajectory',
+      description: 'Machine learning data pipelines, model serving architectures, and high-throughput data systems.',
+      ctcRange: '₹18 – 30 LPA',
+      ctcSubtitle: 'Top Tier Premium',
+      campusDemand: 'Exponential Placement Demand',
+      hiringTier: 'AI Labs & Enterprise Data Divisions',
+      corePillars: ['ML Data Pipelines', 'Deep Learning Services', 'Vector Databases & RAG', 'Distributed Analytics'],
+      topPartners: ['Apex AI', 'ScaleData', 'NeuroTech'],
+      techFocus: 'Python, PyTorch, FastAPIs, Vector DBs, ML Pipelines, SQL Analytics, Docker MLOps.',
+      interviewWeighting: '40% ML & Math • 30% Coding & DSA • 30% Data Architecture',
     },
   ];
 
@@ -123,15 +146,21 @@ export const CareerCompassPage = () => {
       const prof = await studentService.getProfile();
       setProfileData(prof);
 
-      const targetCareer = prof?.profile?.selectedCareer || 'Distributed Systems & Cloud Backend Engineer';
-      setActiveTrack(targetCareer);
+      const targetCareer = prof?.profile?.selectedCareer || user?.selectedCareer || '';
+      if (targetCareer) {
+        setActiveTrack(targetCareer);
+      } else {
+        // If student hasn't selected a career yet, pop open the quiz modal
+        setQuizModalOpen(true);
+      }
 
+      const effectiveCareer = targetCareer || 'Distributed Systems & Cloud Backend Engineer';
       const studentId = prof?.user?.id || user?.id;
 
       // 2. Fetch parallel endpoints
       const [readinessRes, roadmapRes, companyMatchRes, mentorsRes, dashboardRes] = await Promise.allSettled([
         studentId ? studentService.getPlacementReadiness(studentId) : Promise.resolve(null),
-        studentService.getCareerRoadmap(targetCareer),
+        studentService.getCareerRoadmap(effectiveCareer),
         studentId ? studentService.getCompanyMatch(studentId) : Promise.resolve(null),
         studentService.getMentorRecommendations(),
         studentId ? studentService.getProgressDashboard(studentId) : Promise.resolve(null),
@@ -205,14 +234,18 @@ export const CareerCompassPage = () => {
 
   // Submit Career Quiz
   const handleSubmitQuiz = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setIsSubmittingQuiz(true);
     try {
       const res = await studentService.submitCareerQuiz({
         interests: quizInterests,
         strengths: quizStrengths,
       });
-      setQuizResult(res?.suggestedCareer || 'Distributed Systems & Cloud Backend Engineer');
+      setQuizResult({
+        suggestedCareer: res?.suggestedCareer || 'Distributed Systems & Cloud Backend Engineer',
+        description: res?.description || '',
+        requiredSkills: res?.requiredSkills || [],
+      });
     } catch (err) {
       console.error('Quiz submission error:', err);
       alert('Failed to evaluate career quiz. Please try again.');
@@ -1143,89 +1176,212 @@ export const CareerCompassPage = () => {
       {/* ========================================================================= */}
       {quizModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl border border-slate-100 space-y-5 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <Compass className="w-5 h-5 text-blue-600" />
-                <h3 className="text-base font-bold text-slate-900">
-                  Career Diagnostic Assessment Quiz
-                </h3>
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-6 animate-in zoom-in-95 duration-200 custom-scrollbar">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+                  <Compass className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                    Career Discovery & Diagnostic Quiz
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Select your technical interests and strengths to determine your optimal career roadmap.
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setQuizModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitQuiz} className="space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Select your engineering interests and current technical strengths. The GRIP Placement Predictive Engine evaluates your profile against hiring rubrics to suggest your optimal trajectory.
-              </p>
+            <form onSubmit={handleSubmitQuiz} className="space-y-6">
+              {/* Question 1: Domain Interests */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>1. Which Engineering Tracks Excite You Most?</span>
+                    <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-slate-400">Click to select interests</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[
+                    {
+                      label: 'Cloud & Distributed Systems',
+                      tags: ['cloud', 'distributed', 'microservices', 'system design'],
+                      icon: '☁️',
+                      desc: 'High-throughput APIs, caching, and scalable backend infrastructure',
+                    },
+                    {
+                      label: 'Full-Stack Web Products',
+                      tags: ['frontend', 'react', 'node', 'fullstack', 'apis'],
+                      icon: '🌐',
+                      desc: 'Modern web applications, interactive UI, and RESTful APIs',
+                    },
+                    {
+                      label: 'DevOps & Cloud SRE',
+                      tags: ['devops', 'kubernetes', 'docker', 'terraform', 'ci/cd', 'aws'],
+                      icon: '🛠️',
+                      desc: 'Container orchestration, CI/CD automation, and cloud reliability',
+                    },
+                    {
+                      label: 'AI & Data Systems',
+                      tags: ['ai', 'machine learning', 'python', 'data', 'pytorch'],
+                      icon: '🤖',
+                      desc: 'ML models, data processing pipelines, and predictive algorithms',
+                    },
+                  ].map((track) => {
+                    const isSelected = track.tags.some((t) => quizInterests.includes(t));
+                    return (
+                      <div
+                        key={track.label}
+                        onClick={() => {
+                          if (isSelected) {
+                            setQuizInterests((prev) => prev.filter((item) => !track.tags.includes(item)));
+                          } else {
+                            setQuizInterests((prev) => [...new Set([...prev, ...track.tags])]);
+                          }
+                        }}
+                        className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-blue-50/70 border-blue-400 ring-2 ring-blue-500/20 shadow-xs'
+                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{track.icon}</span>
+                          <span className="text-xs font-bold text-slate-900">{track.label}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{track.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-              {/* Interests Input */}
+              {/* Question 2: Technical Strengths */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>2. Current Technical Skills & Strengths</span>
+                    <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-slate-400">Toggle active skills</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'backend',
+                    'system design',
+                    'docker',
+                    'kubernetes',
+                    'react',
+                    'node.js',
+                    'typescript',
+                    'python',
+                    'sql',
+                    'microservices',
+                    'aws',
+                    'linux',
+                    'pytorch',
+                    'kafka',
+                    'redis',
+                    'ci/cd',
+                  ].map((skill) => {
+                    const isChecked = quizStrengths.includes(skill);
+                    return (
+                      <button
+                        type="button"
+                        key={skill}
+                        onClick={() => {
+                          if (isChecked) {
+                            setQuizStrengths((prev) => prev.filter((s) => s !== skill));
+                          } else {
+                            setQuizStrengths((prev) => [...prev, skill]);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all capitalize ${
+                          isChecked
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {isChecked && '✓ '}
+                        {skill}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Question 3: Custom Additions */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700">
-                  Key Technical Interests (Comma-separated)
+                  Additional Strengths or Interests (Optional comma-separated):
                 </label>
                 <input
                   type="text"
-                  value={quizInterests.join(', ')}
-                  onChange={(e) =>
-                    setQuizInterests(
-                      e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
-                    )
-                  }
-                  placeholder="cloud, distributed, microservices, databases"
+                  placeholder="e.g. graph algorithms, next.js, gRPC, computer vision"
+                  onBlur={(e) => {
+                    const extra = e.target.value.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+                    if (extra.length > 0) {
+                      setQuizStrengths((prev) => [...new Set([...prev, ...extra])]);
+                    }
+                  }}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
-                  required
                 />
               </div>
 
-              {/* Strengths Input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">
-                  Current Core Strengths (Comma-separated)
-                </label>
-                <input
-                  type="text"
-                  value={quizStrengths.join(', ')}
-                  onChange={(e) =>
-                    setQuizStrengths(
-                      e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
-                    )
-                  }
-                  placeholder="backend, system design, docker, java, go"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
-                  required
-                />
-              </div>
-
-              {/* Suggested Result */}
+              {/* Suggested Result Preview Banner */}
               {quizResult && (
-                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 space-y-2">
-                  <div className="flex items-center gap-2 text-blue-800 text-xs font-bold">
-                    <Sparkles className="w-4 h-4 text-blue-600" />
-                    <span>Engine Recommendation:</span>
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 space-y-3 animate-fadeIn">
+                  <div className="flex items-center gap-2 text-blue-900 text-xs font-bold">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <span>Algorithmic Recommendation:</span>
                   </div>
-                  <p className="text-sm font-extrabold text-blue-900">
-                    {quizResult}
-                  </p>
-                  <button
+                  <div>
+                    <h4 className="text-base sm:text-lg font-extrabold text-blue-950">
+                      {quizResult.suggestedCareer}
+                    </h4>
+                    {quizResult.description && (
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        {quizResult.description}
+                      </p>
+                    )}
+                  </div>
+                  {quizResult.requiredSkills && quizResult.requiredSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {quizResult.requiredSkills.map((sk) => (
+                        <span key={sk} className="text-[10px] font-semibold bg-white text-blue-800 px-2 py-0.5 rounded-md border border-blue-200">
+                          {sk}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="md"
                     onClick={() => {
-                      handleSelectTrack(quizResult);
+                      const careerName = quizResult.suggestedCareer || quizResult;
+                      handleSelectTrack(careerName);
                       setQuizModalOpen(false);
                     }}
-                    className="mt-2 w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs"
+                    className="w-full mt-2 font-bold shadow-md text-xs py-2.5"
+                    leftIcon={<CheckCircle2 className="w-4 h-4" />}
                   >
-                    Set as Active Career Target
-                  </button>
+                    Confirm Trajectory & Generate Semester Roadmap
+                  </Button>
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <Button
                   type="button"
                   variant="outline"
@@ -1239,8 +1395,9 @@ export const CareerCompassPage = () => {
                   variant="primary"
                   size="sm"
                   disabled={isSubmittingQuiz}
+                  leftIcon={<Compass className="w-4 h-4" />}
                 >
-                  {isSubmittingQuiz ? 'Evaluating...' : 'Run Diagnostics'}
+                  {isSubmittingQuiz ? 'Evaluating Profiles...' : 'Run Diagnostics & Find Match'}
                 </Button>
               </div>
             </form>

@@ -47,7 +47,7 @@ export const scheduleMockInterview = async (req, res) => {
       }
     }
 
-    await MockInterview.create({
+    const createdInterview = await MockInterview.create({
       studentId,
       interviewerId: facultyId,
       dateTime,
@@ -55,7 +55,9 @@ export const scheduleMockInterview = async (req, res) => {
     });
 
     return res.status(201).json({
+      success: true,
       message: 'Appointment confirmed',
+      appointment: createdInterview,
     });
   } catch (error) {
     return res.status(500).json({

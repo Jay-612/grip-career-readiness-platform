@@ -36,7 +36,7 @@ const LoginPage = () => {
   // If already logged in, redirect to dashboard
   React.useEffect(() => {
     if (isAuthenticated && user?.role) {
-      navigate(getRoleDashboardPath(user.role), { replace: true });
+      navigate(getRoleDashboardPath(user.role, user), { replace: true });
     }
   }, [isAuthenticated, user, navigate, getRoleDashboardPath]);
 

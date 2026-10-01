@@ -19,6 +19,13 @@ const studentProfileSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  careerHistory: [
+    {
+      career: { type: String, required: true },
+      date: { type: Date, default: Date.now },
+      source: { type: String, default: 'quiz' },
+    },
+  ],
 });
 
 const StudentProfile = mongoose.model(

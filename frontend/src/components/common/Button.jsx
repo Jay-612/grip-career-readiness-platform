@@ -2,6 +2,7 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 const Button = React.forwardRef(({
+  as: Component = 'button',
   children,
   type = 'button',
   variant = 'primary',
@@ -34,20 +35,26 @@ const Button = React.forwardRef(({
     lg: "text-base px-5 py-2.5 gap-2.5",
   };
 
+  // Only pass type to regular buttons, not custom Link components
+  const componentProps = {
+    ref,
+    disabled: disabled || isLoading,
+    className: `
+      ${baseStyles}
+      ${variants[variant] || variants.primary}
+      ${sizes[size] || sizes.md}
+      ${fullWidth ? 'w-full' : ''}
+      ${className}
+    `,
+    ...props,
+  };
+
+  if (Component === 'button') {
+    componentProps.type = type;
+  }
+
   return (
-    <button
-      ref={ref}
-      type={type}
-      disabled={disabled || isLoading}
-      className={`
-        ${baseStyles}
-        ${variants[variant] || variants.primary}
-        ${sizes[size] || sizes.md}
-        ${fullWidth ? 'w-full' : ''}
-        ${className}
-      `}
-      {...props}
-    >
+    <Component {...componentProps}>
       {isLoading ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin text-current" />
@@ -60,7 +67,7 @@ const Button = React.forwardRef(({
           {rightIcon && <span className="inline-flex shrink-0">{rightIcon}</span>}
         </>
       )}
-    </button>
+    </Component>
   );
 });
 

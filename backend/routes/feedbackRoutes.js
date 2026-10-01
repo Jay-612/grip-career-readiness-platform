@@ -4,11 +4,11 @@ import { addRecruiterFeedback } from '../controllers/feedbackController.js';
 
 const router = express.Router();
 
-// POST /api/feedback — Recruiter/Placement Cell submits student review feedback
+// POST /api/feedback — Recruiter or Admin submits student review feedback
 router.post(
   '/',
   protect,
-  authorize('recruiter', 'placement cell', 'placement', 'admin'),
+  authorize('recruiter', 'admin'),
   addRecruiterFeedback
 );
 

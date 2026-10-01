@@ -56,6 +56,12 @@ export const studentService = {
     return response.data;
   },
 
+  // Get all available career tracks
+  getCareerTracks: async () => {
+    const response = await apiClient.get('/career/tracks');
+    return response.data?.tracks || [];
+  },
+
   // Submit diagnostic career quiz to evaluate suggested track
   submitCareerQuiz: async (quizData) => {
     const response = await apiClient.post('/career/quiz', quizData);

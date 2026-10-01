@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import EvaluationScore from '../model/EvaluationScore.js';
 import MockInterview from '../model/MockInterview.js';
+import { calculateStudentReadiness } from '../services/readinessService.js';
 
 // ─── POST /api/skills/evaluation — Save Skill Evaluation Scores ────
 export const saveEvaluationScore = async (req, res) => {
@@ -72,15 +73,33 @@ export const saveEvaluationScore = async (req, res) => {
     interview.status = 'completed';
     await interview.save();
 
-    await EvaluationScore.create({
-      interviewId,
-      communicationScore: commVal,
-      confidenceScore: confVal,
-      technicalScore: techVal,
-    });
+    // Prevent duplicate evaluation score records
+    let scoreRecord = await EvaluationScore.findOne({ interviewId });
+    if (scoreRecord) {
+      scoreRecord.communicationScore = commVal;
+      scoreRecord.confidenceScore = confVal;
+      scoreRecord.technicalScore = techVal;
+      await scoreRecord.save();
+    } else {
+      scoreRecord = await EvaluationScore.create({
+        interviewId,
+        communicationScore: commVal,
+        confidenceScore: confVal,
+        technicalScore: techVal,
+      });
+    }
+
+    // Recalculate student readiness asynchronously
+    if (interview.studentId) {
+      calculateStudentReadiness(interview.studentId).catch((err) =>
+        console.error('Async readiness update failed after interview evaluation:', err.message)
+      );
+    }
 
     return res.status(201).json({
+      success: true,
       message: 'Scores saved successfully',
+      evaluation: scoreRecord,
     });
   } catch (error) {
     return res.status(500).json({

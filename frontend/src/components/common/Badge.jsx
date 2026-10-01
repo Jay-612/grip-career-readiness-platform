@@ -14,6 +14,10 @@ const Badge = ({
       wrapper: "bg-slate-100 text-slate-700 border-slate-200/80",
       dot: "bg-slate-500",
     },
+    primary: {
+      wrapper: "bg-blue-100 text-blue-800 border-blue-200/80",
+      dot: "bg-blue-600",
+    },
     success: {
       wrapper: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
       dot: "bg-emerald-500",
@@ -34,6 +38,10 @@ const Badge = ({
       wrapper: "bg-purple-50 text-purple-800 border-purple-200/80",
       dot: "bg-purple-600",
     },
+    tier2: {
+      wrapper: "bg-sky-50 text-sky-800 border-sky-200/80",
+      dot: "bg-sky-500",
+    },
     dark: {
       wrapper: "bg-slate-900 text-white border-slate-800",
       dot: "bg-emerald-400",
@@ -41,6 +49,7 @@ const Badge = ({
   };
 
   const sizes = {
+    xs: "text-[10px] font-semibold px-1.5 py-0.5 gap-1",
     sm: "text-[11px] font-medium px-2 py-0.5 gap-1.5",
     md: "text-xs font-medium px-2.5 py-1 gap-1.5",
   };
