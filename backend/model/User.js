@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       enum: ['student', 'faculty', 'alumni', 'recruiter', 'admin'],
       default: 'student',
+      index: true, // Key index for role filtering (leaderboards, faculty roster, student lookup)
     },
   },
   {

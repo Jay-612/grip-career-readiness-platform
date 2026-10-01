@@ -4,9 +4,19 @@ import {
   getPlacementReadiness,
   getCompanyMatch,
   getLeaderboard,
+  getMyRank,
 } from '../controllers/placementController.js';
 
 const router = express.Router();
+
+// GET /api/placement/my-rank — Lightweight personal rank & percentile
+// Access: Student (own)
+router.get(
+  '/my-rank',
+  protect,
+  authorize('student'),
+  getMyRank
+);
 
 // GET /api/placement/readiness/:studentId — Placement readiness score
 // Access: Student (own), Faculty, Admin
@@ -27,11 +37,11 @@ router.get(
 );
 
 // GET /api/placement/leaderboard — Student readiness leaderboard
-// Access: Faculty, Admin
+// Access: Faculty, Admin, Student
 router.get(
   '/leaderboard',
   protect,
-  authorize('faculty', 'admin'),
+  authorize('faculty', 'admin', 'student'),
   getLeaderboard
 );
 

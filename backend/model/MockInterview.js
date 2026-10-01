@@ -1,30 +1,43 @@
 import mongoose from 'mongoose';
 
-const mockInterviewSchema = new mongoose.Schema({
-  studentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const mockInterviewSchema = new mongoose.Schema(
+  {
+    studentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+    interviewerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+    dateTime: {
+      type: Date,
+      required: true,
+    },
+    meetLink: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ['scheduled', 'completed', 'cancelled'],
+      default: 'scheduled',
+    },
   },
-  interviewerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  dateTime: {
-    type: Date,
-    required: true,
-  },
-  meetLink: {
-    type: String,
-    default: '',
-  },
-  status: {
-    type: String,
-    enum: ['scheduled', 'completed', 'cancelled'],
-    default: 'scheduled',
-  },
-});
+  {
+    timestamps: true,
+  }
+);
+
+// Compound indexes for student progress queries and interviewer schedules
+mockInterviewSchema.index({ studentId: 1, status: 1 });
+mockInterviewSchema.index({ interviewerId: 1, dateTime: 1 });
+mockInterviewSchema.index({ studentId: 1, dateTime: -1 });
 
 const MockInterview = mongoose.model(
   'MockInterview',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   MessageSquare,
   HelpCircle,
@@ -57,6 +57,10 @@ export const GuidancePage = () => {
   const [questionText, setQuestionText] = useState('');
   const [formErrors, setFormErrors] = useState({});
 
+  // Follow-up Reply State (Bi-directional Threading)
+  const [replyText, setReplyText] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+
   // Mobile view toggle (show thread vs show list)
   const [mobileView, setMobileView] = useState('list'); // 'list' | 'thread'
 
@@ -92,7 +96,11 @@ export const GuidancePage = () => {
     };
   };
 
-  // Fetch all guidance requests and recommended mentors
+  const activeRequestIdRef = useRef(null);
+
+  // ─────────────────────────────────────────────────────────────
+  // 1. DATA FETCHING (Zero N+1: Ingest replies from primary API)
+  // ─────────────────────────────────────────────────────────────
   const fetchGuidanceData = async () => {
     setIsLoading(true);
     setError(null);
@@ -109,23 +117,12 @@ export const GuidancePage = () => {
       if (requestsRes.status === 'fulfilled' && requestsRes.value?.requests) {
         const rawList = requestsRes.value.requests;
 
-        // 2. Fetch full details/replies for each request in parallel to compute accurate status
-        const detailsResults = await Promise.allSettled(
-          rawList.map((req) => guidanceService.getRequestById(req.id))
-        );
-
-        loadedQuestions = rawList.map((req, idx) => {
-          const detailRes = detailsResults[idx];
-          const replies =
-            detailRes.status === 'fulfilled' && detailRes.value?.replies
-              ? detailRes.value.replies
-              : [];
-          return {
-            ...req,
-            replies,
-            status: replies.length > 0 ? 'answered' : 'awaiting',
-          };
-        });
+        // Zero N+1: Ingest pre-calculated replies and status from getGuidanceRequests
+        loadedQuestions = rawList.map((req) => ({
+          ...req,
+          replies: req.latestReply ? [req.latestReply] : [],
+          status: req.status === 'replied' || (req.replyCount && req.replyCount > 0) ? 'answered' : 'awaiting',
+        }));
 
         setQuestions(loadedQuestions);
 
@@ -135,6 +132,7 @@ export const GuidancePage = () => {
             loadedQuestions.find((q) => q.id === selectedQuestionId) || loadedQuestions[0];
           setSelectedQuestionId(defaultSelected.id);
           setActiveThread(defaultSelected);
+          handleSelectQuestion(defaultSelected.id);
         } else {
           setSelectedQuestionId(null);
           setActiveThread(null);
@@ -160,9 +158,11 @@ export const GuidancePage = () => {
     fetchGuidanceData();
   }, [user?.id]);
 
-  // When selected question ID changes, update active thread
+  // When selected question ID changes, update active thread with race condition prevention
   const handleSelectQuestion = async (questionId) => {
+    if (!questionId) return;
     setSelectedQuestionId(questionId);
+    activeRequestIdRef.current = questionId;
     setMobileView('thread');
 
     // Find locally cached question
@@ -175,7 +175,7 @@ export const GuidancePage = () => {
     setIsLoadingThread(true);
     try {
       const res = await guidanceService.getRequestById(questionId);
-      if (res?.request) {
+      if (activeRequestIdRef.current === questionId && res?.request) {
         const updated = {
           ...res.request,
           replies: res.replies || [],
@@ -188,9 +188,13 @@ export const GuidancePage = () => {
         );
       }
     } catch (err) {
-      console.error('Failed to refresh thread:', err);
+      if (activeRequestIdRef.current === questionId) {
+        console.error('Failed to refresh thread:', err);
+      }
     } finally {
-      setIsLoadingThread(false);
+      if (activeRequestIdRef.current === questionId) {
+        setIsLoadingThread(false);
+      }
     }
   };
 
@@ -292,6 +296,41 @@ export const GuidancePage = () => {
     }
   };
 
+  // Follow-Up Reply Submission (Bi-directional Threading)
+  const handleSendReply = async (e) => {
+    e.preventDefault();
+    if (!replyText.trim() || !activeThread?.id) return;
+    setIsSubmittingReply(true);
+    try {
+      const res = await guidanceService.replyRequest(activeThread.id, replyText.trim());
+      const newReply = res?.reply || {
+        id: Date.now().toString(),
+        mentorName: user?.name || 'You',
+        mentorRole: user?.role || 'student',
+        answerText: replyText.trim(),
+      };
+      setActiveThread((prev) => ({
+        ...prev,
+        status: 'answered',
+        replies: [...(prev?.replies || []), newReply],
+      }));
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === activeThread.id
+            ? { ...q, replies: [...(q.replies || []), newReply] }
+            : q
+        )
+      );
+      setReplyText('');
+      setSuccessToast('Your reply has been posted to the advisory thread.');
+      setTimeout(() => setSuccessToast(null), 3500);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to post reply.');
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
   // Render Role Badge for Responders
   const renderRoleBadge = (role) => {
     const normRole = (role || '').toLowerCase();
@@ -306,6 +345,13 @@ export const GuidancePage = () => {
       return (
         <Badge variant="tier1" size="xs" icon={<Briefcase className="w-3 h-3" />}>
           Alumni Mentor
+        </Badge>
+      );
+    }
+    if (normRole === 'student') {
+      return (
+        <Badge variant="neutral" size="xs" icon={<User className="w-3 h-3 text-blue-600" />}>
+          Student (Author)
         </Badge>
       );
     }
@@ -783,15 +829,49 @@ export const GuidancePage = () => {
                   </div>
                 )}
 
-                {/* Restricted Student Reply Notice */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-[11px] flex items-start gap-2.5 leading-relaxed">
-                  <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                  <p>
-                    <strong>Institutional Advisory Thread:</strong> Responses on this forum are
-                    exclusively provided by verified Faculty Advisors and registered Alumni Mentors
-                    to preserve pedagogical and technical accuracy.
-                  </p>
-                </div>
+                {/* Bi-directional Thread Reply Form */}
+                <form
+                  onSubmit={handleSendReply}
+                  className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="guidance-reply-input"
+                      className="text-xs font-bold text-slate-900 flex items-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Post a Follow-Up Reply</span>
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      Bi-directional Advisory Dialogue
+                    </span>
+                  </div>
+                  <textarea
+                    id="guidance-reply-input"
+                    rows={2}
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Ask a clarifying question or respond to the mentor's advice..."
+                    className="w-full text-xs p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                    disabled={isSubmittingReply}
+                  />
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline" />
+                      <span>Replies are shared in this mentoring thread.</span>
+                    </p>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="xs"
+                      disabled={isSubmittingReply || !replyText.trim()}
+                      isLoading={isSubmittingReply}
+                      rightIcon={<Send className="w-3 h-3" />}
+                    >
+                      Send Reply
+                    </Button>
+                  </div>
+                </form>
               </div>
             </div>
           ) : (

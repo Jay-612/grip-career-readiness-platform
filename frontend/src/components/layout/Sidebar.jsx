@@ -16,7 +16,8 @@ import {
   LogOut,
   Sparkles,
   ShieldCheck,
-  GraduationCap
+  GraduationCap,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
@@ -88,6 +89,14 @@ const Sidebar = ({
       { name: 'Company Profile', path: '/recruiter/company', icon: Building2 },
       { name: 'Student Feedback', path: '/recruiter/feedback', icon: FileCheck },
     ],
+    admin: [
+      { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+      { name: 'User Management', path: '/admin/users', icon: Users, badge: 'RBAC' },
+      { name: 'Curriculum & Tracks', path: '/admin/curriculum', icon: Compass },
+      { name: 'Company Partners', path: '/admin/companies', icon: Building2 },
+      { name: 'Department Events', path: '/admin/events', icon: Calendar },
+      { name: 'System Analytics', path: '/admin/analytics', icon: BarChart3 },
+    ],
   };
 
   const navItems = navConfigs[activeRole] || navConfigs.student;
@@ -97,6 +106,7 @@ const Sidebar = ({
     faculty: { name: 'Faculty Member', roleSubtitle: 'Faculty • Campus Portal', initials: 'FA' },
     alumni: { name: 'Alumni Mentor', roleSubtitle: 'Alumni • Campus Portal', initials: 'AL' },
     recruiter: { name: 'Recruiter Partner', roleSubtitle: 'Recruiter • Campus Portal', initials: 'RC' },
+    admin: { name: 'Institutional Admin', roleSubtitle: 'Admin • Campus Console', initials: 'AD' },
   };
 
   const currentRoleMeta = defaultUserMeta[activeRole] || defaultUserMeta.student;
@@ -273,6 +283,10 @@ const Sidebar = ({
           <div className="flex items-center justify-between px-1 pt-1 text-slate-500 text-xs">
             <button
               type="button"
+              onClick={() => {
+                const target = activeRole === 'student' ? '/student/profile' : activeRole === 'recruiter' ? '/recruiter/company' : '/';
+                navigate(target);
+              }}
               className="inline-flex items-center gap-1.5 hover:text-slate-800 transition-colors"
             >
               <Settings className="w-3.5 h-3.5" />

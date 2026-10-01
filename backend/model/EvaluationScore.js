@@ -1,30 +1,37 @@
 import mongoose from 'mongoose';
 
-const evaluationScoreSchema = new mongoose.Schema({
-  interviewId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'MockInterview',
-    required: true,
+const evaluationScoreSchema = new mongoose.Schema(
+  {
+    interviewId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'MockInterview',
+      required: true,
+      unique: true, // Guarantees 1:1 relationship between interview and score, eliminating aggregation duplication
+      index: true,
+    },
+    technicalScore: {
+      type: Number,
+      min: 0,
+      max: 10,
+      default: 0,
+    },
+    communicationScore: {
+      type: Number,
+      min: 0,
+      max: 10,
+      default: 0,
+    },
+    confidenceScore: {
+      type: Number,
+      min: 0,
+      max: 10,
+      default: 0,
+    },
   },
-  technicalScore: {
-    type: Number,
-    min: 0,
-    max: 10,
-    default: 0,
-  },
-  communicationScore: {
-    type: Number,
-    min: 0,
-    max: 10,
-    default: 0,
-  },
-  confidenceScore: {
-    type: Number,
-    min: 0,
-    max: 10,
-    default: 0,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const EvaluationScore = mongoose.model(
   'EvaluationScore',

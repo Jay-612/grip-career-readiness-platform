@@ -27,6 +27,15 @@ export const guidanceService = {
     const response = await apiClient.get(`/guidance/requests/${id}`);
     return response.data;
   },
+
+  // Reply to guidance request (mentors and student authors)
+  // POST /api/guidance/requests/:id/reply -> body: { answerText }
+  replyRequest: async (requestId, answerText) => {
+    const response = await apiClient.post(`/guidance/requests/${requestId}/reply`, {
+      answerText,
+    });
+    return response.data;
+  },
 };
 
 export default guidanceService;

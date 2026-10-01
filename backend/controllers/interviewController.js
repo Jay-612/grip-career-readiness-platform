@@ -127,3 +127,67 @@ export const getAppointments = async (req, res) => {
     });
   }
 };
+
+// ─── PATCH /api/appointments/:id/cancel — Cancel Appointment ────────
+export const cancelAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = (req.user.id || req.user.userId || '').toString();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment ID format',
+      });
+    }
+
+    const appointment = await MockInterview.findById(id);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found',
+      });
+    }
+
+    // Only the student, the interviewer, or an admin can cancel
+    const studentIdStr = (appointment.studentId || '').toString();
+    const interviewerIdStr = (appointment.interviewerId || '').toString();
+
+    if (
+      studentIdStr !== currentUserId &&
+      interviewerIdStr !== currentUserId &&
+      req.user.role !== 'admin'
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only cancel your own appointments.',
+      });
+    }
+
+    if (appointment.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Appointment is already cancelled',
+      });
+    }
+
+    appointment.status = 'cancelled';
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Appointment cancelled successfully',
+      appointment: {
+        id: appointment._id,
+        status: appointment.status,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while cancelling appointment',
+      error: error.message,
+    });
+  }
+};
+

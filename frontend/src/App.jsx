@@ -22,9 +22,15 @@ import MentorshipInboxPage from './pages/Alumni/MentorshipInboxPage';
 import RecruiterDashboard from './pages/Recruiter/RecruiterDashboard';
 import CompanyProfilePage from './pages/Recruiter/CompanyProfilePage';
 import StudentFeedbackPortalPage from './pages/Recruiter/StudentFeedbackPortalPage';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import UserManagementPage from './pages/Admin/UserManagementPage';
+import CurriculumRoadmapPage from './pages/Admin/CurriculumRoadmapPage';
+import CompanyDirectoryPage from './pages/Admin/CompanyDirectoryPage';
+import EventManagementPage from './pages/Admin/EventManagementPage';
+import SystemAnalyticsPage from './pages/Admin/SystemAnalyticsPage';
 import Button from './components/common/Button';
 import Badge from './components/common/Badge';
-import { GraduationCap, LogOut, CheckCircle, ArrowLeft } from 'lucide-react';
+import { GraduationCap, LogOut, CheckCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 // Clean placeholder for upcoming screens (Goals, Compass, Mentorship, Faculty Interviews, etc.)
 const PlaceholderScreen = ({ title, backPath }) => {
@@ -330,6 +336,48 @@ const App = () => {
             <Route path="feedback/:studentId" element={<StudentFeedbackPortalPage />} />
             <Route path="student-feedback" element={<Navigate to="/recruiter/feedback" replace />} />
             <Route path="student-feedback/:studentId" element={<Navigate to="/recruiter/feedback" replace />} />
+          </Route>
+
+          {/* Admin Protected Layout & Nested Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DashboardLayout
+                  role="admin"
+                  breadcrumbs={['Portal', 'Institutional Administration']}
+                  statusBadge={
+                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-[11px] font-semibold text-indigo-700">
+                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Admin Console: System Active</span>
+                    </div>
+                  }
+                  quickAction={
+                    <Link to="/admin/events">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        + Schedule Event
+                      </Button>
+                    </Link>
+                  }
+                  primaryAction={
+                    <Link to="/admin/users">
+                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
+                        + Add User
+                      </Button>
+                    </Link>
+                  }
+                />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<UserManagementPage />} />
+            <Route path="curriculum" element={<CurriculumRoadmapPage />} />
+            <Route path="roadmaps" element={<Navigate to="/admin/curriculum" replace />} />
+            <Route path="companies" element={<CompanyDirectoryPage />} />
+            <Route path="events" element={<EventManagementPage />} />
+            <Route path="analytics" element={<SystemAnalyticsPage />} />
           </Route>
 
           {/* Fallback */}

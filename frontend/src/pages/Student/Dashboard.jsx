@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -19,16 +19,21 @@ import {
   Check,
   Building2,
   UserCheck,
-  Plus
+  Plus,
+  Edit2,
+  Trash2,
+  XCircle,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import goalService from '../../services/goalService';
 import guidanceService from '../../services/guidanceService';
+import interviewService from '../../services/interviewService';
 import analyticsApi from '../../services/analyticsApi';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import ProgressBar from '../../components/common/ProgressBar';
+import RadialGauge from '../../components/common/RadialGauge';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
@@ -40,6 +45,10 @@ export const Dashboard = () => {
   const [error, setError] = useState(null);
   const [updatingGoalId, setUpdatingGoalId] = useState(null);
   const [actionSuccessToast, setActionSuccessToast] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSynced, setLastSynced] = useState(null);
+  const [cancellingAptId, setCancellingAptId] = useState(null);
+  const [deletingGoalId, setDeletingGoalId] = useState(null);
 
   // Consolidated Dashboard Data State from Real APIs
   const [dashboardData, setDashboardData] = useState({
@@ -56,16 +65,20 @@ export const Dashboard = () => {
     leaderboardTotal: null,
   });
 
+  const toastTimerRef = useRef(null);
+
   // ─────────────────────────────────────────────────────────────
   // 1. DATA FETCHING (Single Efficient Parallel Request Suite)
   // ─────────────────────────────────────────────────────────────
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (signal) => {
     setIsLoading(true);
     setError(null);
 
     try {
       // 1. Get base user & student profile
       const profileRes = await studentService.getProfile();
+      if (signal?.aborted) return;
+
       const currentUser = profileRes?.user || user;
       const currentProfile = profileRes?.profile || null;
       const studentId = currentUser?.id || user?.id;
@@ -76,43 +89,38 @@ export const Dashboard = () => {
 
       const selectedCareer = currentProfile?.selectedCareer || '';
 
-      // 2. Fetch parallel endpoints concurrently (Avoid duplicate requests)
+      // 2. Fetch parallel endpoints concurrently (Zero N+1, Zero Leaderboard Overfetching)
       const [
-        progressRes,
         readinessRes,
+        myRankRes,
         companyRes,
         goalsRes,
         roadmapRes,
         appointmentsRes,
         guidanceRes,
-        leaderboardRes,
       ] = await Promise.allSettled([
-        studentService.getProgressDashboard(studentId),
         studentService.getPlacementReadiness(studentId),
+        studentService.getMyRank(),
         selectedCareer ? studentService.getCompanyMatch(studentId) : null,
         studentService.getGoals(studentId),
         selectedCareer ? studentService.getCareerRoadmap(selectedCareer) : null,
         studentService.getAppointments(),
         guidanceService.getRequests(1, 10),
-        analyticsApi.getLeaderboard(1, 100),
       ]);
 
-      // Process Leaderboard Percentile Rank
+      if (signal?.aborted) return;
+
+      // Process direct lightweight student rank (<10ms indexed endpoint)
       let myRank = null;
       let totalStudents = null;
-      if (leaderboardRes.status === 'fulfilled' && leaderboardRes.value) {
-        totalStudents = leaderboardRes.value.totalItems || leaderboardRes.value.leaderboard?.length || null;
-        const entry = leaderboardRes.value.leaderboard?.find(
-          (item) => String(item.studentId) === String(studentId)
-        );
-        if (entry) {
-          myRank = entry.rank;
-        }
+      if (myRankRes.status === 'fulfilled' && myRankRes.value?.success) {
+        myRank = myRankRes.value.rank;
+        totalStudents = myRankRes.value.totalStudents;
       }
 
       setDashboardData({
         profile: currentProfile,
-        progress: progressRes.status === 'fulfilled' ? progressRes.value : null,
+        progress: null, // Removed unused 5-query progress dashboard
         readiness: readinessRes.status === 'fulfilled' ? readinessRes.value : null,
         companyMatches:
           companyRes.status === 'fulfilled' && companyRes.value?.matches
@@ -139,7 +147,9 @@ export const Dashboard = () => {
         leaderboardRank: myRank,
         leaderboardTotal: totalStudents,
       });
+      setLastSynced(new Date());
     } catch (err) {
+      if (signal?.aborted) return;
       console.error('Error loading student dashboard data:', err);
       setError(
         err.response?.data?.message ||
@@ -147,12 +157,22 @@ export const Dashboard = () => {
           'Failed to load dashboard data. Please check your network connection.'
       );
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    const controller = new AbortController();
+    fetchDashboardData(controller.signal);
+
+    return () => {
+      controller.abort();
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
   }, [user?.id]);
 
   // ─────────────────────────────────────────────────────────────
@@ -162,6 +182,16 @@ export const Dashboard = () => {
   const studentName = user?.name || dashboardData.profile?.name || 'Student';
   const semester = dashboardData.profile?.semester || 1;
   const targetTrack = dashboardData.profile?.selectedCareer || '';
+
+  // Profile Completeness Score (0-100%)
+  const profileCompletion = useMemo(() => {
+    let score = 0;
+    if (user?.name || dashboardData.profile?.name) score += 25;
+    if (user?.email) score += 25;
+    if (semester) score += 25;
+    if (targetTrack && targetTrack.trim().length > 0) score += 25;
+    return score;
+  }, [user?.name, user?.email, dashboardData.profile?.name, semester, targetTrack]);
 
   // Readiness Score & Target Tier
   const readinessScore =
@@ -284,9 +314,9 @@ export const Dashboard = () => {
     }
   };
 
-  // Helper: Get Deadline Status
+  // Helper: Get Deadline Status with WCAG Colorblind-Safe Icons
   const getDeadlineBadge = (dueDate) => {
-    if (!dueDate) return { text: 'Flexible', variant: 'neutral' };
+    if (!dueDate) return { text: 'Flexible', variant: 'neutral', icon: <Check className="w-3 h-3 text-slate-500" /> };
     const due = new Date(dueDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -295,11 +325,39 @@ export const Dashboard = () => {
 
     const diffDays = Math.round((dueDay - today) / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) return { text: `Overdue by ${Math.abs(diffDays)}d`, variant: 'danger' };
-    if (diffDays === 0) return { text: 'Due Today', variant: 'warning' };
-    if (diffDays === 1) return { text: 'Due Tomorrow', variant: 'warning' };
-    if (diffDays <= 7) return { text: `${diffDays}d Left`, variant: 'info' };
-    return { text: `${diffDays}d Left`, variant: 'neutral' };
+    if (diffDays < 0) {
+      return {
+        text: `Overdue by ${Math.abs(diffDays)}d`,
+        variant: 'danger',
+        icon: <AlertTriangle className="w-3 h-3 text-rose-600" />,
+      };
+    }
+    if (diffDays === 0) {
+      return {
+        text: 'Due Today',
+        variant: 'warning',
+        icon: <Clock className="w-3 h-3 text-amber-600" />,
+      };
+    }
+    if (diffDays === 1) {
+      return {
+        text: 'Due Tomorrow',
+        variant: 'warning',
+        icon: <Clock className="w-3 h-3 text-amber-600" />,
+      };
+    }
+    if (diffDays <= 7) {
+      return {
+        text: `${diffDays}d Left`,
+        variant: 'info',
+        icon: <Calendar className="w-3 h-3 text-blue-600" />,
+      };
+    }
+    return {
+      text: `${diffDays}d Left`,
+      variant: 'neutral',
+      icon: <Calendar className="w-3 h-3 text-slate-500" />,
+    };
   };
 
   // ─────────────────────────────────────────────────────────────
@@ -320,21 +378,30 @@ export const Dashboard = () => {
 
     try {
       await goalService.updateGoalStatus(goalId, 'completed');
-      setActionSuccessToast('Goal marked as completed! Platform readiness updated.');
-      setTimeout(() => setActionSuccessToast(null), 3500);
-      // Refresh background readiness & progress stats
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
+
+      // Refresh background readiness & personal rank telemetry
       const studentId = user?.id;
       if (studentId) {
-        const [readinessRes, progressRes] = await Promise.allSettled([
+        const [readinessRes, myRankRes] = await Promise.allSettled([
           studentService.getPlacementReadiness(studentId),
-          studentService.getProgressDashboard(studentId),
+          studentService.getMyRank(),
         ]);
-        if (readinessRes.status === 'fulfilled') {
-          setDashboardData((prev) => ({ ...prev, readiness: readinessRes.value }));
-        }
-        if (progressRes.status === 'fulfilled') {
-          setDashboardData((prev) => ({ ...prev, progress: progressRes.value }));
-        }
+
+        setDashboardData((prev) => {
+          const next = { ...prev };
+          if (readinessRes.status === 'fulfilled') {
+            next.readiness = readinessRes.value;
+          }
+          if (myRankRes.status === 'fulfilled' && myRankRes.value?.success) {
+            next.leaderboardRank = myRankRes.value.rank;
+            next.leaderboardTotal = myRankRes.value.totalStudents;
+          }
+          return next;
+        });
       }
     } catch (err) {
       console.error('Failed to update goal:', err);
@@ -342,6 +409,111 @@ export const Dashboard = () => {
       alert(err.response?.data?.message || 'Failed to complete goal.');
     } finally {
       setUpdatingGoalId(null);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 3.1 LIVE REFRESH TELEMETRY
+  // ─────────────────────────────────────────────────────────────
+  const handleManualRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await fetchDashboardData();
+      setActionSuccessToast('Dashboard telemetry synced with live backend');
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3000);
+    } catch (err) {
+      console.error('Refresh error:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 3.2 DELETE SPRINT GOAL
+  // ─────────────────────────────────────────────────────────────
+  const handleDeleteGoal = async (goalId) => {
+    if (!window.confirm('Are you sure you want to delete this sprint goal?')) return;
+    setDeletingGoalId(goalId);
+    try {
+      await goalService.deleteGoal(goalId);
+      setDashboardData((prev) => ({
+        ...prev,
+        goals: prev.goals.filter((g) => g.id !== goalId),
+      }));
+      setActionSuccessToast('Goal removed successfully');
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
+
+      // Trigger background readiness recalculation
+      const studentId = user?.id;
+      if (studentId) {
+        const [readinessRes, myRankRes] = await Promise.allSettled([
+          studentService.getPlacementReadiness(studentId),
+          studentService.getMyRank(),
+        ]);
+        setDashboardData((prev) => {
+          const next = { ...prev };
+          if (readinessRes.status === 'fulfilled') next.readiness = readinessRes.value;
+          if (myRankRes.status === 'fulfilled' && myRankRes.value?.success) {
+            next.leaderboardRank = myRankRes.value.rank;
+            next.leaderboardTotal = myRankRes.value.totalStudents;
+          }
+          return next;
+        });
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete goal.');
+    } finally {
+      setDeletingGoalId(null);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 3.3 EDIT SPRINT GOAL TITLE
+  // ─────────────────────────────────────────────────────────────
+  const handleEditGoal = async (goal) => {
+    const newText = window.prompt('Update sprint goal title:', goal.title);
+    if (!newText || newText.trim() === '' || newText.trim() === goal.title) return;
+
+    try {
+      await goalService.editGoal(goal.id, { text: newText.trim() });
+      setDashboardData((prev) => ({
+        ...prev,
+        goals: prev.goals.map((g) =>
+          g.id === goal.id ? { ...g, title: newText.trim() } : g
+        ),
+      }));
+      setActionSuccessToast('Goal updated successfully');
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update goal.');
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 3.4 CANCEL MOCK INTERVIEW APPOINTMENT
+  // ─────────────────────────────────────────────────────────────
+  const handleCancelAppointment = async (appointmentId) => {
+    if (!window.confirm('Are you sure you want to cancel this mock interview appointment?')) return;
+    setCancellingAptId(appointmentId);
+    try {
+      await interviewService.cancelAppointment(appointmentId);
+      setDashboardData((prev) => ({
+        ...prev,
+        appointments: prev.appointments.map((a) =>
+          a.id === appointmentId ? { ...a, status: 'cancelled' } : a
+        ),
+      }));
+      setActionSuccessToast('Appointment cancelled successfully');
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to cancel appointment.');
+    } finally {
+      setCancellingAptId(null);
     }
   };
 
@@ -383,14 +555,51 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6 pb-12 antialiased">
-      {/* Toast Alert */}
+    <main
+      className="space-y-6 pb-12 antialiased"
+      aria-label="Student Career Readiness Dashboard"
+    >
+      {/* Toast Alert with Screen Reader Accessibility */}
       {actionSuccessToast && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-fadeIn">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-fadeIn"
+        >
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{actionSuccessToast}</span>
         </div>
       )}
+
+      {/* Top Sync & Status Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-500 px-1">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold text-slate-700">Live Campus Telemetry</span>
+          <span className="text-slate-300">•</span>
+          <span>
+            Last synced: {lastSynced ? lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/student/profile"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition"
+          >
+            <span>Profile: <strong className="text-emerald-600">{profileCompletion}% Complete</strong></span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition shadow-2xs disabled:opacity-60 cursor-pointer"
+            title="Refresh student dashboard telemetry"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Syncing...' : 'Refresh Telemetry'}</span>
+          </button>
+        </div>
+      </div>
 
       {/* ─────────────────────────────────────────────────────────────
           1. COMPACT HERO BANNER (Authenticated Student)
@@ -405,10 +614,18 @@ export const Dashboard = () => {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           {/* Left Details */}
           <div className="space-y-2 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-sm text-blue-100 border border-white/20">
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>Campus Career Readiness Platform</span>
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-sm text-blue-100 border border-white/20">
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>Campus Career Readiness Platform</span>
+              </span>
+              <Link
+                to="/student/profile"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-sm text-emerald-200 border border-emerald-400/30 hover:bg-white/25 transition"
+              >
+                <span>Profile {profileCompletion}% Complete</span>
+              </Link>
+            </div>
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-white">
               Welcome back, {studentName}!
             </h1>
@@ -488,7 +705,7 @@ export const Dashboard = () => {
       ───────────────────────────────────────────────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-5" data-purpose="summary-metrics">
         {/* Card 1: Overall Placement Readiness */}
-        <article className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
+        <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-2">
               <span className="font-semibold text-slate-700">Placement Readiness Score</span>
@@ -496,20 +713,32 @@ export const Dashboard = () => {
                 <Award className="w-4 h-4" />
               </div>
             </div>
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
-                {readinessScore}%
-              </span>
-              <Badge variant={readinessScore >= 80 ? 'tier1' : readinessScore >= 60 ? 'tier2' : 'neutral'} size="sm">
-                {targetTier}
-              </Badge>
-            </div>
-            <div className="mt-3">
-              <ProgressBar
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="flex items-baseline gap-2.5">
+                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
+                    {readinessScore}%
+                  </span>
+                  <Badge variant={readinessScore >= 80 ? 'tier1' : readinessScore >= 60 ? 'tier2' : 'neutral'} size="sm">
+                    {targetTier}
+                  </Badge>
+                </div>
+                <div className="mt-3 w-40">
+                  <ProgressBar
+                    value={readinessScore}
+                    max={100}
+                    variant={readinessScore >= 80 ? 'success' : 'primary'}
+                    size="xs"
+                  />
+                </div>
+              </div>
+              <RadialGauge
                 value={readinessScore}
                 max={100}
-                variant={readinessScore >= 80 ? 'success' : 'primary'}
-                size="xs"
+                size={68}
+                strokeWidth={7}
+                variant={readinessScore >= 80 ? 'tier1' : 'primary'}
+                className="shrink-0"
               />
             </div>
           </div>
@@ -518,7 +747,7 @@ export const Dashboard = () => {
               Goals ({dashboardData.readiness?.breakdown?.goalScore ?? 0}%) • Interviews ({dashboardData.readiness?.breakdown?.interviewScore ?? 0}%) • Feedback ({dashboardData.readiness?.breakdown?.feedbackScore ?? 0}%)
             </span>
           </div>
-        </article>
+        </section>
 
         {/* Card 2: Active Goals & Sprint Velocity */}
         <article className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
@@ -680,7 +909,7 @@ export const Dashboard = () => {
                     >
                       <div className="space-y-1 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant={deadline.variant} size="xs">
+                          <Badge variant={deadline.variant} size="xs" icon={deadline.icon}>
                             {deadline.text}
                           </Badge>
                           <span className="text-xs text-slate-400">
@@ -698,18 +927,39 @@ export const Dashboard = () => {
                         </div>
                       </div>
 
-                      <div className="shrink-0 flex items-center gap-2">
+                      <div className="shrink-0 flex items-center gap-1.5">
                         <Button
                           variant="outline"
                           size="xs"
-                          disabled={isUpdating}
+                          disabled={isUpdating || deletingGoalId === goal.id}
                           isLoading={isUpdating}
                           onClick={() => handleQuickCompleteGoal(goal.id)}
+                          aria-label={`Mark goal "${goal.title}" as completed`}
                           leftIcon={<Check className="w-3.5 h-3.5 text-emerald-600" />}
                           className="text-emerald-700 hover:bg-emerald-50"
                         >
                           Mark Complete
                         </Button>
+                        <button
+                          type="button"
+                          onClick={() => handleEditGoal(goal)}
+                          disabled={isUpdating || deletingGoalId === goal.id}
+                          title="Edit sprint goal"
+                          aria-label={`Edit goal "${goal.title}"`}
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-blue-600 transition disabled:opacity-50 cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteGoal(goal.id)}
+                          disabled={isUpdating || deletingGoalId === goal.id}
+                          title="Delete sprint goal"
+                          aria-label={`Delete goal "${goal.title}"`}
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition disabled:opacity-50 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </article>
                   );
@@ -880,11 +1130,25 @@ export const Dashboard = () => {
                         {apt.meetLink ? 'Online Video Interview' : 'Department Evaluation Lab'}
                       </p>
                     </div>
-                    <Link to="/student/interviews">
-                      <Button variant="secondary" size="xs" className="w-full mt-1">
-                        View Appointment
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-2 pt-1">
+                      <Link to="/student/interviews" className="flex-1">
+                        <Button variant="secondary" size="xs" className="w-full">
+                          View
+                        </Button>
+                      </Link>
+                      {apt.status !== 'cancelled' && (
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          disabled={cancellingAptId === apt.id}
+                          isLoading={cancellingAptId === apt.id}
+                          onClick={() => handleCancelAppointment(apt.id)}
+                          className="text-rose-600 hover:bg-rose-50 border-rose-200"
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -905,10 +1169,10 @@ export const Dashboard = () => {
               </Badge>
             </div>
 
-            {/* Live Company Matches Count */}
+            {/* Live Company Matches Count with Visual Donut Telemetry */}
             {dashboardData.companyMatches.length > 0 ? (
               <div className="space-y-4 pt-3">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <Building2 className="w-5 h-5 text-blue-600 shrink-0" />
                     <div>
@@ -920,6 +1184,19 @@ export const Dashboard = () => {
                       </span>
                     </div>
                   </div>
+                  <RadialGauge
+                    value={
+                      Math.round(
+                        dashboardData.companyMatches.reduce((acc, c) => acc + (c.matchPercentage || 0), 0) /
+                        (dashboardData.companyMatches.length || 1)
+                      )
+                    }
+                    max={100}
+                    size={64}
+                    strokeWidth={6}
+                    variant={readinessScore >= 80 ? 'tier1' : 'primary'}
+                    className="shrink-0"
+                  />
                 </div>
 
                 {/* Top Matched Companies */}
@@ -1080,7 +1357,7 @@ export const Dashboard = () => {
           </div>
         )}
       </section>
-    </div>
+    </main>
   );
 };
 

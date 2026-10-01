@@ -49,6 +49,13 @@ export const interviewService = {
     const response = await apiClient.get('/mentors/recommendation');
     return Array.isArray(response.data) ? response.data : [];
   },
+
+  // Cancel an appointment
+  // PATCH /api/appointments/:id/cancel
+  cancelAppointment: async (appointmentId) => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/cancel`);
+    return response.data;
+  },
 };
 
 export default interviewService;

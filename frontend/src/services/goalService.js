@@ -59,6 +59,20 @@ export const goalService = {
     const response = await apiClient.get(`/placement/readiness/${studentId}`);
     return response.data;
   },
+
+  // Edit goal text or status
+  // PUT /api/goals/:goalId/edit -> body: { text, isCompleted, dueDate }
+  editGoal: async (goalId, data) => {
+    const response = await apiClient.put(`/goals/${goalId}/edit`, data);
+    return response.data;
+  },
+
+  // Delete goal
+  // DELETE /api/goals/:goalId
+  deleteGoal: async (goalId) => {
+    const response = await apiClient.delete(`/goals/${goalId}`);
+    return response.data;
+  },
 };
 
 export default goalService;

@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
       case 'recruiter':
         return '/recruiter/dashboard';
       case 'admin':
-        return '/faculty/hod-analytics';
+        return '/admin/dashboard';
       default:
         return '/student/dashboard';
     }

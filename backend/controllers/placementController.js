@@ -249,3 +249,54 @@ export const getLeaderboard = async (req, res) => {
     });
   }
 };
+
+// ─── 1.4 Get Authenticated Student's Rank & Percentile ───────────
+// GET /api/placement/my-rank
+export const getMyRank = async (req, res) => {
+  try {
+    const studentId = req.user?.id || req.user?.userId;
+
+    if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid student ID is required',
+      });
+    }
+
+    const sId = new mongoose.Types.ObjectId(studentId);
+
+    // Retrieve the student's current profile & readinessScore
+    const myProfile = await StudentProfile.findOne({ studentId: sId });
+    const myScore = myProfile?.readinessScore || 0;
+
+    // Fast indexed count of students with strictly higher readinessScore
+    const [higherScoreCount, totalStudents] = await Promise.all([
+      StudentProfile.countDocuments({ readinessScore: { $gt: myScore } }),
+      StudentProfile.countDocuments(),
+    ]);
+
+    const myRank = higherScoreCount + 1;
+    const total = Math.max(totalStudents, 1);
+    const percentilePct = Math.max(1, Math.round((myRank / total) * 100));
+
+    const targetTier =
+      myScore >= 80 ? 'Tier 1' : myScore >= 60 ? 'Tier 2' : 'General';
+
+    return res.status(200).json({
+      success: true,
+      studentId,
+      rank: myRank,
+      totalStudents: total,
+      percentile: `Top ${percentilePct}%`,
+      readinessScore: myScore,
+      targetTier,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while calculating student rank',
+      error: error.message,
+    });
+  }
+};
+

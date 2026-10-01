@@ -29,18 +29,18 @@ router.get(
   getGuidanceRequestById
 );
 
-// POST /api/guidance/:id/reply & POST /api/guidance/requests/:id/reply — Mentor replies to a request
+// POST /api/guidance/:id/reply & POST /api/guidance/requests/:id/reply — Mentor or Student replies to a request
 router.post(
   '/:id/reply',
   protect,
-  authorize('faculty', 'alumni', 'admin'),
+  authorize('student', 'faculty', 'alumni', 'admin'),
   replyGuidanceRequest
 );
 
 router.post(
   '/requests/:id/reply',
   protect,
-  authorize('faculty', 'alumni', 'admin'),
+  authorize('student', 'faculty', 'alumni', 'admin'),
   replyGuidanceRequest
 );
 
@@ -48,7 +48,7 @@ router.post(
 router.put(
   '/reply/:id',
   protect,
-  authorize('faculty', 'alumni', 'admin'),
+  authorize('student', 'faculty', 'alumni', 'admin'),
   updateGuidanceReply
 );
 

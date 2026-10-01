@@ -30,6 +30,12 @@ export const studentService = {
     return response.data;
   },
 
+  // Get authenticated student's exact leaderboard rank and percentile
+  getMyRank: async () => {
+    const response = await apiClient.get('/placement/my-rank');
+    return response.data;
+  },
+
   // Get target company matches and eligibility percentages
   getCompanyMatch: async (studentId) => {
     const response = await apiClient.get(`/placement/company-match/${studentId}`);
@@ -72,6 +78,12 @@ export const studentService = {
   getMentorRecommendations: async () => {
     const response = await apiClient.get('/mentors/recommendation');
     return Array.isArray(response.data) ? response.data : [];
+  },
+
+  // Get consolidated student dashboard telemetry
+  getStudentDashboard: async () => {
+    const response = await apiClient.get('/student/dashboard');
+    return response.data;
   },
 };
 

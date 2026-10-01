@@ -197,30 +197,6 @@ export const replyGuidanceRequest = async (req, res) => {
     const mentorId = req.user.id || req.user.userId;
     const userRole = (req.user.role || '').toLowerCase();
 
-    // Restricted strictly to Faculty, Alumni, or Admin
-    if (userRole !== 'faculty' && userRole !== 'alumni' && userRole !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. Only Faculty or Alumni can reply to guidance requests.',
-      });
-    }
-
-    const answerText = req.body.reply || req.body.answerText;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid Guidance Request ID format',
-      });
-    }
-
-    if (!answerText || !answerText.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'reply text is required',
-      });
-    }
-
     const request = await GuidanceRequest.findById(id);
     if (!request) {
       return res.status(404).json({
@@ -229,14 +205,32 @@ export const replyGuidanceRequest = async (req, res) => {
       });
     }
 
-    await GuidanceReply.create({
+    // RBAC: Mentors (Faculty/Alumni/Admin) OR the original student author can reply
+    const isOriginalAuthor =
+      userRole === 'student' &&
+      request.studentId &&
+      request.studentId.toString() === mentorId.toString();
+
+    const isMentor =
+      userRole === 'faculty' || userRole === 'alumni' || userRole === 'admin';
+
+    if (!isMentor && !isOriginalAuthor) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only reply to your own guidance inquiries.',
+      });
+    }
+
+    const createdReply = await GuidanceReply.create({
       requestId: id,
       mentorId,
       answerText: answerText.trim(),
     });
 
     return res.status(201).json({
+      success: true,
       message: 'Reply sent successfully',
+      reply: createdReply,
     });
   } catch (error) {
     return res.status(500).json({

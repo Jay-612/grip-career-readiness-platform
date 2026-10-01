@@ -19,6 +19,8 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import placementRoutes from './routes/placementRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
+import studentRoutes from './routes/studentRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,6 +45,8 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/placement', placementRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/department', departmentRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ─── Health check ─────────────────────────────────────────────
 app.get('/', (req, res) => {
