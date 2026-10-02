@@ -21,7 +21,11 @@ import {
   ChevronDown,
   ExternalLink,
   Award,
-  Sparkles
+  Sparkles,
+  Copy,
+  RefreshCw,
+  Edit3,
+  Link2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import facultyService from '../../services/facultyService';
@@ -70,12 +74,70 @@ const InterviewEvaluationPage = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
 
+  // Google Meet generation state
+  const [isGeneratingMeet, setIsGeneratingMeet] = useState(false);
+  const [meetToast, setMeetToast] = useState(null);
+  const [isEditingMeet, setIsEditingMeet] = useState(false);
+  const [customMeetInput, setCustomMeetInput] = useState('');
+
   // Session stopwatch / timer
   const [timerSeconds, setTimerSeconds] = useState(2295); // ~38 mins initial
   const [isTimerRunning, setIsTimerRunning] = useState(true);
 
   // Switcher dropdown
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
+
+  // Handle on-demand Google Meet generation
+  const handleGenerateMeet = async () => {
+    const interviewId = currentInterview?.id || currentInterview?._id;
+    if (!interviewId) return;
+    setIsGeneratingMeet(true);
+    try {
+      const res = await facultyService.generateGoogleMeet(interviewId);
+      if (res?.meetLink) {
+        setCurrentInterview((prev) => ({
+          ...prev,
+          meetLink: res.meetLink,
+          googleEventId: res.googleEventId,
+          calendarHtmlLink: res.calendarHtmlLink,
+        }));
+        setMeetToast('Meeting room updated!');
+        setTimeout(() => setMeetToast(null), 4000);
+      }
+    } catch (err) {
+      console.error('Failed to generate meet link:', err);
+      alert(err.response?.data?.message || 'Failed to generate meeting link.');
+    } finally {
+      setIsGeneratingMeet(false);
+    }
+  };
+
+  // Handle saving custom/real Google Meet link (e.g. from meet.google.com/new)
+  const handleSaveCustomMeet = async () => {
+    const interviewId = currentInterview?.id || currentInterview?._id;
+    if (!interviewId || !customMeetInput.trim()) return;
+    setIsGeneratingMeet(true);
+    try {
+      const res = await facultyService.generateGoogleMeet(interviewId, customMeetInput.trim());
+      if (res?.meetLink) {
+        setCurrentInterview((prev) => ({
+          ...prev,
+          meetLink: res.meetLink,
+          googleEventId: res.googleEventId,
+          calendarHtmlLink: res.calendarHtmlLink,
+        }));
+        setMeetToast('Meeting link saved successfully!');
+        setTimeout(() => setMeetToast(null), 4000);
+        setIsEditingMeet(false);
+        setCustomMeetInput('');
+      }
+    } catch (err) {
+      console.error('Failed to save meet link:', err);
+      alert(err.response?.data?.message || 'Failed to save meeting link.');
+    } finally {
+      setIsGeneratingMeet(false);
+    }
+  };
 
   // Stopwatch effect
   useEffect(() => {
@@ -576,28 +638,184 @@ const InterviewEvaluationPage = () => {
           </div>
 
           {/* Middle: Session Details */}
-          <div className="lg:col-span-4 border-t lg:border-t-0 lg:border-l border-slate-200 pt-4 lg:pt-0 lg:pl-6 space-y-1.5 text-xs">
+          <div className="lg:col-span-4 border-t lg:border-t-0 lg:border-l border-slate-200 pt-4 lg:pt-0 lg:pl-6 space-y-2 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-blue-900">
               <FileCheck className="w-4 h-4 text-blue-600" />
               <span>Mock Technical Screen: System Design & DSA</span>
             </div>
 
-            <div className="flex items-center gap-2 text-slate-600">
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2 text-slate-600 flex-wrap">
+                {currentInterview.meetLink ? (
+                  <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                    <Video className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="font-semibold text-[11px]">
+                      Google Meet Active
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="text-[11px]">No Video Room</span>
+                  </div>
+                )}
+                <span>•</span>
+                <span>{currentInterview.duration || 45}m Standard Rubric</span>
+              </div>
+
               {currentInterview.meetLink ? (
-                <>
-                  <Video className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span className="text-blue-700 font-medium truncate">
-                    Virtual Meet (Google Meet)
-                  </span>
-                </>
+                <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                  <a
+                    href={currentInterview.meetLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="success"
+                      size="xs"
+                      leftIcon={<Video className="w-3.5 h-3.5" />}
+                      rightIcon={<ExternalLink className="w-3 h-3" />}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs"
+                    >
+                      {currentInterview.meetLink.includes('meet.google.com') ? 'Join Google Meet' : 'Join Video Room'}
+                    </Button>
+                  </a>
+
+                  {currentInterview.calendarHtmlLink && (
+                    <a
+                      href={currentInterview.calendarHtmlLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Add to Google Calendar"
+                    >
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        leftIcon={<Calendar className="w-3 h-3 text-slate-500" />}
+                        className="text-xs"
+                      >
+                        Calendar
+                      </Button>
+                    </a>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(currentInterview.meetLink);
+                      setMeetToast('Meet URL copied!');
+                      setTimeout(() => setMeetToast(null), 3000);
+                    }}
+                    title="Copy meeting link"
+                    className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingMeet(!isEditingMeet);
+                      setCustomMeetInput(currentInterview.meetLink || '');
+                    }}
+                    title="Enter custom Google Meet link"
+                    className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isGeneratingMeet}
+                    onClick={handleGenerateMeet}
+                    title="Regenerate video room link"
+                    className="p-1 rounded-md text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isGeneratingMeet ? 'animate-spin text-blue-600' : ''}`} />
+                  </button>
+
+                  {meetToast && (
+                    <span className="text-[11px] font-medium text-emerald-600 animate-fadeIn">
+                      {meetToast}
+                    </span>
+                  )}
+                </div>
               ) : (
-                <>
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>In-Person • Dept. Seminar Lab 3</span>
-                </>
+                <div className="flex items-center gap-2 pt-0.5">
+                  <Button
+                    variant="primary"
+                    size="xs"
+                    disabled={isGeneratingMeet}
+                    onClick={handleGenerateMeet}
+                    leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isGeneratingMeet ? 'animate-spin' : ''}`} />}
+                    className="text-xs"
+                  >
+                    {isGeneratingMeet ? 'Generating Room...' : 'Generate Video Room'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => {
+                      setIsEditingMeet(!isEditingMeet);
+                      setCustomMeetInput('');
+                    }}
+                    leftIcon={<Edit3 className="w-3 h-3" />}
+                    className="text-xs"
+                  >
+                    Paste Meet Link
+                  </Button>
+                </div>
               )}
-              <span>•</span>
-              <span>45m Slot</span>
+
+              {/* Inline Custom Google Meet URL Editor */}
+              {isEditingMeet && (
+                <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl space-y-2.5 mt-2 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800">
+                      Set Real Google Meet URL
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingMeet(false)}
+                      className="text-xs text-slate-400 hover:text-slate-600"
+                    >
+                      Close
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      placeholder="https://meet.google.com/xxx-yyyy-zzz"
+                      value={customMeetInput}
+                      onChange={(e) => setCustomMeetInput(e.target.value)}
+                      className="flex-1 text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    />
+                    <Button
+                      variant="primary"
+                      size="xs"
+                      disabled={isGeneratingMeet || !customMeetInput.trim()}
+                      onClick={handleSaveCustomMeet}
+                      className="text-xs shrink-0"
+                    >
+                      {isGeneratingMeet ? 'Saving...' : 'Save Link'}
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5 flex-wrap gap-1">
+                    <span>Need a new meeting room?</span>
+                    <a
+                      href="https://meet.google.com/new"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 font-semibold hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>Create on meet.google.com/new</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 text-slate-500">
@@ -608,9 +826,12 @@ const InterviewEvaluationPage = () => {
               </span>
             </div>
 
-            <div className="pt-1">
+            <div className="pt-1 flex items-center gap-1.5 flex-wrap">
               <span className="inline-block bg-slate-100 text-slate-700 text-[11px] font-medium px-2 py-0.5 rounded">
-                Evaluator: {user?.name || 'Prof. Neha Sharma'}
+                Candidate: {currentInterview.student?.name || 'Student'} ({currentInterview.student?.email || 'N/A'})
+              </span>
+              <span className="inline-block bg-blue-50 text-blue-700 text-[11px] font-medium px-2 py-0.5 rounded border border-blue-100">
+                Evaluator: {user?.name || 'Faculty Member'}
               </span>
             </div>
           </div>

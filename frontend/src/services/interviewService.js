@@ -56,6 +56,15 @@ export const interviewService = {
     const response = await apiClient.patch(`/appointments/${appointmentId}/cancel`);
     return response.data;
   },
+
+  // Generate or refresh Google Meet room for an appointment (or save custom link)
+  // POST /api/appointments/:id/create-meet
+  generateGoogleMeet: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.post(`/appointments/${appointmentId}/create-meet`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
 };
 
 export default interviewService;

@@ -20,7 +20,10 @@ import {
   BarChart3,
   Building2,
   GraduationCap,
-  X
+  X,
+  Copy,
+  Trash2,
+  Edit3
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import interviewService from '../../services/interviewService';
@@ -68,8 +71,15 @@ export const InterviewCenterPage = () => {
     facultyId: '',
     date: '',
     time: '14:00',
+    customMeetLink: '',
   });
   const [bookingErrors, setBookingErrors] = useState({});
+
+  // Edit Meet Link Modal State
+  const [isEditMeetModalOpen, setIsEditMeetModalOpen] = useState(false);
+  const [editMeetId, setEditMeetId] = useState('');
+  const [editMeetInput, setEditMeetInput] = useState('');
+  const [isSavingMeetLink, setIsSavingMeetLink] = useState(false);
 
   // Evaluation Details Modal State
   const [selectedEvaluation, setSelectedEvaluation] = useState(null);
@@ -214,9 +224,36 @@ export const InterviewCenterPage = () => {
       facultyId: initialFacultyId,
       date: dateStr,
       time: '14:00',
+      customMeetLink: '',
     });
     setBookingErrors({});
     setIsBookingModalOpen(true);
+  };
+
+  // Open Edit Meeting Link Modal
+  const handleOpenEditMeet = (interviewId, currentLink = '') => {
+    setEditMeetId(interviewId);
+    setEditMeetInput(currentLink || '');
+    setIsEditMeetModalOpen(true);
+  };
+
+  // Save Custom Meeting Link
+  const handleSaveEditMeet = async (e) => {
+    e.preventDefault();
+    if (!editMeetId || !editMeetInput.trim()) return;
+    setIsSavingMeetLink(true);
+    try {
+      await interviewService.generateGoogleMeet(editMeetId, editMeetInput.trim());
+      setSuccessToast('Meeting room link updated successfully!');
+      setTimeout(() => setSuccessToast(null), 4000);
+      setIsEditMeetModalOpen(false);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Failed to save meet link:', err);
+      alert(err.response?.data?.message || 'Failed to save meeting link.');
+    } finally {
+      setIsSavingMeetLink(false);
+    }
   };
 
   // Validate Booking Form
@@ -256,6 +293,7 @@ export const InterviewCenterPage = () => {
         date: bookingFormData.date,
         time: bookingFormData.time,
         facultyId: bookingFormData.facultyId,
+        customMeetLink: bookingFormData.customMeetLink,
       });
 
       setSuccessToast('Mock interview appointment confirmed successfully!');
@@ -279,6 +317,22 @@ export const InterviewCenterPage = () => {
   const handleOpenEvaluation = (interview) => {
     setSelectedEvaluation(interview);
     setIsEvaluationModalOpen(true);
+  };
+
+  // Cancel Scheduled Interview Appointment
+  const handleCancelAppointment = async (interviewId) => {
+    if (!window.confirm('Are you sure you want to cancel this mock interview session? It will be removed from your Google Calendar.')) {
+      return;
+    }
+    try {
+      await interviewService.cancelAppointment(interviewId);
+      setSuccessToast('Interview appointment cancelled and removed from calendar.');
+      setTimeout(() => setSuccessToast(null), 4000);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Failed to cancel appointment:', err);
+      alert(err.response?.data?.message || 'Failed to cancel appointment.');
+    }
   };
 
   // Render Status Badge Helper
@@ -556,27 +610,94 @@ export const InterviewCenterPage = () => {
             </div>
 
             {/* Action Area */}
-            <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2 shrink-0">
+            <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2.5 shrink-0">
               {nextInterview.meetLink ? (
-                <a
-                  href={nextInterview.meetLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto"
-                >
-                  <Button
-                    variant="success"
-                    size="md"
-                    leftIcon={<Video className="w-4 h-4" />}
-                    rightIcon={<ExternalLink className="w-3.5 h-3.5" />}
-                    className="shadow-md"
-                  >
-                    Join Interview Room
-                  </Button>
-                </a>
+                <div className="flex flex-col items-start md:items-end gap-2 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <a
+                      href={nextInterview.meetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 sm:flex-initial"
+                    >
+                      <Button
+                        variant="success"
+                        size="md"
+                        leftIcon={<Video className="w-4 h-4" />}
+                        rightIcon={<ExternalLink className="w-3.5 h-3.5" />}
+                        className="shadow-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                      >
+                        {nextInterview.meetLink.includes('meet.google.com') ? 'Join Google Meet' : 'Join Video Room'}
+                      </Button>
+                    </a>
+
+                    {nextInterview.calendarHtmlLink && (
+                      <a
+                        href={nextInterview.calendarHtmlLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0"
+                        title="Add to Google Calendar"
+                      >
+                        <Button
+                          variant="outline"
+                          size="md"
+                          leftIcon={<Calendar className="w-4 h-4 text-blue-200" />}
+                          className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                        >
+                          Calendar
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 text-[11px] text-blue-200 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(nextInterview.meetLink);
+                        setSuccessToast('Meeting link copied to clipboard!');
+                        setTimeout(() => setSuccessToast(null), 3000);
+                      }}
+                      className="hover:text-white flex items-center gap-1 transition"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>Copy Link</span>
+                    </button>
+                    <span>•</span>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEditMeet(nextInterview.interviewId || nextInterview.id, nextInterview.meetLink)}
+                      className="hover:text-white flex items-center gap-1 transition text-blue-200"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>Change Link</span>
+                    </button>
+                    <span>•</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCancelAppointment(nextInterview.interviewId || nextInterview.id)}
+                      className="text-rose-300 hover:text-rose-200 flex items-center gap-1 transition"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Cancel Session</span>
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 text-[11px] text-slate-200">
-                  Meeting room link will appear prior to the slot.
+                <div className="flex items-center gap-2">
+                  <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 text-[11px] text-slate-200">
+                    Awaiting meeting link.
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenEditMeet(nextInterview.interviewId || nextInterview.id, '')}
+                    className="bg-white/10 hover:bg-white/20 border-white/20 text-white text-xs"
+                    leftIcon={<Edit3 className="w-3.5 h-3.5" />}
+                  >
+                    Add Meet Link
+                  </Button>
                 </div>
               )}
             </div>
@@ -820,23 +941,71 @@ export const InterviewCenterPage = () => {
                         <span>Awaiting Faculty Scorecard</span>
                       </div>
                     ) : item.meetLink ? (
-                      <a
-                        href={item.meetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <a
+                          href={item.meetLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button
+                            variant="success"
+                            size="xs"
+                            leftIcon={<Video className="w-3.5 h-3.5" />}
+                            rightIcon={<ExternalLink className="w-3 h-3" />}
+                            className="text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            {item.meetLink.includes('meet.google.com') ? 'Join Meet' : 'Join Room'}
+                          </Button>
+                        </a>
+                        {item.calendarHtmlLink && (
+                          <a
+                            href={item.calendarHtmlLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Add to Google Calendar"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition"
+                          >
+                            <Calendar className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditMeet(item.interviewId || item.id, item.meetLink)}
+                          title="Change meeting link"
+                          className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCancelAppointment(item.interviewId || item.id)}
+                          title="Cancel scheduled appointment"
+                          className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-slate-400">Scheduled</span>
                         <Button
                           variant="outline"
                           size="xs"
-                          leftIcon={<Video className="w-3.5 h-3.5 text-blue-600" />}
-                          rightIcon={<ExternalLink className="w-3 h-3" />}
-                          className="text-[11px]"
+                          onClick={() => handleOpenEditMeet(item.interviewId || item.id, '')}
+                          leftIcon={<Edit3 className="w-3 h-3" />}
+                          className="text-[10px]"
                         >
-                          Join
+                          Add Link
                         </Button>
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-400">Scheduled</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCancelAppointment(item.interviewId || item.id)}
+                          title="Cancel scheduled appointment"
+                          className="p-1 rounded text-slate-400 hover:text-rose-600 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -969,6 +1138,37 @@ export const InterviewCenterPage = () => {
               <option value="15:30">03:30 PM (Afternoon Slot)</option>
               <option value="17:00">05:00 PM (Evening Slot)</option>
             </select>
+          </div>
+
+          {/* Custom Google Meet Link (Optional) */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                <span>Google Meet / Video Link</span>
+                <span className="text-[10px] font-normal text-slate-500">(Optional)</span>
+              </label>
+              <a
+                href="https://meet.google.com/new"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+              >
+                <span>Launch meet.google.com/new</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <input
+              type="url"
+              placeholder="https://meet.google.com/xxx-yyyy-zzz or leave blank to auto-generate"
+              value={bookingFormData.customMeetLink}
+              onChange={(e) =>
+                setBookingFormData((prev) => ({ ...prev, customMeetLink: e.target.value }))
+              }
+              className="w-full bg-white text-slate-900 text-xs sm:text-sm rounded-lg border border-slate-200 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600 hover:border-slate-300"
+            />
+            <p className="text-[11px] text-slate-500">
+              Leave blank to automatically create a meeting room, or paste a link from Google Meet.
+            </p>
           </div>
 
           <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-100 text-xs text-blue-900 flex items-start gap-2">
@@ -1112,6 +1312,69 @@ export const InterviewCenterPage = () => {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* ─────────────────────────────────────────────────────────────
+          9. EDIT / SET CUSTOM MEETING LINK MODAL
+      ───────────────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={isEditMeetModalOpen}
+        onClose={() => setIsEditMeetModalOpen(false)}
+        title="Set / Change Meeting Room Link"
+        description="Paste your Google Meet room link or customize the video conference URL."
+        size="md"
+      >
+        <form onSubmit={handleSaveEditMeet} className="space-y-4 pt-1">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-700">
+                Meeting URL
+              </label>
+              <a
+                href="https://meet.google.com/new"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+              >
+                <span>Launch meet.google.com/new</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <input
+              type="url"
+              required
+              placeholder="https://meet.google.com/xxx-yyyy-zzz"
+              value={editMeetInput}
+              onChange={(e) => setEditMeetInput(e.target.value)}
+              className="w-full bg-white text-slate-900 text-xs sm:text-sm rounded-lg border border-slate-200 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600 hover:border-slate-300"
+            />
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Tip: Click <strong>Launch meet.google.com/new</strong> above to instantly start a verified Google Meet room with your Google account, copy the link, and paste it here.
+            </p>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={isSavingMeetLink}
+              onClick={() => setIsEditMeetModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              isLoading={isSavingMeetLink}
+              loadingText="Updating..."
+              leftIcon={<Video className="w-3.5 h-3.5" />}
+            >
+              Save Meeting Link
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

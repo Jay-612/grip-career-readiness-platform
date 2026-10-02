@@ -300,6 +300,9 @@ export const getInterviewAnalysis = async (req, res) => {
           interviewerName: { $ifNull: ['$interviewer.name', 'Unknown'] },
           dateTime: 1,
           meetLink: 1,
+          calendarHtmlLink: 1,
+          googleEventId: 1,
+          duration: 1,
           status: 1,
           scores: {
             technical: { $ifNull: ['$evaluation.technicalScore', null] },

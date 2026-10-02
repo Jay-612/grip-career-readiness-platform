@@ -801,12 +801,25 @@ const FacultyDashboard = () => {
                       >
                         Start / Evaluate
                       </Link>
-                      <Link
-                        to={interview.id ? `/faculty/interviews/${interview.id}` : "/faculty/interviews"}
-                        className="flex-1 text-center py-1.5 px-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
-                      >
-                        View Details
-                      </Link>
+                      {interview.meetLink ? (
+                        <a
+                          href={interview.meetLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-1.5 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1 shrink-0"
+                          title="Join Google Meet"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Meet</span>
+                        </a>
+                      ) : (
+                        <Link
+                          to={interview.id ? `/faculty/interviews/${interview.id}` : "/faculty/interviews"}
+                          className="flex-1 text-center py-1.5 px-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
+                        >
+                          View Details
+                        </Link>
+                      )}
                     </div>
                   </div>
                 ))}

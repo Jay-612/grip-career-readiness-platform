@@ -23,6 +23,22 @@ const mockInterviewSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    googleEventId: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    calendarHtmlLink: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    duration: {
+      type: Number,
+      default: 45, // default 45-minute interview slot
+      min: 15,
+      max: 180,
+    },
     status: {
       type: String,
       enum: ['scheduled', 'completed', 'cancelled'],

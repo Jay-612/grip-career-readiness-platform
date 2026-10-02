@@ -23,6 +23,15 @@ export const facultyService = {
       : response.data?.appointments || [];
   },
 
+  // Generate or refresh Google Meet room for an appointment (or save custom link)
+  // POST /api/appointments/:id/create-meet
+  generateGoogleMeet: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.post(`/appointments/${appointmentId}/create-meet`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
+
   // Get guidance requests from students (accessible to faculty)
   // GET /api/guidance/requests?page=&limit=
   getGuidanceRequests: async (page = 1, limit = 20) => {
