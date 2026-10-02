@@ -23,7 +23,15 @@ const LoginPage = () => {
   const location = useLocation();
   const { login, isAuthenticated, user, getRoleDashboardPath } = useAuth();
 
-  const [role, setRole] = useState('student');
+  const searchParams = new URLSearchParams(location.search);
+  const initialRoleParam = searchParams.get('role');
+  const validRoles = ['student', 'faculty', 'alumni', 'recruiter', 'admin'];
+
+  const [role, setRole] = useState(() => {
+    return initialRoleParam && validRoles.includes(initialRoleParam.toLowerCase())
+      ? initialRoleParam.toLowerCase()
+      : 'student';
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,6 +41,14 @@ const LoginPage = () => {
   const [serverError, setServerError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Sync role if query parameter changes in URL
+  React.useEffect(() => {
+    const r = new URLSearchParams(location.search).get('role');
+    if (r && validRoles.includes(r.toLowerCase())) {
+      setRole(r.toLowerCase());
+    }
+  }, [location.search]);
+
   // If already logged in, redirect to dashboard
   React.useEffect(() => {
     if (isAuthenticated && user?.role) {
@@ -40,11 +56,73 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, user, navigate, getRoleDashboardPath]);
 
+  const ROLE_CONFIGS = {
+    student: {
+      label: 'Student',
+      placeholder: 'aarav.sharma@campus.edu',
+      demoEmail: 'aarav.sharma@campus.edu',
+      demoPassword: 'Password123!',
+      badgeText: 'Candidate Access',
+      badgeColor: 'text-blue-700 bg-blue-50 border-blue-100',
+      description: 'Authenticate with your university-assigned identity handle.',
+    },
+    faculty: {
+      label: 'Faculty',
+      placeholder: 'dr.rajesh.kumar@campus.edu',
+      demoEmail: 'dr.rajesh.kumar@campus.edu',
+      demoPassword: 'Password123!',
+      badgeText: 'Faculty & HOD Access',
+      badgeColor: 'text-purple-700 bg-purple-50 border-purple-100',
+      description: 'Authenticate with your departmental faculty credentials.',
+    },
+    alumni: {
+      label: 'Alumni',
+      placeholder: 'vikram.aditya@alumni.edu',
+      demoEmail: 'vikram.aditya@alumni.edu',
+      demoPassword: 'Password123!',
+      badgeText: 'Alumni Network Handle',
+      badgeColor: 'text-emerald-700 bg-emerald-50 border-emerald-100',
+      description: 'Authenticate with your verified alumni mentorship handle.',
+    },
+    recruiter: {
+      label: 'Recruiter',
+      placeholder: 'alex.rivera@techcorp.com',
+      demoEmail: 'alex.rivera@techcorp.com',
+      demoPassword: 'Password123!',
+      badgeText: 'Corporate Partner Domain',
+      badgeColor: 'text-amber-800 bg-amber-50 border-amber-100',
+      description: 'Authenticate with your verified campus hiring identity.',
+    },
+    admin: {
+      label: 'Admin',
+      placeholder: 'admin@campus.edu',
+      demoEmail: 'admin@campus.edu',
+      demoPassword: 'Password123!',
+      badgeText: 'Institutional Console',
+      badgeColor: 'text-rose-700 bg-rose-50 border-rose-100',
+      description: 'Authenticate with institutional administrator console credentials.',
+    },
+  };
+
+  const handleRoleSelect = (selectedRole) => {
+    setRole(selectedRole);
+    setServerError('');
+    setFieldErrors({});
+  };
+
+  const handleFillDemo = (targetRole = role) => {
+    const cfg = ROLE_CONFIGS[targetRole] || ROLE_CONFIGS.student;
+    setEmail(cfg.demoEmail);
+    setPassword(cfg.demoPassword);
+    setFieldErrors({});
+    setServerError('');
+  };
+
   const validateForm = () => {
     const errors = {};
     if (!email.trim()) {
-      errors.email = 'Institutional email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Email address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       errors.email = 'Please enter a valid email address.';
     }
 
@@ -64,7 +142,7 @@ const LoginPage = () => {
 
     setIsLoading(true);
     try {
-      const result = await login(email, password);
+      const result = await login(email.trim(), password);
       if (result?.success) {
         const from = location.state?.from?.pathname || result.redirectPath;
         navigate(from, { replace: true });
@@ -85,6 +163,7 @@ const LoginPage = () => {
     { id: 'faculty', label: 'Faculty', icon: GraduationCap },
     { id: 'alumni', label: 'Alumni', icon: Briefcase },
     { id: 'recruiter', label: 'Recruiter', icon: Building },
+    { id: 'admin', label: 'Admin', icon: ShieldCheck },
   ];
 
   return (
@@ -126,46 +205,55 @@ const LoginPage = () => {
 
       {/* Main Container - Centered Balanced Layout */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12 max-w-7xl mx-auto w-full">
-        <div className="w-full max-w-md flex flex-col gap-6">
+        <div className="w-full max-w-2xl flex flex-col gap-6">
           {/* Header Title Section */}
           <div className="text-center flex flex-col items-center gap-2.5">
             <Badge variant="info" dot={true} pulseDot={true} className="py-1 px-3">
               SECURE CAMPUS ACCESS
             </Badge>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Log In to{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800">
                 GRIP Campus
               </span>
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-500 max-w-sm">
+            <p className="text-sm sm:text-base text-slate-500 max-w-md">
               Enter your institutional credentials or university SSO to access your career command center.
             </p>
           </div>
 
           {/* Form Card */}
-          <div className="w-full bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 relative overflow-hidden">
+          <div className="w-full bg-white rounded-3xl border border-slate-200 shadow-xl p-7 sm:p-10 relative overflow-hidden">
             {/* Top gradient stripe */}
             <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 absolute top-0 left-0 right-0" />
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-6">
               {/* Server Error Alert */}
               {serverError && (
-                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5 animate-fadeIn">
+                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2.5 animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                   <span className="flex-1 leading-relaxed">{serverError}</span>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 {/* Select Your Campus Role */}
-                <div className="flex flex-col gap-2">
-                  <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                    SELECT YOUR CAMPUS ROLE
-                  </span>
-                  <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200/60">
+                <div className="flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+                      SELECT YOUR CAMPUS ROLE
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleFillDemo(role)}
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+                    >
+                      Fill Demo Credentials
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1.5 p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/60">
                     {roles.map((r) => {
                       const Icon = r.icon;
                       const isSelected = role === r.id;
@@ -173,16 +261,16 @@ const LoginPage = () => {
                         <button
                           key={r.id}
                           type="button"
-                          onClick={() => setRole(r.id)}
+                          onClick={() => handleRoleSelect(r.id)}
                           className={`
-                            flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2 px-1.5 rounded-lg text-xs font-medium transition-all
+                            flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 px-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all
                             ${isSelected
-                              ? 'bg-white text-blue-700 font-semibold shadow-xs'
+                              ? 'bg-white text-blue-700 shadow-xs ring-1 ring-slate-200/80'
                               : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                             }
                           `}
                         >
-                          <Icon className="w-3.5 h-3.5 shrink-0" />
+                          <Icon className="w-4 h-4 shrink-0" />
                           <span className="truncate">{r.label}</span>
                         </button>
                       );
@@ -191,29 +279,29 @@ const LoginPage = () => {
                 </div>
 
                 {/* Institutional Email Field */}
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between flex-wrap gap-1">
                     <label
                       htmlFor="email"
-                      className="text-xs font-semibold text-slate-700 flex items-center gap-1"
+                      className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1"
                     >
-                      <span>Institutional / College Email</span>
+                      <span>{role === 'admin' ? 'Administrator Email' : 'Institutional / College Email'}</span>
                       <span className="text-rose-500 font-bold">*</span>
                     </label>
-                    <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
-                      Requires .edu / campus domain
+                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${ROLE_CONFIGS[role]?.badgeColor || 'text-blue-700 bg-blue-50 border-blue-100'}`}>
+                      {ROLE_CONFIGS[role]?.badgeText || 'Requires .edu / campus domain'}
                     </span>
                   </div>
                   <div className="relative flex items-center">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                    <Mail className="w-4.5 h-4.5 text-slate-400 absolute left-4 pointer-events-none" />
                     <input
                       id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="rohan.mehta@univ-engineering.edu"
+                      placeholder={ROLE_CONFIGS[role]?.placeholder || 'rohan.mehta@univ-engineering.edu'}
                       className={`
-                        w-full bg-white text-slate-900 placeholder:text-slate-400 text-sm rounded-lg border transition-all duration-150 pl-10 pr-3.5 py-2.5
+                        w-full bg-white text-slate-900 placeholder:text-slate-400 text-sm sm:text-base rounded-xl border transition-all duration-150 pl-11 pr-4 py-3
                         ${fieldErrors.email
                           ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
                           : 'border-slate-200/90 hover:border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
@@ -225,18 +313,18 @@ const LoginPage = () => {
                   {fieldErrors.email ? (
                     <p className="text-xs text-rose-600 font-medium mt-0.5">{fieldErrors.email}</p>
                   ) : (
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Authenticate with your university-assigned identity handle.
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {ROLE_CONFIGS[role]?.description || 'Authenticate with your university-assigned identity handle.'}
                     </p>
                   )}
                 </div>
 
                 {/* Password Field */}
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <label
                       htmlFor="password"
-                      className="text-xs font-semibold text-slate-700 flex items-center gap-1"
+                      className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1"
                     >
                       <span>Password</span>
                       <span className="text-rose-500 font-bold">*</span>
@@ -244,13 +332,13 @@ const LoginPage = () => {
                     <button
                       type="button"
                       onClick={() => setServerError('Password reset link request initiated. Please check with your campus administrator.')}
-                      className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
                     >
                       Forgot Password?
                     </button>
                   </div>
                   <div className="relative flex items-center">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                    <Lock className="w-4.5 h-4.5 text-slate-400 absolute left-4 pointer-events-none" />
                     <input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -258,7 +346,7 @@ const LoginPage = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••••••"
                       className={`
-                        w-full bg-white text-slate-900 placeholder:text-slate-400 text-sm rounded-lg border transition-all duration-150 pl-10 pr-10 py-2.5
+                        w-full bg-white text-slate-900 placeholder:text-slate-400 text-sm sm:text-base rounded-xl border transition-all duration-150 pl-11 pr-11 py-3
                         ${fieldErrors.password
                           ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
                           : 'border-slate-200/90 hover:border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
@@ -269,10 +357,10 @@ const LoginPage = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 text-slate-400 hover:text-slate-600 focus:outline-none"
+                      className="absolute right-4 text-slate-400 hover:text-slate-600 focus:outline-none"
                       aria-label="Toggle password visibility"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                     </button>
                   </div>
                   {fieldErrors.password && (
@@ -282,20 +370,20 @@ const LoginPage = () => {
 
                 {/* Remember Me Checkbox & Security Badge */}
                 <div className="flex items-center justify-between pt-1">
-                  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                  <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      className="w-4.5 h-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
-                    <span className="text-xs text-slate-600 font-medium">
+                    <span className="text-xs sm:text-sm text-slate-600 font-medium">
                       Remember for 30 days
                     </span>
                   </label>
 
-                  <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-1 rounded-lg">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     <span>256-bit Encrypted</span>
                   </div>
                 </div>
@@ -308,8 +396,8 @@ const LoginPage = () => {
                   fullWidth={true}
                   isLoading={isLoading}
                   loadingText="Signing In..."
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
-                  className="mt-2 text-sm font-semibold shadow-md shadow-blue-500/10 py-3"
+                  rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
+                  className="mt-2 text-sm sm:text-base font-semibold shadow-md shadow-blue-500/10 py-3.5 rounded-xl"
                 >
                   Sign In to GRIP
                 </Button>
@@ -318,7 +406,7 @@ const LoginPage = () => {
               {/* Divider */}
               <div className="relative flex items-center justify-center my-1">
                 <div className="w-full border-t border-slate-200" />
-                <span className="absolute px-3 bg-white text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                <span className="absolute px-3.5 bg-white text-[11px] font-bold text-slate-400 tracking-wider uppercase">
                   OR CONTINUE WITH INSTITUTIONAL ACCESS
                 </span>
               </div>
@@ -327,17 +415,17 @@ const LoginPage = () => {
               <Button
                 type="button"
                 variant="secondary"
-                size="md"
+                size="lg"
                 fullWidth={true}
                 onClick={handleSSOLogin}
-                leftIcon={<Shield className="w-4 h-4 text-blue-600" />}
-                className="text-xs font-semibold py-2.5"
+                leftIcon={<Shield className="w-4.5 h-4.5 text-blue-600" />}
+                className="text-xs sm:text-sm font-semibold py-3 rounded-xl"
               >
                 Log In with University Single Sign-On (SAML / Shibboleth)
               </Button>
 
               {/* Footer Switch */}
-              <div className="text-center text-xs text-slate-500 pt-1">
+              <div className="text-center text-xs sm:text-sm text-slate-500 pt-1">
                 Don't have an account yet?{' '}
                 <Link
                   to="/register"

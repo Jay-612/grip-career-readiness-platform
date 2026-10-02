@@ -11,7 +11,6 @@ import {
   EyeOff,
   ArrowRight,
   Shield,
-  ShieldCheck,
   CheckCircle2,
   AlertCircle,
   Check
@@ -97,12 +96,6 @@ const RegisterPage = () => {
       title: 'Recruiter',
       subtitle: 'Campus Hiring',
       icon: Building,
-    },
-    {
-      id: 'admin',
-      title: 'Admin',
-      subtitle: 'Institutional Console',
-      icon: ShieldCheck,
     },
   ];
 

@@ -166,19 +166,24 @@ export const getGuidanceRequestById = async (req, res) => {
       success: true,
       request: {
         id: request._id,
-        studentId: request.studentId._id,
-        studentName: request.studentId.name,
-        studentEmail: request.studentId.email,
+        _id: request._id,
+        studentId: request.studentId?._id || request.studentId,
+        studentName: request.studentId?.name || 'Student Candidate',
+        studentEmail: request.studentId?.email || '',
         question: request.question,
         date: request.date,
+        createdAt: request.createdAt,
       },
       replies: replies.map((reply) => ({
         id: reply._id,
-        mentorId: reply.mentorId._id,
-        mentorName: reply.mentorId.name,
-        mentorEmail: reply.mentorId.email,
-        mentorRole: reply.mentorId.role,
+        _id: reply._id,
+        mentorId: reply.mentorId?._id || reply.mentorId,
+        mentorName: reply.mentorId?.name || 'Mentor',
+        mentorEmail: reply.mentorId?.email || '',
+        mentorRole: reply.mentorId?.role || 'mentor',
         answerText: reply.answerText,
+        date: reply.createdAt,
+        createdAt: reply.createdAt,
       })),
     });
   } catch (error) {
@@ -197,6 +202,27 @@ export const replyGuidanceRequest = async (req, res) => {
     const mentorId = req.user.id || req.user.userId;
     const userRole = (req.user.role || '').toLowerCase();
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Guidance Request ID format',
+      });
+    }
+
+    const rawAnswer =
+      req.body?.answerText ||
+      req.body?.reply ||
+      req.body?.text ||
+      req.body?.answer;
+
+    if (!rawAnswer || !rawAnswer.toString().trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'answerText is required',
+      });
+    }
+    const answerText = rawAnswer.toString().trim();
+
     const request = await GuidanceRequest.findById(id);
     if (!request) {
       return res.status(404).json({
@@ -206,10 +232,16 @@ export const replyGuidanceRequest = async (req, res) => {
     }
 
     // RBAC: Mentors (Faculty/Alumni/Admin) OR the original student author can reply
+    const studentOwnerId = (
+      request.studentId?._id ||
+      request.studentId ||
+      ''
+    ).toString();
+
     const isOriginalAuthor =
       userRole === 'student' &&
-      request.studentId &&
-      request.studentId.toString() === mentorId.toString();
+      studentOwnerId &&
+      studentOwnerId === (mentorId || '').toString();
 
     const isMentor =
       userRole === 'faculty' || userRole === 'alumni' || userRole === 'admin';
@@ -224,13 +256,27 @@ export const replyGuidanceRequest = async (req, res) => {
     const createdReply = await GuidanceReply.create({
       requestId: id,
       mentorId,
-      answerText: answerText.trim(),
+      answerText,
     });
+
+    const populated = await GuidanceReply.findById(createdReply._id)
+      .populate('mentorId', 'name email role');
 
     return res.status(201).json({
       success: true,
       message: 'Reply sent successfully',
-      reply: createdReply,
+      reply: {
+        id: populated._id,
+        _id: populated._id,
+        requestId: populated.requestId,
+        mentorId: populated.mentorId?._id || mentorId,
+        mentorName: populated.mentorId?.name || req.user.name || 'Mentor',
+        mentorEmail: populated.mentorId?.email || req.user.email || '',
+        mentorRole: populated.mentorId?.role || req.user.role || 'mentor',
+        answerText: populated.answerText,
+        date: populated.createdAt,
+        createdAt: populated.createdAt,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -340,7 +386,11 @@ export const getMentorRecommendations = async (req, res) => {
 export const updateGuidanceReply = async (req, res) => {
   try {
     const { id } = req.params;
-    const answerText = req.body.answerText || req.body.reply;
+    const rawAnswer =
+      req.body?.answerText ||
+      req.body?.reply ||
+      req.body?.text ||
+      req.body?.answer;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -349,12 +399,13 @@ export const updateGuidanceReply = async (req, res) => {
       });
     }
 
-    if (!answerText || !answerText.trim()) {
+    if (!rawAnswer || !rawAnswer.toString().trim()) {
       return res.status(400).json({
         success: false,
         message: 'answerText is required',
       });
     }
+    const answerText = rawAnswer.toString().trim();
 
     const reply = await GuidanceReply.findById(id);
     if (!reply) {
@@ -365,39 +416,41 @@ export const updateGuidanceReply = async (req, res) => {
     }
 
     const currentUserId = (req.user.id || req.user.userId || '').toString();
+    const userRole = (req.user.role || '').toLowerCase();
+    const authorId = reply.mentorId ? reply.mentorId.toString() : '';
 
     // Only the author or an admin can update
-    if (
-      reply.mentorId.toString() !== currentUserId &&
-      req.user.role !== 'admin'
-    ) {
+    if (authorId !== currentUserId && userRole !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Only the author or an admin can update this reply.',
       });
     }
 
-    reply.answerText = answerText.trim();
+    reply.answerText = answerText;
     await reply.save();
 
     const populated = await GuidanceReply.findById(reply._id)
       .populate('mentorId', 'name email role');
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Reply updated successfully',
       reply: {
         id: populated._id,
+        _id: populated._id,
         requestId: populated.requestId,
-        mentorId: populated.mentorId._id,
-        mentorName: populated.mentorId.name,
-        mentorEmail: populated.mentorId.email,
-        mentorRole: populated.mentorId.role,
+        mentorId: populated.mentorId?._id || reply.mentorId,
+        mentorName: populated.mentorId?.name || '',
+        mentorEmail: populated.mentorId?.email || '',
+        mentorRole: populated.mentorId?.role || '',
         answerText: populated.answerText,
+        date: populated.createdAt,
+        createdAt: populated.createdAt,
       },
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error while updating reply',
       error: error.message,

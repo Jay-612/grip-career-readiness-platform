@@ -38,7 +38,28 @@ router.post(
 );
 
 router.post(
+  '/:id/replies',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  replyGuidanceRequest
+);
+
+router.post(
   '/requests/:id/reply',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  replyGuidanceRequest
+);
+
+router.post(
+  '/requests/:id/replies',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  replyGuidanceRequest
+);
+
+router.post(
+  '/reply/:id',
   protect,
   authorize('student', 'faculty', 'alumni', 'admin'),
   replyGuidanceRequest
@@ -50,6 +71,21 @@ router.put(
   protect,
   authorize('student', 'faculty', 'alumni', 'admin'),
   updateGuidanceReply
+);
+
+router.put(
+  '/replies/:id',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  updateGuidanceReply
+);
+
+// GET /api/guidance/:id — Get request with replies (single ID alias)
+router.get(
+  '/:id',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  getGuidanceRequestById
 );
 
 export default router;
