@@ -53,10 +53,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, role) => {
     setIsLoading(true);
     try {
-      const response = await apiClient.post('/auth/login', { email, password });
+      const response = await apiClient.post('/auth/login', { email, password, role });
       if (response.data?.success && response.data?.token) {
         const receivedToken = response.data.token;
         const receivedUser = response.data.user;
@@ -79,7 +79,12 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || 'Invalid email or password';
-      throw new Error(errorMessage);
+      const customErr = new Error(errorMessage);
+      if (error.response?.data?.roleMismatch) {
+        customErr.roleMismatch = true;
+        customErr.actualRole = error.response.data.actualRole;
+      }
+      throw customErr;
     } finally {
       setIsLoading(false);
     }

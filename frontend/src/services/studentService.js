@@ -85,6 +85,18 @@ export const studentService = {
     const response = await apiClient.get('/student/dashboard');
     return response.data;
   },
+
+  // Get alumni experience posts & placement playbooks (Student access)
+  getAlumniPosts: async (params = {}) => {
+    const response = await apiClient.get('/alumni/posts', { params });
+    return response.data;
+  },
+
+  // Get single alumni experience post by ID (Student access)
+  getAlumniPostById: async (id) => {
+    const response = await apiClient.get(`/alumni/posts/${id}`);
+    return response.data;
+  },
 };
 
 export const studentApi = studentService;
