@@ -636,6 +636,11 @@ const GuidanceInboxPage = () => {
                       <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium">
                         Advising
                       </span>
+                      {item.targetType === 'faculty' && (
+                        <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-semibold border border-blue-200">
+                          Direct 1:1 to You
+                        </span>
+                      )}
                     </div>
 
                     {/* Inquiry Excerpt */}

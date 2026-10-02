@@ -630,6 +630,11 @@ export const MentorshipInboxPage = () => {
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
+                        {reqItem.targetType === 'alumni' && (
+                          <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[10px] font-semibold border border-purple-200">
+                            Alumni Network
+                          </span>
+                        )}
                         {isPending ? (
                           <Badge variant="warning" size="xs">
                             Awaiting

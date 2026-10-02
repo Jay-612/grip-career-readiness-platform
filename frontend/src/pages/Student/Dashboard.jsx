@@ -61,6 +61,7 @@ export const Dashboard = () => {
     roadmap: null,
     appointments: [],
     guidanceRequests: [],
+    alumniPosts: [],
     leaderboardRank: null,
     leaderboardTotal: null,
   });
@@ -98,6 +99,7 @@ export const Dashboard = () => {
         roadmapRes,
         appointmentsRes,
         guidanceRes,
+        alumniPostsRes,
       ] = await Promise.allSettled([
         studentService.getPlacementReadiness(studentId),
         studentService.getMyRank(),
@@ -106,6 +108,7 @@ export const Dashboard = () => {
         selectedCareer ? studentService.getCareerRoadmap(selectedCareer) : null,
         studentService.getAppointments(),
         guidanceService.getRequests(1, 10),
+        studentService.getAlumniPosts({ limit: 4 }),
       ]);
 
       if (signal?.aborted) return;
@@ -143,6 +146,10 @@ export const Dashboard = () => {
         guidanceRequests:
           guidanceRes.status === 'fulfilled' && guidanceRes.value?.requests
             ? guidanceRes.value.requests
+            : [],
+        alumniPosts:
+          alumniPostsRes.status === 'fulfilled' && alumniPostsRes.value?.posts
+            ? alumniPostsRes.value.posts
             : [],
         leaderboardRank: myRank,
         leaderboardTotal: totalStudents,
@@ -1351,6 +1358,92 @@ export const Dashboard = () => {
                   <blockquote className="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200/80 italic mt-1 leading-relaxed">
                     "{item.content}"
                   </blockquote>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ─── SECTION 5: ALUMNI INSIGHTS & PLACEMENT STORIES ───────── */}
+      <section
+        className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-card space-y-4"
+        data-purpose="student-alumni-posts-feed"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Alumni Placement Stories &amp; Playbooks
+              </h3>
+              <Badge variant="primary" size="sm">
+                Verified Alumni
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Real interview strategies, system design walkthroughs, and career lessons from verified alumni
+            </p>
+          </div>
+          <Link
+            to="/student/alumni-posts"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+          >
+            <span>View All Stories ({dashboardData.alumniPosts.length || 0}) →</span>
+          </Link>
+        </div>
+
+        {dashboardData.alumniPosts.length === 0 ? (
+          <EmptyState
+            icon={<BookOpen className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
+            title="No Alumni Stories Available Yet"
+            description="Placement advice and interview playbooks from campus alumni will appear here once published."
+            compact
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {dashboardData.alumniPosts.slice(0, 3).map((post) => (
+              <article
+                key={post.id || post._id}
+                className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-card transition-all flex flex-col justify-between"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500">
+                    <span className="font-bold text-slate-800 truncate">
+                      {post.author?.name || post.alumniId?.name || 'Verified Alumni'}
+                    </span>
+                    <span className="shrink-0">{formatDate(post.date)}</span>
+                  </div>
+                  {(post.author?.currentCompany || post.alumniProfile?.currentCompany) && (
+                    <div className="flex items-center gap-1.5 text-xs text-blue-700 font-semibold">
+                      <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <span className="truncate">
+                        {post.author?.currentCompany || post.alumniProfile?.currentCompany}
+                        {(post.author?.jobRole || post.alumniProfile?.jobRole) && (
+                          <span className="text-slate-500 font-normal">
+                            {' '}• {post.author?.jobRole || post.alumniProfile?.jobRole}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  <h4 className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug">
+                    {post.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    {post.content}
+                  </p>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400 font-medium">
+                    {Array.isArray(post.tags) && post.tags[0] ? `#${post.tags[0]}` : 'Placement'}
+                  </span>
+                  <Link
+                    to="/student/alumni-posts"
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-0.5"
+                  >
+                    <span>Read Story →</span>
+                  </Link>
                 </div>
               </article>
             ))}

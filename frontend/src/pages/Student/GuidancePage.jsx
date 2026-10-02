@@ -54,6 +54,8 @@ export const GuidancePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formCategory, setFormCategory] = useState('General Career');
+  const [targetType, setTargetType] = useState('faculty'); // 'faculty' (specific) | 'alumni' (all alumni)
+  const [targetFacultyId, setTargetFacultyId] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [formErrors, setFormErrors] = useState({});
 
@@ -243,6 +245,20 @@ export const GuidancePage = () => {
     return result;
   }, [questions, statusFilter, searchQuery]);
 
+  // Filter faculty mentors for direct inquiry
+  const facultyMentors = useMemo(() => {
+    return recommendedMentors.filter(
+      (m) => String(m.role || '').toLowerCase() === 'faculty'
+    );
+  }, [recommendedMentors]);
+
+  // Ensure default targetFacultyId is set when facultyMentors become available
+  useEffect(() => {
+    if (facultyMentors.length > 0 && !targetFacultyId) {
+      setTargetFacultyId(facultyMentors[0].id);
+    }
+  }, [facultyMentors, targetFacultyId]);
+
   // Form Validation
   const validateForm = () => {
     const errors = {};
@@ -250,6 +266,10 @@ export const GuidancePage = () => {
       errors.question = 'Please provide details for your question or guidance request.';
     } else if (questionText.trim().length < 15) {
       errors.question = 'Question must be at least 15 characters to provide sufficient context for mentors.';
+    }
+
+    if (targetType === 'faculty' && !targetFacultyId) {
+      errors.targetFaculty = 'Please select a specific faculty advisor for direct routing.';
     }
 
     setFormErrors(errors);
@@ -268,9 +288,18 @@ export const GuidancePage = () => {
       // Format payload with topic prefix for clean organization
       const formattedQuestion = `[${formCategory}] ${questionText.trim()}`;
 
-      const res = await guidanceService.createRequest(formattedQuestion);
+      const res = await guidanceService.createRequest({
+        question: formattedQuestion,
+        targetType,
+        targetFacultyId: targetType === 'faculty' ? targetFacultyId : null,
+      });
 
-      setSuccessToast('Your guidance question has been submitted to faculty and alumni mentors!');
+      const successMsg =
+        targetType === 'faculty'
+          ? 'Your guidance question was submitted exclusively to the selected faculty advisor!'
+          : 'Your guidance question was broadcast to all verified alumni mentors!';
+
+      setSuccessToast(successMsg);
       setTimeout(() => setSuccessToast(null), 4000);
 
       // Reset form and close modal
@@ -679,10 +708,23 @@ export const GuidancePage = () => {
                       }
                     `}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-                        {parsed.topic}
-                      </span>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                          {parsed.topic}
+                        </span>
+                        {q.targetType === 'faculty' ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                            <GraduationCap className="w-2.5 h-2.5 text-blue-600" />
+                            <span>{q.targetFacultyName ? `Prof. ${q.targetFacultyName}` : 'Faculty Advisor'}</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-800 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                            <Briefcase className="w-2.5 h-2.5 text-purple-600" />
+                            <span>All Alumni</span>
+                          </span>
+                        )}
+                      </div>
                       {isAnswered ? (
                         <Badge variant="success" size="xs" dot>
                           {replyCount} {replyCount === 1 ? 'Reply' : 'Replies'}
@@ -739,9 +781,22 @@ export const GuidancePage = () => {
               {/* Question Header */}
               <div className="space-y-3 pb-5 border-b border-slate-100">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md">
-                    {parseQuestion(activeThread.question).topic}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md">
+                      {parseQuestion(activeThread.question).topic}
+                    </span>
+                    {activeThread.targetType === 'faculty' ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                        <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Direct to: {activeThread.targetFacultyName ? `Prof. ${activeThread.targetFacultyName}` : 'Faculty Advisor'}</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                        <Briefcase className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Routed to: All Alumni Mentors</span>
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     {activeThread.status === 'answered' ? (
                       <Badge variant="success" size="sm" dot>
@@ -952,9 +1007,15 @@ export const GuidancePage = () => {
                     variant="outline"
                     size="xs"
                     onClick={() => {
-                      setFormCategory(
-                        mentor.role === 'Faculty' ? 'Academic & Research' : 'Industry Transition'
-                      );
+                      if (mentor.role === 'Faculty') {
+                        setTargetType('faculty');
+                        setTargetFacultyId(mentor.id);
+                        setFormCategory('Academic & Research');
+                      } else {
+                        setTargetType('alumni');
+                        setTargetFacultyId('');
+                        setFormCategory('Industry Transition');
+                      }
                       setQuestionText(`@${mentor.name}: `);
                       setIsModalOpen(true);
                     }}
@@ -977,7 +1038,7 @@ export const GuidancePage = () => {
         isOpen={isModalOpen}
         onClose={() => !isSubmitting && setIsModalOpen(false)}
         title="Submit a Guidance Question"
-        description="Your question will be routed to departmental faculty advisors and verified alumni mentors."
+        description="Choose whether to route directly to 1 specific faculty advisor or broadcast to all verified alumni mentors."
         size="md"
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4 pt-2">
@@ -985,6 +1046,139 @@ export const GuidancePage = () => {
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{formErrors.submit}</span>
+            </div>
+          )}
+
+          {/* ── 2 TARGETING APPROACHES ── */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-800 block">
+              Guidance Target Audience <span className="text-rose-500">*</span>
+            </label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Approach 1: Particular Faculty Advisor */}
+              <div
+                onClick={() => {
+                  setTargetType('faculty');
+                  if (!targetFacultyId && facultyMentors.length > 0) {
+                    setTargetFacultyId(facultyMentors[0].id);
+                  }
+                }}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5 ${
+                  targetType === 'faculty'
+                    ? 'bg-blue-50/70 border-blue-600 ring-2 ring-blue-600/20'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap
+                      className={`w-4 h-4 ${
+                        targetType === 'faculty' ? 'text-blue-600' : 'text-slate-500'
+                      }`}
+                    />
+                    <span className="text-xs font-bold text-slate-900">
+                      Particular Faculty
+                    </span>
+                  </div>
+                  <input
+                    type="radio"
+                    name="targetType"
+                    checked={targetType === 'faculty'}
+                    onChange={() => {
+                      setTargetType('faculty');
+                      if (!targetFacultyId && facultyMentors.length > 0) {
+                        setTargetFacultyId(facultyMentors[0].id);
+                      }
+                    }}
+                    className="text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 leading-snug">
+                  Goes <strong>only to 1 selected faculty advisor</strong> (not other faculty or alumni).
+                </p>
+              </div>
+
+              {/* Approach 2: All Alumni Members */}
+              <div
+                onClick={() => setTargetType('alumni')}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5 ${
+                  targetType === 'alumni'
+                    ? 'bg-purple-50/70 border-purple-600 ring-2 ring-purple-600/20'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Briefcase
+                      className={`w-4 h-4 ${
+                        targetType === 'alumni' ? 'text-purple-600' : 'text-slate-500'
+                      }`}
+                    />
+                    <span className="text-xs font-bold text-slate-900">
+                      All Alumni Mentors
+                    </span>
+                  </div>
+                  <input
+                    type="radio"
+                    name="targetType"
+                    checked={targetType === 'alumni'}
+                    onChange={() => setTargetType('alumni')}
+                    className="text-purple-600 focus:ring-purple-500 h-3.5 w-3.5"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 leading-snug">
+                  Broadcast to <strong>all verified alumni members</strong> in industry (not faculty).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Conditional Dropdown for Particular Faculty */}
+          {targetType === 'faculty' && (
+            <div className="space-y-1.5 p-3.5 rounded-xl bg-blue-50/50 border border-blue-200">
+              <label
+                htmlFor="faculty-select"
+                className="text-xs font-semibold text-slate-800 flex items-center justify-between"
+              >
+                <span>Select Faculty Advisor:</span>
+                <span className="text-[11px] font-medium text-blue-700">1:1 Direct Routing</span>
+              </label>
+
+              {facultyMentors.length === 0 ? (
+                <p className="text-xs text-amber-700 font-medium py-1">
+                  Loading available faculty advisors...
+                </p>
+              ) : (
+                <select
+                  id="faculty-select"
+                  value={targetFacultyId}
+                  onChange={(e) => setTargetFacultyId(e.target.value)}
+                  className="w-full bg-white text-slate-900 text-xs rounded-lg border border-slate-300 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600"
+                >
+                  <option value="" disabled>
+                    -- Choose Faculty Advisor --
+                  </option>
+                  {facultyMentors.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name} — {f.careerTag || 'Faculty Advisor'}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {formErrors.targetFaculty && (
+                <p className="text-xs text-rose-600 font-medium">{formErrors.targetFaculty}</p>
+              )}
+            </div>
+          )}
+
+          {targetType === 'alumni' && (
+            <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-200 text-xs text-purple-900 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+              <span>
+                Your question will be visible to <strong>all campus alumni</strong> working at TechCorp, CloudSys, and other partner companies.
+              </span>
             </div>
           )}
 

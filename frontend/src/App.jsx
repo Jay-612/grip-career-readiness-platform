@@ -12,6 +12,7 @@ import CareerCompassPage from './pages/Student/CareerCompassPage';
 import GoalTrackerPage from './pages/Student/GoalTrackerPage';
 import GuidancePage from './pages/Student/GuidancePage';
 import InterviewCenterPage from './pages/Student/InterviewCenterPage';
+import AlumniInsightsPage from './pages/Student/AlumniInsightsPage';
 import FacultyDashboard from './pages/Faculty/Dashboard';
 import InterviewEvaluationPage from './pages/Faculty/InterviewEvaluationPage';
 import GuidanceInboxPage from './pages/Faculty/GuidanceInboxPage';
@@ -207,6 +208,9 @@ const App = () => {
             <Route path="readiness" element={<Navigate to="/student/interviews" replace />} />
             <Route path="mock-interview" element={<Navigate to="/student/interviews" replace />} />
             <Route path="mock-interviews" element={<Navigate to="/student/interviews" replace />} />
+            <Route path="alumni-posts" element={<AlumniInsightsPage />} />
+            <Route path="alumni-stories" element={<Navigate to="/student/alumni-posts" replace />} />
+            <Route path="experiences" element={<Navigate to="/student/alumni-posts" replace />} />
           </Route>
 
           {/* Faculty Authenticated Layout & Nested Routes */}

@@ -5,10 +5,20 @@ import apiClient from './apiClient';
  * Interfaces with backend endpoints for guidance requests and threaded replies.
  */
 export const guidanceService = {
-  // Student submits a new guidance question
-  // POST /api/guidance/request -> body: { question }
-  createRequest: async (question) => {
-    const response = await apiClient.post('/guidance/request', { question });
+  // Student submits a new guidance question with target routing
+  // POST /api/guidance/request -> body: { question, targetType, targetFacultyId }
+  createRequest: async (payloadOrQuestion, targetType = 'alumni', targetFacultyId = null) => {
+    let payload = {};
+    if (typeof payloadOrQuestion === 'string') {
+      payload = {
+        question: payloadOrQuestion,
+        targetType,
+        targetFacultyId,
+      };
+    } else if (payloadOrQuestion && typeof payloadOrQuestion === 'object') {
+      payload = payloadOrQuestion;
+    }
+    const response = await apiClient.post('/guidance/request', payload);
     return response.data;
   },
 

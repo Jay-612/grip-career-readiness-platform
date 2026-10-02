@@ -9,7 +9,7 @@ import AlumniProfile from '../model/AlumniProfile.js';
 export const createGuidanceRequest = async (req, res) => {
   try {
     const studentId = req.user.id || req.user.userId;
-    const { question } = req.body;
+    const { question, targetType, targetFacultyId, facultyId, mentorId } = req.body;
 
     if (!question || !question.trim()) {
       return res.status(400).json({
@@ -18,24 +18,65 @@ export const createGuidanceRequest = async (req, res) => {
       });
     }
 
+    // Normalized targetType: 'faculty' (specific faculty advisor) or 'alumni' (broadcast to all alumni)
+    const normalizedTargetType = (targetType || '').toLowerCase() === 'faculty' ? 'faculty' : 'alumni';
+    let chosenFacultyId = null;
+
+    if (normalizedTargetType === 'faculty') {
+      const selectedId = targetFacultyId || facultyId || mentorId;
+      if (!selectedId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please select a specific faculty advisor for this guidance request.',
+        });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(selectedId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid target faculty ID format',
+        });
+      }
+
+      const facultyUser = await User.findById(selectedId);
+      if (!facultyUser || (facultyUser.role !== 'faculty' && facultyUser.role !== 'admin')) {
+        return res.status(404).json({
+          success: false,
+          message: 'The selected faculty advisor could not be found.',
+        });
+      }
+      chosenFacultyId = facultyUser._id;
+    }
+
     const guidanceRequest = await GuidanceRequest.create({
       studentId,
       question: question.trim(),
+      targetType: normalizedTargetType,
+      targetFacultyId: chosenFacultyId,
     });
 
     const populated = await GuidanceRequest.findById(guidanceRequest._id)
-      .populate('studentId', 'name email');
+      .populate('studentId', 'name email')
+      .populate('targetFacultyId', 'name email role');
 
     res.status(201).json({
       success: true,
-      message: 'Guidance request created successfully',
+      message: normalizedTargetType === 'faculty'
+        ? `Guidance request sent specifically to ${populated.targetFacultyId?.name || 'the selected faculty advisor'}.`
+        : 'Guidance request sent to all verified alumni mentors.',
       request: {
         id: populated._id,
-        studentId: populated.studentId._id,
-        studentName: populated.studentId.name,
-        studentEmail: populated.studentId.email,
+        _id: populated._id,
+        studentId: populated.studentId?._id || populated.studentId,
+        studentName: populated.studentId?.name || 'Student Candidate',
+        studentEmail: populated.studentId?.email || '',
         question: populated.question,
+        targetType: populated.targetType,
+        targetFacultyId: populated.targetFacultyId?._id || null,
+        targetFacultyName: populated.targetFacultyId?.name || null,
+        targetFacultyEmail: populated.targetFacultyId?.email || null,
         date: populated.date,
+        createdAt: populated.createdAt || populated.date,
       },
     });
   } catch (error) {
@@ -55,15 +96,35 @@ export const getGuidanceRequests = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const filter = {};
+    const userRole = (req.user.role || '').toLowerCase();
+    const currentUserId = (req.user.id || req.user.userId || '').toString();
 
-    // Students can only see their own requests
-    if (req.user.role === 'student') {
-      filter.studentId = req.user.id || req.user.userId;
+    if (userRole === 'student') {
+      // Students can only see their own requests
+      filter.studentId = currentUserId;
+    } else if (userRole === 'faculty') {
+      // Approach 1: Faculty member sees requests sent specifically to THEM (or legacy 'all')
+      filter.$or = [
+        { targetType: 'faculty', targetFacultyId: currentUserId },
+        { targetType: 'all' },
+        { targetType: { $exists: false } },
+        { targetType: null },
+      ];
+    } else if (userRole === 'alumni') {
+      // Approach 2: Alumni member sees requests sent to ALL alumni (or legacy 'all')
+      filter.$or = [
+        { targetType: 'alumni' },
+        { targetType: 'all' },
+        { targetType: { $exists: false } },
+        { targetType: null },
+      ];
     }
+    // Admin sees all requests
 
     const [requests, totalItems] = await Promise.all([
       GuidanceRequest.find(filter)
         .populate('studentId', 'name email')
+        .populate('targetFacultyId', 'name email role')
         .sort({ date: -1 })
         .skip(skip)
         .limit(limit),
@@ -96,16 +157,23 @@ export const getGuidanceRequests = async (req, res) => {
         const reps = replyMap.get(r._id.toString()) || [];
         return {
           id: r._id,
+          _id: r._id,
           studentId: r.studentId?._id || null,
           studentName: r.studentId?.name || 'Student Candidate',
           studentEmail: r.studentId?.email || '',
+          targetType: r.targetType || 'all',
+          targetFacultyId: r.targetFacultyId?._id || null,
+          targetFacultyName: r.targetFacultyId?.name || null,
+          targetFacultyEmail: r.targetFacultyId?.email || null,
           question: r.question,
           date: r.date,
+          createdAt: r.createdAt || r.date,
           replyCount: reps.length,
           status: reps.length > 0 ? 'replied' : 'pending',
           latestReply: reps[0]
             ? {
                 id: reps[0]._id,
+                _id: reps[0]._id,
                 mentorName: reps[0].mentorId?.name || 'Faculty Mentor',
                 answerText: reps[0].answerText,
               }
@@ -135,7 +203,8 @@ export const getGuidanceRequestById = async (req, res) => {
     }
 
     const request = await GuidanceRequest.findById(id)
-      .populate('studentId', 'name email');
+      .populate('studentId', 'name email')
+      .populate('targetFacultyId', 'name email role');
 
     if (!request) {
       return res.status(404).json({
@@ -145,16 +214,50 @@ export const getGuidanceRequestById = async (req, res) => {
     }
 
     const currentUserId = (req.user.id || req.user.userId || '').toString();
+    const userRole = (req.user.role || '').toLowerCase();
 
     // Students can only view their own requests
-    if (
-      req.user.role === 'student' &&
-      request.studentId._id.toString() !== currentUserId
-    ) {
+    const studentOwnerId = (
+      request.studentId?._id ||
+      request.studentId ||
+      ''
+    ).toString();
+
+    if (userRole === 'student' && studentOwnerId !== currentUserId) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. You can only view your own requests.',
       });
+    }
+
+    // Role-based visibility check
+    if (userRole === 'faculty') {
+      const isTargetedFaculty =
+        request.targetFacultyId &&
+        (request.targetFacultyId._id || request.targetFacultyId).toString() === currentUserId;
+      const isLegacyOrAll = !request.targetType || request.targetType === 'all';
+
+      if (!isTargetedFaculty && !isLegacyOrAll) {
+        return res.status(403).json({
+          success: false,
+          message:
+            request.targetType === 'alumni'
+              ? 'Access denied. This inquiry was routed exclusively to alumni mentors.'
+              : 'Access denied. This inquiry was routed specifically to another faculty advisor.',
+        });
+      }
+    } else if (userRole === 'alumni') {
+      const isAlumniTargeted =
+        request.targetType === 'alumni' ||
+        request.targetType === 'all' ||
+        !request.targetType;
+
+      if (!isAlumniTargeted) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. This inquiry was routed specifically to a faculty advisor.',
+        });
+      }
     }
 
     // Fetch replies for this request
@@ -170,6 +273,10 @@ export const getGuidanceRequestById = async (req, res) => {
         studentId: request.studentId?._id || request.studentId,
         studentName: request.studentId?.name || 'Student Candidate',
         studentEmail: request.studentId?.email || '',
+        targetType: request.targetType || 'all',
+        targetFacultyId: request.targetFacultyId?._id || null,
+        targetFacultyName: request.targetFacultyId?.name || null,
+        targetFacultyEmail: request.targetFacultyId?.email || null,
         question: request.question,
         date: request.date,
         createdAt: request.createdAt,
@@ -231,7 +338,7 @@ export const replyGuidanceRequest = async (req, res) => {
       });
     }
 
-    // RBAC: Mentors (Faculty/Alumni/Admin) OR the original student author can reply
+    // RBAC: Check reply permissions
     const studentOwnerId = (
       request.studentId?._id ||
       request.studentId ||
@@ -243,13 +350,34 @@ export const replyGuidanceRequest = async (req, res) => {
       studentOwnerId &&
       studentOwnerId === (mentorId || '').toString();
 
-    const isMentor =
-      userRole === 'faculty' || userRole === 'alumni' || userRole === 'admin';
+    let canReply = false;
+    if (userRole === 'admin') {
+      canReply = true;
+    } else if (isOriginalAuthor) {
+      canReply = true;
+    } else if (userRole === 'faculty') {
+      const isTargetedFaculty =
+        request.targetFacultyId &&
+        (request.targetFacultyId._id || request.targetFacultyId).toString() === (mentorId || '').toString();
+      const isLegacyOrAll = !request.targetType || request.targetType === 'all';
+      canReply = isTargetedFaculty || isLegacyOrAll;
+    } else if (userRole === 'alumni') {
+      const isAlumniTargeted =
+        request.targetType === 'alumni' ||
+        request.targetType === 'all' ||
+        !request.targetType;
+      canReply = isAlumniTargeted;
+    }
 
-    if (!isMentor && !isOriginalAuthor) {
+    if (!canReply) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. You can only reply to your own guidance inquiries.',
+        message:
+          userRole === 'faculty'
+            ? 'Access denied. You can only reply to guidance inquiries routed to you.'
+            : userRole === 'alumni'
+            ? 'Access denied. You can only reply to inquiries routed to the alumni network.'
+            : 'Access denied. You can only reply to your own guidance inquiries.',
       });
     }
 

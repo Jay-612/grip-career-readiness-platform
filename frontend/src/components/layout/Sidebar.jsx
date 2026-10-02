@@ -72,6 +72,7 @@ const Sidebar = ({
       { name: 'Goal Tracker', path: '/student/goals', icon: Target, badge: 'Sprint' },
       { name: 'Mentorship & Q&A', path: '/student/guidance', icon: Users },
       { name: 'Interview & Readiness', path: '/student/interviews', icon: Award },
+      { name: 'Alumni Stories', path: '/student/alumni-posts', icon: BookOpen, badge: 'Insights' },
     ],
     faculty: [
       { name: 'Dashboard', path: '/faculty/dashboard', icon: LayoutDashboard },

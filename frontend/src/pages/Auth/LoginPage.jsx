@@ -39,6 +39,7 @@ const LoginPage = () => {
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [serverError, setServerError] = useState('');
+  const [roleMismatchData, setRoleMismatchData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Sync role if query parameter changes in URL
@@ -46,6 +47,7 @@ const LoginPage = () => {
     const r = new URLSearchParams(location.search).get('role');
     if (r && validRoles.includes(r.toLowerCase())) {
       setRole(r.toLowerCase());
+      setRoleMismatchData(null);
     }
   }, [location.search]);
 
@@ -64,16 +66,16 @@ const LoginPage = () => {
       demoPassword: 'Password123!',
       badgeText: 'Candidate Access',
       badgeColor: 'text-blue-700 bg-blue-50 border-blue-100',
-      description: 'Authenticate with your university-assigned identity handle.',
+      description: 'Authenticate with your university-assigned student identity handle.',
     },
     faculty: {
       label: 'Faculty',
-      placeholder: 'dr.rajesh.kumar@campus.edu',
+      placeholder: 'dr.rajesh.kumar@campus.edu or FAC-CSE-001',
       demoEmail: 'dr.rajesh.kumar@campus.edu',
       demoPassword: 'Password123!',
       badgeText: 'Faculty & HOD Access',
       badgeColor: 'text-purple-700 bg-purple-50 border-purple-100',
-      description: 'Authenticate with your departmental faculty credentials.',
+      description: 'Authenticate with your departmental email or Teacher / Employee ID.',
     },
     alumni: {
       label: 'Alumni',
@@ -107,6 +109,7 @@ const LoginPage = () => {
   const handleRoleSelect = (selectedRole) => {
     setRole(selectedRole);
     setServerError('');
+    setRoleMismatchData(null);
     setFieldErrors({});
   };
 
@@ -116,14 +119,23 @@ const LoginPage = () => {
     setPassword(cfg.demoPassword);
     setFieldErrors({});
     setServerError('');
+    setRoleMismatchData(null);
   };
 
   const validateForm = () => {
     const errors = {};
-    if (!email.trim()) {
-      errors.email = 'Email address is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      errors.email = 'Please enter a valid email address.';
+    const trimmedInput = email.trim();
+    if (!trimmedInput) {
+      errors.email = role === 'faculty' ? 'Email address or Teacher ID is required.' : 'Email address is required.';
+    } else if (trimmedInput.includes('@')) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedInput)) {
+        errors.email = 'Please enter a valid email address.';
+      }
+    } else {
+      // Must be at least 3 characters if ID is entered (e.g. FAC-CSE-001)
+      if (trimmedInput.length < 3) {
+        errors.email = 'Please enter a valid email or ID (at least 3 characters).';
+      }
     }
 
     if (!password) {
@@ -137,18 +149,24 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
+    setRoleMismatchData(null);
 
     if (!validateForm()) return;
 
     setIsLoading(true);
     try {
-      const result = await login(email.trim(), password);
+      const result = await login(email.trim(), password, role);
       if (result?.success) {
-        const from = location.state?.from?.pathname || result.redirectPath;
-        navigate(from, { replace: true });
+        const fromState = location.state?.from?.pathname;
+        const isFromValid = fromState && fromState.startsWith(`/${result.user.role}`);
+        const destination = isFromValid ? fromState : result.redirectPath;
+        navigate(destination, { replace: true });
       }
     } catch (err) {
       setServerError(err.message || 'Invalid email or password. Please try again.');
+      if (err.roleMismatch && err.actualRole) {
+        setRoleMismatchData(err.actualRole);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -232,9 +250,23 @@ const LoginPage = () => {
             <div className="flex flex-col gap-6">
               {/* Server Error Alert */}
               {serverError && (
-                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2.5 animate-fadeIn">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-                  <span className="flex-1 leading-relaxed">{serverError}</span>
+                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex flex-col gap-2.5 animate-fadeIn">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                    <span className="flex-1 leading-relaxed">{serverError}</span>
+                  </div>
+                  {roleMismatchData && (
+                    <div className="pl-6.5 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleRoleSelect(roleMismatchData)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs rounded-lg transition-colors shadow-xs"
+                      >
+                        <span>Switch to {ROLE_CONFIGS[roleMismatchData]?.label || roleMismatchData} Portal Tab</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -285,7 +317,13 @@ const LoginPage = () => {
                       htmlFor="email"
                       className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1"
                     >
-                      <span>{role === 'admin' ? 'Administrator Email' : 'Institutional / College Email'}</span>
+                      <span>
+                        {role === 'admin'
+                          ? 'Administrator Email'
+                          : role === 'faculty'
+                          ? 'Faculty Email or Teacher ID'
+                          : 'Institutional / College Email'}
+                      </span>
                       <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${ROLE_CONFIGS[role]?.badgeColor || 'text-blue-700 bg-blue-50 border-blue-100'}`}>
@@ -296,7 +334,8 @@ const LoginPage = () => {
                     <Mail className="w-4.5 h-4.5 text-slate-400 absolute left-4 pointer-events-none" />
                     <input
                       id="email"
-                      type="email"
+                      type="text"
+                      autoComplete="username"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={ROLE_CONFIGS[role]?.placeholder || 'rohan.mehta@univ-engineering.edu'}
