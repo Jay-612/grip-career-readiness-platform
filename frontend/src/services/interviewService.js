@@ -56,6 +56,40 @@ export const interviewService = {
     const response = await apiClient.patch(`/appointments/${appointmentId}/cancel`);
     return response.data;
   },
+
+  // Generate or refresh Google Meet room for an appointment (or save custom link)
+  // POST /api/appointments/:id/create-meet
+  generateGoogleMeet: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.post(`/appointments/${appointmentId}/create-meet`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
+
+  // Accept a pending mock interview appointment and generate Google Meet
+  // PATCH /api/appointments/:id/accept
+  acceptAppointment: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/accept`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
+
+  // Decline/reject an appointment request
+  // PATCH /api/appointments/:id/reject
+  rejectAppointment: async (appointmentId, reason = '') => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/reject`, {
+      reason,
+    });
+    return response.data;
+  },
+
+  // Securely verify and obtain the active meeting link with time-gate protection
+  // GET /api/appointments/:id/join
+  joinAppointment: async (appointmentId) => {
+    const response = await apiClient.get(`/appointments/${appointmentId}/join`);
+    return response.data;
+  },
 };
 
 export default interviewService;

@@ -126,6 +126,15 @@ const FacultyDashboard = () => {
       return timeB - timeA;
     });
 
+  // Pending interview requests awaiting faculty acceptance
+  const pendingInterviews = appointments
+    .filter((a) => a.status === 'pending')
+    .sort((a, b) => {
+      const timeA = a.dateTime ? new Date(a.dateTime).getTime() : 0;
+      const timeB = b.dateTime ? new Date(b.dateTime).getTime() : 0;
+      return timeA - timeB;
+    });
+
   // Pending guidance requests (all student inquiries available to faculty)
   const pendingGuidance = guidanceRequests;
 
@@ -148,7 +157,24 @@ const FacultyDashboard = () => {
   // Generate priority "Needs Attention" queue items (3-5 items)
   const needsAttentionItems = [];
 
-  // Item 1: Pending guidance requests
+  // Priority Item 1: Pending mock interview requests
+  if (pendingInterviews.length > 0) {
+    const topPending = pendingInterviews[0];
+    needsAttentionItems.push({
+      id: `pending-interview-${topPending.id}`,
+      type: 'interview-request',
+      title: `Mock Interview Request: ${topPending.student?.name || 'Student Candidate'}`,
+      studentName: topPending.student?.name || 'Student Candidate',
+      studentEmail: topPending.student?.email,
+      date: topPending.dateTime || `${topPending.date} ${topPending.time}`,
+      severity: 'warning',
+      badge: 'Request Pending',
+      actionText: 'Review & Accept',
+      actionLink: `/faculty/interviews/${topPending.id}`,
+    });
+  }
+
+  // Item 2: Pending guidance requests
   if (pendingGuidance.length > 0) {
     const topGuidance = pendingGuidance[0];
     needsAttentionItems.push({
@@ -740,6 +766,32 @@ const FacultyDashboard = () => {
               </Link>
             </div>
 
+            {/* Pending Requests Notice */}
+            {pendingInterviews.length > 0 && (
+              <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/70 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Pending Requests ({pendingInterviews.length})</span>
+                  </span>
+                  <Badge variant="warning" size="xs">
+                    Action Needed
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-snug">
+                  <strong>{pendingInterviews[0].student?.name || 'Student Candidate'}</strong> requested mock screen for {formatDate(pendingInterviews[0].dateTime || pendingInterviews[0].date)} at {pendingInterviews[0].time}.
+                </p>
+                <div className="pt-1 flex items-center gap-2">
+                  <Link
+                    to={`/faculty/interviews/${pendingInterviews[0].id}`}
+                    className="flex-1 text-center py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    Review & Accept Request
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {upcomingInterviews.length === 0 ? (
               <EmptyState
                 compact
@@ -801,12 +853,25 @@ const FacultyDashboard = () => {
                       >
                         Start / Evaluate
                       </Link>
-                      <Link
-                        to={interview.id ? `/faculty/interviews/${interview.id}` : "/faculty/interviews"}
-                        className="flex-1 text-center py-1.5 px-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
-                      >
-                        View Details
-                      </Link>
+                      {interview.meetLink ? (
+                        <a
+                          href={interview.meetLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-1.5 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1 shrink-0"
+                          title="Join Google Meet"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Meet</span>
+                        </a>
+                      ) : (
+                        <Link
+                          to={interview.id ? `/faculty/interviews/${interview.id}` : "/faculty/interviews"}
+                          className="flex-1 text-center py-1.5 px-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
+                        >
+                          View Details
+                        </Link>
+                      )}
                     </div>
                   </div>
                 ))}

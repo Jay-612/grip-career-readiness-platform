@@ -20,7 +20,11 @@ import {
   BarChart3,
   Building2,
   GraduationCap,
-  X
+  X,
+  Copy,
+  Trash2,
+  Edit3,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import interviewService from '../../services/interviewService';
@@ -68,8 +72,15 @@ export const InterviewCenterPage = () => {
     facultyId: '',
     date: '',
     time: '14:00',
+    customMeetLink: '',
   });
   const [bookingErrors, setBookingErrors] = useState({});
+
+  // Edit Meet Link Modal State
+  const [isEditMeetModalOpen, setIsEditMeetModalOpen] = useState(false);
+  const [editMeetId, setEditMeetId] = useState('');
+  const [editMeetInput, setEditMeetInput] = useState('');
+  const [isSavingMeetLink, setIsSavingMeetLink] = useState(false);
 
   // Evaluation Details Modal State
   const [selectedEvaluation, setSelectedEvaluation] = useState(null);
@@ -105,6 +116,53 @@ export const InterviewCenterPage = () => {
     } catch {
       return '';
     }
+  };
+
+  // Helper: Time-gate join window (Unlocks 5 minutes before scheduled start time)
+  const getJoinWindow = (dateTime, duration = 45) => {
+    if (!dateTime) return { canJoin: false, message: 'Invalid session time', opensAtStr: '' };
+    const now = new Date();
+    const startTime = new Date(dateTime);
+    if (isNaN(startTime.getTime())) return { canJoin: false, message: 'Invalid date', opensAtStr: '' };
+
+    const EARLY_BUFFER_MS = 5 * 60 * 1000; // 5 min buffer
+    const durationMs = (duration || 45) * 60 * 1000;
+    const unlockTime = new Date(startTime.getTime() - EARLY_BUFFER_MS);
+    const endTime = new Date(startTime.getTime() + durationMs + 15 * 60 * 1000);
+
+    const opensAtStr = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (now.getTime() < unlockTime.getTime()) {
+      const diffMs = unlockTime.getTime() - now.getTime();
+      const diffMins = Math.ceil(diffMs / (60 * 1000));
+      const diffHrs = Math.floor(diffMins / 60);
+      const remainingMins = diffMins % 60;
+      const countdownStr = diffHrs > 0 ? `${diffHrs}h ${remainingMins}m` : `${diffMins} min`;
+
+      return {
+        canJoin: false,
+        reason: 'EARLY',
+        countdownStr,
+        opensAtStr,
+        message: `Unlocks at ${opensAtStr} (in ${countdownStr})`,
+      };
+    }
+
+    if (now.getTime() > endTime.getTime()) {
+      return {
+        canJoin: false,
+        reason: 'ENDED',
+        opensAtStr,
+        message: 'Session concluded',
+      };
+    }
+
+    return {
+      canJoin: true,
+      reason: 'OPEN',
+      opensAtStr,
+      message: 'Active Now',
+    };
   };
 
   // Initial Data Fetching
@@ -162,12 +220,16 @@ export const InterviewCenterPage = () => {
     fetchAllData();
   }, [user?.id]);
 
-  // Derived: Next Interview (nearest upcoming with status 'scheduled')
+  // Derived: Next Interview (nearest upcoming with status 'scheduled' or 'pending')
   const nextInterview = useMemo(() => {
-    const scheduled = interviews.filter((i) => i.status === 'scheduled');
-    if (scheduled.length === 0) return null;
+    const upcoming = interviews.filter((i) => i.status === 'scheduled' || i.status === 'pending');
+    if (upcoming.length === 0) return null;
 
-    return [...scheduled].sort((a, b) => {
+    return [...upcoming].sort((a, b) => {
+      // Prioritize scheduled interviews first, then earliest pending
+      if (a.status === 'scheduled' && b.status === 'pending') return -1;
+      if (a.status === 'pending' && b.status === 'scheduled') return 1;
+
       const timeA = a.dateTime ? new Date(a.dateTime).getTime() : Infinity;
       const timeB = b.dateTime ? new Date(b.dateTime).getTime() : Infinity;
       return timeA - timeB;
@@ -182,6 +244,8 @@ export const InterviewCenterPage = () => {
       list = list.filter((i) => i.status === 'completed');
     } else if (historyFilter === 'scheduled') {
       list = list.filter((i) => i.status === 'scheduled');
+    } else if (historyFilter === 'pending') {
+      list = list.filter((i) => i.status === 'pending');
     } else if (historyFilter === 'evaluated') {
       list = list.filter(
         (i) =>
@@ -214,9 +278,36 @@ export const InterviewCenterPage = () => {
       facultyId: initialFacultyId,
       date: dateStr,
       time: '14:00',
+      customMeetLink: '',
     });
     setBookingErrors({});
     setIsBookingModalOpen(true);
+  };
+
+  // Open Edit Meeting Link Modal
+  const handleOpenEditMeet = (interviewId, currentLink = '') => {
+    setEditMeetId(interviewId);
+    setEditMeetInput(currentLink || '');
+    setIsEditMeetModalOpen(true);
+  };
+
+  // Save Custom Meeting Link
+  const handleSaveEditMeet = async (e) => {
+    e.preventDefault();
+    if (!editMeetId || !editMeetInput.trim()) return;
+    setIsSavingMeetLink(true);
+    try {
+      await interviewService.generateGoogleMeet(editMeetId, editMeetInput.trim());
+      setSuccessToast('Meeting room link updated successfully!');
+      setTimeout(() => setSuccessToast(null), 4000);
+      setIsEditMeetModalOpen(false);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Failed to save meet link:', err);
+      alert(err.response?.data?.message || 'Failed to save meeting link.');
+    } finally {
+      setIsSavingMeetLink(false);
+    }
   };
 
   // Validate Booking Form
@@ -256,6 +347,7 @@ export const InterviewCenterPage = () => {
         date: bookingFormData.date,
         time: bookingFormData.time,
         facultyId: bookingFormData.facultyId,
+        customMeetLink: bookingFormData.customMeetLink,
       });
 
       setSuccessToast('Mock interview appointment confirmed successfully!');
@@ -281,6 +373,22 @@ export const InterviewCenterPage = () => {
     setIsEvaluationModalOpen(true);
   };
 
+  // Cancel Scheduled Interview Appointment
+  const handleCancelAppointment = async (interviewId) => {
+    if (!window.confirm('Are you sure you want to cancel this mock interview session? It will be removed from your Google Calendar.')) {
+      return;
+    }
+    try {
+      await interviewService.cancelAppointment(interviewId);
+      setSuccessToast('Interview appointment cancelled and removed from calendar.');
+      setTimeout(() => setSuccessToast(null), 4000);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Failed to cancel appointment:', err);
+      alert(err.response?.data?.message || 'Failed to cancel appointment.');
+    }
+  };
+
   // Render Status Badge Helper
   const renderStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
@@ -294,6 +402,18 @@ export const InterviewCenterPage = () => {
         return (
           <Badge variant="info" size="sm" pulseDot>
             Confirmed
+          </Badge>
+        );
+      case 'pending':
+        return (
+          <Badge variant="warning" size="sm">
+            Pending Review
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <Badge variant="danger" size="sm">
+            Declined
           </Badge>
         );
       case 'cancelled':
@@ -527,60 +647,198 @@ export const InterviewCenterPage = () => {
         </div>
 
         {nextInterview ? (
-          <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div className="space-y-2.5 max-w-xl">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-semibold tracking-wide uppercase">
-                  Upcoming Session
-                </span>
-                <span className="text-xs text-slate-300">
-                  {formatDate(nextInterview.dateTime)} at {formatTime(nextInterview.dateTime)}
-                </span>
-              </div>
+          (() => {
+            const isPending = nextInterview.status === 'pending';
+            const joinWindow = getJoinWindow(nextInterview.dateTime, nextInterview.duration);
 
-              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white leading-snug">
-                Faculty Technical Mock Screen
-              </h3>
+            return (
+              <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5">
+                <div className="space-y-2.5 max-w-xl">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {isPending ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[11px] font-semibold tracking-wide uppercase flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-amber-300" />
+                        Pending Mentor Review
+                      </span>
+                    ) : joinWindow.canJoin ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-semibold tracking-wide uppercase flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        Session Active Now
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 text-[11px] font-semibold tracking-wide uppercase flex items-center gap-1.5">
+                        <Lock className="w-3 h-3 text-blue-300" />
+                        Confirmed • Opens in {joinWindow.countdownStr}
+                      </span>
+                    )}
+                    <span className="text-xs text-slate-300">
+                      {formatDate(nextInterview.dateTime)} at {formatTime(nextInterview.dateTime)}
+                    </span>
+                  </div>
 
-              <div className="flex items-center gap-4 text-xs text-slate-300 flex-wrap">
-                <span className="flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-blue-300" />
-                  <span>Interviewer: <strong>{nextInterview.interviewerName}</strong></span>
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-blue-300" />
-                  <span>45 Minutes Standard Rubric</span>
-                </span>
-              </div>
-            </div>
+                  <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white leading-snug">
+                    {isPending ? 'Requested Faculty Mock Technical Screen' : 'Confirmed Technical Mock Screen'}
+                  </h3>
 
-            {/* Action Area */}
-            <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2 shrink-0">
-              {nextInterview.meetLink ? (
-                <a
-                  href={nextInterview.meetLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto"
-                >
-                  <Button
-                    variant="success"
-                    size="md"
-                    leftIcon={<Video className="w-4 h-4" />}
-                    rightIcon={<ExternalLink className="w-3.5 h-3.5" />}
-                    className="shadow-md"
-                  >
-                    Join Interview Room
-                  </Button>
-                </a>
-              ) : (
-                <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 text-[11px] text-slate-200">
-                  Meeting room link will appear prior to the slot.
+                  <div className="flex items-center gap-4 text-xs text-slate-300 flex-wrap">
+                    <span className="flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-blue-300" />
+                      <span>Mentor: <strong>{nextInterview.interviewerName}</strong></span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-blue-300" />
+                      <span>{nextInterview.duration || 45} Minutes Rubric</span>
+                    </span>
+                  </div>
+
+                  {isPending && (
+                    <p className="text-[11px] text-amber-200/90 bg-amber-500/10 border border-amber-400/20 rounded-lg px-2.5 py-1.5">
+                      Your request has been routed to Professor {nextInterview.interviewerName}. The meeting link will appear once accepted.
+                    </p>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+
+                {/* Action Area */}
+                <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2.5 shrink-0">
+                  {isPending ? (
+                    <div className="flex flex-col items-start md:items-end gap-2 w-full sm:w-auto">
+                      <Button
+                        disabled
+                        variant="secondary"
+                        size="md"
+                        leftIcon={<Clock className="w-4 h-4 text-amber-300" />}
+                        className="bg-white/10 text-amber-200 border-white/20 cursor-not-allowed font-medium text-xs sm:text-sm"
+                      >
+                        Awaiting Faculty Acceptance
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => handleCancelAppointment(nextInterview.interviewId || nextInterview.id)}
+                        className="text-xs text-rose-300 hover:text-rose-200 transition"
+                      >
+                        Cancel Request
+                      </button>
+                    </div>
+                  ) : joinWindow.canJoin && nextInterview.meetLink ? (
+                    <div className="flex flex-col items-start md:items-end gap-2 w-full sm:w-auto">
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <a
+                          href={nextInterview.meetLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 sm:flex-initial"
+                        >
+                          <Button
+                            variant="success"
+                            size="md"
+                            leftIcon={<Video className="w-4 h-4" />}
+                            rightIcon={<ExternalLink className="w-3.5 h-3.5" />}
+                            className="shadow-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                          >
+                            {nextInterview.meetLink.includes('meet.google.com') ? 'Join Google Meet' : 'Join Video Room'}
+                          </Button>
+                        </a>
+
+                        {nextInterview.calendarHtmlLink && (
+                          <a
+                            href={nextInterview.calendarHtmlLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0"
+                            title="Add to Google Calendar"
+                          >
+                            <Button
+                              variant="outline"
+                              size="md"
+                              leftIcon={<Calendar className="w-4 h-4 text-blue-200" />}
+                              className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                            >
+                              Calendar
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-3 text-[11px] text-blue-200 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(nextInterview.meetLink);
+                            setSuccessToast('Meeting link copied to clipboard!');
+                            setTimeout(() => setSuccessToast(null), 3000);
+                          }}
+                          className="hover:text-white flex items-center gap-1 transition"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy Link</span>
+                        </button>
+                        <span>•</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCancelAppointment(nextInterview.interviewId || nextInterview.id)}
+                          className="text-rose-300 hover:text-rose-200 flex items-center gap-1 transition"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Cancel Session</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-start md:items-end gap-2 w-full sm:w-auto">
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Button
+                          disabled
+                          variant="secondary"
+                          size="md"
+                          leftIcon={<Lock className="w-4 h-4 text-slate-300" />}
+                          className="bg-white/10 text-slate-200 border-white/20 cursor-not-allowed font-medium text-xs sm:text-sm"
+                          title={`Room unlocks 5 minutes before scheduled start (at ${joinWindow.opensAtStr})`}
+                        >
+                          Opens at {joinWindow.opensAtStr}
+                        </Button>
+
+                        {nextInterview.calendarHtmlLink && (
+                          <a
+                            href={nextInterview.calendarHtmlLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0"
+                            title="Add to Google Calendar"
+                          >
+                            <Button
+                              variant="outline"
+                              size="md"
+                              leftIcon={<Calendar className="w-4 h-4 text-blue-200" />}
+                              className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                            >
+                              Calendar
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-[11px] text-amber-200/90 font-medium">
+                        <Clock className="w-3 h-3" />
+                        <span>Meeting room unlocks 5 minutes before session</span>
+                      </div>
+
+                      <div className="flex items-center gap-3 text-[11px] text-blue-200 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => handleCancelAppointment(nextInterview.interviewId || nextInterview.id)}
+                          className="text-rose-300 hover:text-rose-200 flex items-center gap-1 transition"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Cancel Session</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()
         ) : (
           <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -703,7 +961,12 @@ export const InterviewCenterPage = () => {
               {
                 id: 'scheduled',
                 label: 'Scheduled',
-                count: interviewSummary.scheduled,
+                count: interviews.filter((i) => i.status === 'scheduled').length,
+              },
+              {
+                id: 'pending',
+                label: 'Pending Requests',
+                count: interviews.filter((i) => i.status === 'pending').length,
               },
               {
                 id: 'evaluated',
@@ -819,25 +1082,104 @@ export const InterviewCenterPage = () => {
                         <Clock className="w-3.5 h-3.5" />
                         <span>Awaiting Faculty Scorecard</span>
                       </div>
-                    ) : item.meetLink ? (
-                      <a
-                        href={item.meetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          leftIcon={<Video className="w-3.5 h-3.5 text-blue-600" />}
-                          rightIcon={<ExternalLink className="w-3 h-3" />}
-                          className="text-[11px]"
+                    ) : item.status === 'pending' ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="warning" size="xs">
+                          Awaiting Faculty Review
+                        </Badge>
+                        <button
+                          type="button"
+                          onClick={() => handleCancelAppointment(item.interviewId || item.id)}
+                          title="Cancel interview request"
+                          className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition"
                         >
-                          Join
-                        </Button>
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-400">Scheduled</span>
-                    )}
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (() => {
+                      const rowJoin = getJoinWindow(item.dateTime, item.duration);
+                      if (!rowJoin.canJoin) {
+                        return (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Button
+                              disabled
+                              variant="secondary"
+                              size="xs"
+                              leftIcon={<Lock className="w-3 h-3 text-slate-400" />}
+                              className="text-[11px] bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200"
+                              title={`Room unlocks 5 minutes before scheduled session at ${rowJoin.opensAtStr}`}
+                            >
+                              Opens at {rowJoin.opensAtStr}
+                            </Button>
+                            {item.calendarHtmlLink && (
+                              <a
+                                href={item.calendarHtmlLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Add to Google Calendar"
+                                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition"
+                              >
+                                <Calendar className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleCancelAppointment(item.interviewId || item.id)}
+                              title="Cancel scheduled appointment"
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      }
+
+                      // Row is within join window
+                      return (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {item.meetLink ? (
+                            <a
+                              href={item.meetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="success"
+                                size="xs"
+                                leftIcon={<Video className="w-3.5 h-3.5" />}
+                                rightIcon={<ExternalLink className="w-3 h-3" />}
+                                className="text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+                              >
+                                {item.meetLink.includes('meet.google.com') ? 'Join Meet' : 'Join Room'}
+                              </Button>
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-medium">Session Active</span>
+                          )}
+
+                          {item.calendarHtmlLink && (
+                            <a
+                              href={item.calendarHtmlLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Add to Google Calendar"
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition"
+                            >
+                              <Calendar className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleCancelAppointment(item.interviewId || item.id)}
+                            title="Cancel scheduled appointment"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               );
@@ -950,32 +1292,57 @@ export const InterviewCenterPage = () => {
             )}
           </div>
 
-          {/* Time Slot Picker */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-              <span>Preferred Time Slot</span>
-              <span className="text-rose-500">*</span>
-            </label>
-            <select
+          {/* Time Picker (Any Arbitrary Time) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                <span>Preferred Start Time</span>
+                <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[11px] text-slate-500 font-mono font-medium">
+                {bookingFormData.time ? `Selected: ${bookingFormData.time}` : 'Enter Time'}
+              </span>
+            </div>
+            <input
+              type="time"
+              required
               value={bookingFormData.time}
               onChange={(e) =>
                 setBookingFormData((prev) => ({ ...prev, time: e.target.value }))
               }
-              className="w-full bg-white text-slate-900 text-xs sm:text-sm rounded-lg border border-slate-200 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600 hover:border-slate-300"
-            >
-              <option value="10:00">10:00 AM (Morning Slot)</option>
-              <option value="11:30">11:30 AM (Morning Slot)</option>
-              <option value="14:00">02:00 PM (Afternoon Slot)</option>
-              <option value="15:30">03:30 PM (Afternoon Slot)</option>
-              <option value="17:00">05:00 PM (Evening Slot)</option>
-            </select>
+              className="w-full bg-white text-slate-900 text-xs sm:text-sm rounded-lg border border-slate-200 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600 hover:border-slate-300 font-medium"
+            />
+            {/* Quick selection chips for standard slots */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              <span className="text-[10px] text-slate-400 font-medium">Quick Suggestions:</span>
+              {['09:30', '11:00', '14:00', '15:30', '17:00'].map((slot) => (
+                <button
+                  key={slot}
+                  type="button"
+                  onClick={() => setBookingFormData((prev) => ({ ...prev, time: slot }))}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-colors ${
+                    bookingFormData.time === slot
+                      ? 'bg-blue-600 text-white font-bold shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {slot}
+                </button>
+              ))}
+            </div>
+            {bookingErrors.time && (
+              <p className="text-xs text-rose-600 font-medium">{bookingErrors.time}</p>
+            )}
           </div>
 
-          <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-100 text-xs text-blue-900 flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <span className="text-[11px] leading-relaxed">
-              Appointment confirmations sync automatically to your student dashboard and faculty calendar.
-            </span>
+          <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900 space-y-1">
+            <div className="flex items-center gap-1.5 font-semibold text-blue-800">
+              <Clock className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>Mentor Review & Acceptance Workflow</span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-blue-700">
+              Your appointment request will be sent to the faculty mentor. Once the faculty member accepts your chosen time, the Google Meet link will be generated automatically and confirmed on your dashboard.
+            </p>
           </div>
 
           {/* Modal Actions */}
@@ -994,10 +1361,10 @@ export const InterviewCenterPage = () => {
               variant="primary"
               size="sm"
               isLoading={isSubmittingBooking}
-              loadingText="Confirming..."
+              loadingText="Submitting..."
               leftIcon={<Calendar className="w-3.5 h-3.5" />}
             >
-              Confirm Appointment
+              Submit Interview Request
             </Button>
           </div>
         </form>
@@ -1112,6 +1479,69 @@ export const InterviewCenterPage = () => {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* ─────────────────────────────────────────────────────────────
+          9. EDIT / SET CUSTOM MEETING LINK MODAL
+      ───────────────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={isEditMeetModalOpen}
+        onClose={() => setIsEditMeetModalOpen(false)}
+        title="Set / Change Meeting Room Link"
+        description="Paste your Google Meet room link or customize the video conference URL."
+        size="md"
+      >
+        <form onSubmit={handleSaveEditMeet} className="space-y-4 pt-1">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-700">
+                Meeting URL
+              </label>
+              <a
+                href="https://meet.google.com/new"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+              >
+                <span>Launch meet.google.com/new</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <input
+              type="url"
+              required
+              placeholder="https://meet.google.com/xxx-yyyy-zzz"
+              value={editMeetInput}
+              onChange={(e) => setEditMeetInput(e.target.value)}
+              className="w-full bg-white text-slate-900 text-xs sm:text-sm rounded-lg border border-slate-200 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600 hover:border-slate-300"
+            />
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Tip: Click <strong>Launch meet.google.com/new</strong> above to instantly start a verified Google Meet room with your Google account, copy the link, and paste it here.
+            </p>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={isSavingMeetLink}
+              onClick={() => setIsEditMeetModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              isLoading={isSavingMeetLink}
+              loadingText="Updating..."
+              leftIcon={<Video className="w-3.5 h-3.5" />}
+            >
+              Save Meeting Link
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

@@ -23,6 +23,33 @@ export const facultyService = {
       : response.data?.appointments || [];
   },
 
+  // Generate or refresh Google Meet room for an appointment (or save custom link)
+  // POST /api/appointments/:id/create-meet
+  generateGoogleMeet: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.post(`/appointments/${appointmentId}/create-meet`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
+
+  // Accept a pending mock interview appointment and generate Google Meet
+  // PATCH /api/appointments/:id/accept
+  acceptAppointment: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/accept`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
+
+  // Decline/reject an appointment request
+  // PATCH /api/appointments/:id/reject
+  rejectAppointment: async (appointmentId, reason = '') => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/reject`, {
+      reason,
+    });
+    return response.data;
+  },
+
   // Get guidance requests from students (accessible to faculty)
   // GET /api/guidance/requests?page=&limit=
   getGuidanceRequests: async (page = 1, limit = 20) => {
