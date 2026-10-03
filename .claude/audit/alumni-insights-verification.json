@@ -1,0 +1,54 @@
+{
+  "desktop": {
+    "viewport": "1440x900",
+    "metrics": {
+      "totalCards": 5,
+      "postCards": 4,
+      "buttons": 28,
+      "scrollHeight": 1032,
+      "windowHeight": 900,
+      "folds": 1.1,
+      "hasHorizontalOverflow": false,
+      "hasDuplicatedStudentProfile": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "tablet": {
+    "viewport": "768x1024",
+    "metrics": {
+      "totalCards": 5,
+      "postCards": 4,
+      "buttons": 28,
+      "scrollHeight": 1036,
+      "windowHeight": 1024,
+      "folds": 1,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "metrics": {
+      "totalCards": 5,
+      "postCards": 4,
+      "buttons": 28,
+      "scrollHeight": 1736,
+      "windowHeight": 844,
+      "folds": 2.1,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "interactions": {
+    "searchWorks": true,
+    "topicFilterWorks": true,
+    "companyFilterWorks": true,
+    "readMoreDrawerWorks": true,
+    "authorProfileDrawerWorks": true,
+    "emptyStateWorks": true,
+    "clearFiltersRestoresPosts": true
+  }
+}

@@ -168,30 +168,7 @@ const App = () => {
             path="/student"
             element={
               <ProtectedRoute allowedRoles={['student']}>
-                <DashboardLayout
-                  role="student"
-                  breadcrumbs={['Portal', 'Student Dashboard']}
-                  statusBadge={
-                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[11px] font-semibold text-blue-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Session: Spring 2026 Cycle</span>
-                    </div>
-                  }
-                  quickAction={
-                    <Link to="/student/goals">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        + Log Progress
-                      </Button>
-                    </Link>
-                  }
-                  primaryAction={
-                    <Link to="/student/guidance">
-                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
-                        Request Mentorship
-                      </Button>
-                    </Link>
-                  }
-                />
+                <DashboardLayout role="student" />
               </ProtectedRoute>
             }
           >
@@ -218,30 +195,7 @@ const App = () => {
             path="/faculty"
             element={
               <ProtectedRoute allowedRoles={['faculty', 'admin']}>
-                <DashboardLayout
-                  role="faculty"
-                  breadcrumbs={['Portal', 'Faculty Dashboard']}
-                  statusBadge={
-                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[11px] font-semibold text-blue-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Available for Mocks</span>
-                    </div>
-                  }
-                  quickAction={
-                    <Link to="/faculty/guidance">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Guidance Inbox
-                      </Button>
-                    </Link>
-                  }
-                  primaryAction={
-                    <Link to="/faculty/interviews">
-                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
-                        + Evaluate Student
-                      </Button>
-                    </Link>
-                  }
-                />
+                <DashboardLayout role="faculty" />
               </ProtectedRoute>
             }
           >
@@ -264,30 +218,7 @@ const App = () => {
             path="/alumni"
             element={
               <ProtectedRoute allowedRoles={['alumni']}>
-                <DashboardLayout
-                  role="alumni"
-                  breadcrumbs={['Portal', 'Alumni Advisor Hub']}
-                  statusBadge={
-                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold text-emerald-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Alumni Mentor Network</span>
-                    </div>
-                  }
-                  quickAction={
-                    <Link to="/alumni/experience">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        + Share Experience
-                      </Button>
-                    </Link>
-                  }
-                  primaryAction={
-                    <Link to="/alumni/mentorship">
-                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
-                        Mentorship Inbox
-                      </Button>
-                    </Link>
-                  }
-                />
+                <DashboardLayout role="alumni" />
               </ProtectedRoute>
             }
           >
@@ -305,30 +236,7 @@ const App = () => {
             path="/recruiter"
             element={
               <ProtectedRoute allowedRoles={['recruiter']}>
-                <DashboardLayout
-                  role="recruiter"
-                  breadcrumbs={['Portal', 'Recruiter Hub']}
-                  statusBadge={
-                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[11px] font-semibold text-blue-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                      <span>Hiring Partner Active</span>
-                    </div>
-                  }
-                  quickAction={
-                    <Link to="/recruiter/company">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Company Profile
-                      </Button>
-                    </Link>
-                  }
-                  primaryAction={
-                    <Link to="/recruiter/feedback">
-                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
-                        + Review Candidate
-                      </Button>
-                    </Link>
-                  }
-                />
+                <DashboardLayout role="recruiter" />
               </ProtectedRoute>
             }
           >
@@ -347,30 +255,7 @@ const App = () => {
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <DashboardLayout
-                  role="admin"
-                  breadcrumbs={['Portal', 'Institutional Administration']}
-                  statusBadge={
-                    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-[11px] font-semibold text-indigo-700">
-                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Admin Console: System Active</span>
-                    </div>
-                  }
-                  quickAction={
-                    <Link to="/admin/events">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        + Schedule Event
-                      </Button>
-                    </Link>
-                  }
-                  primaryAction={
-                    <Link to="/admin/users">
-                      <Button variant="primary" size="sm" className="text-xs shadow-xs">
-                        + Add User
-                      </Button>
-                    </Link>
-                  }
-                />
+                <DashboardLayout role="admin" />
               </ProtectedRoute>
             }
           >

@@ -1,0 +1,65 @@
+{
+  "dashboard": {
+    "desktop": {
+      "totalCards": 12,
+      "buttons": 20,
+      "scrollHeight": 1425,
+      "windowHeight": 900,
+      "folds": 1.6,
+      "hasHorizontalOverflow": false
+    },
+    "tablet": {
+      "scrollHeight": 1425,
+      "folds": 1.4,
+      "hasHorizontalOverflow": false
+    },
+    "mobile": {
+      "totalCards": 12,
+      "scrollHeight": 2171,
+      "folds": 2.6,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "experience": {
+    "desktop": {
+      "totalCards": 2,
+      "buttons": 14,
+      "scrollHeight": 900,
+      "windowHeight": 900,
+      "folds": 1,
+      "hasHorizontalOverflow": false
+    },
+    "mobile": {
+      "scrollHeight": 844,
+      "folds": 1,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "mentorship": {
+    "desktop": {
+      "totalCards": 4,
+      "buttons": 22,
+      "scrollHeight": 900,
+      "windowHeight": 900,
+      "folds": 1,
+      "hasHorizontalOverflow": false
+    },
+    "mobile": {
+      "scrollHeight": 1027,
+      "folds": 1.2,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "interactions": {
+    "dashboardDrawerWorks": true,
+    "quickLinksWork": true,
+    "publishExperienceWorks": true,
+    "acceptMentorshipWorks": true
+  }
+}

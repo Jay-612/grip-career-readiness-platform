@@ -1,446 +1,465 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import {
-  MessageSquare,
-  HelpCircle,
-  CheckCircle2,
-  Clock,
-  User,
-  GraduationCap,
-  Briefcase,
-  Search,
-  Filter,
-  Plus,
-  RefreshCw,
-  AlertCircle,
-  Sparkles,
-  ChevronRight,
-  ArrowLeft,
-  ShieldCheck,
-  Send,
-  Building2,
-  Calendar
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import actionPlanService from '../../services/actionPlanService';
+import goalService from '../../services/goalService';
 import guidanceService from '../../services/guidanceService';
-import mentorService from '../../services/mentorService';
-import Button from '../../components/common/Button';
-import Badge from '../../components/common/Badge';
-import Card, { CardHeader, CardTitle, CardContent } from '../../components/common/Card';
-import Modal from '../../components/common/Modal';
+import {
+  GuidanceHeader,
+  ActivePlanSummary,
+  RemedialTaskList,
+  TaskDetailsDrawer,
+  SubmissionModal,
+  CompletedPlansAccordion,
+} from '../../components/student/guidance';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
+import { CheckCircle2, ShieldAlert, Award } from 'lucide-react';
 
 export const GuidancePage = () => {
   const { user } = useAuth();
+  const studentId = user?.id || user?._id;
 
-  // Data States
-  const [questions, setQuestions] = useState([]);
-  const [selectedQuestionId, setSelectedQuestionId] = useState(null);
-  const [activeThread, setActiveThread] = useState(null);
-  const [recommendedMentors, setRecommendedMentors] = useState([]);
+  // Master Data States
+  const [actionPlans, setActionPlans] = useState([]);
+  const [remedialGoals, setRemedialGoals] = useState([]);
+  const [guidanceRequests, setGuidanceRequests] = useState([]);
 
   // UI States
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingThread, setIsLoadingThread] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [successToast, setSuccessToast] = useState(null);
 
-  // Filters & Search
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'awaiting' | 'answered'
-  const [searchQuery, setSearchQuery] = useState('');
+  // Active Filter: 'active' | 'completed' | 'all'
+  const [activeFilter, setActiveFilter] = useState('active');
 
-  // Ask Question Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formCategory, setFormCategory] = useState('General Career');
-  const [targetType, setTargetType] = useState('faculty'); // 'faculty' (specific) | 'alumni' (all alumni)
-  const [targetFacultyId, setTargetFacultyId] = useState('');
-  const [questionText, setQuestionText] = useState('');
-  const [formErrors, setFormErrors] = useState({});
-
-  // Follow-up Reply State (Bi-directional Threading)
-  const [replyText, setReplyText] = useState('');
-  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
-
-  // Mobile view toggle (show thread vs show list)
-  const [mobileView, setMobileView] = useState('list'); // 'list' | 'thread'
-
-  // Helper: Format Date
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Recent';
-    try {
-      const d = new Date(dateString);
-      if (isNaN(d.getTime())) return 'Recent';
-      return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return 'Recent';
-    }
-  };
-
-  // Helper: Extract Topic/Category from question text if formatted as [Category] ...
-  const parseQuestion = (rawText) => {
-    if (!rawText) return { topic: 'Career Guidance', body: '' };
-    const match = rawText.match(/^\[(.*?)\]\s*([\s\S]*)$/);
-    if (match) {
-      return {
-        topic: match[1].trim(),
-        body: match[2].trim(),
-      };
-    }
-    return {
-      topic: 'Career Guidance',
-      body: rawText,
-    };
-  };
-
-  const activeRequestIdRef = useRef(null);
+  // Progressive Disclosure: Drawer & Modal
+  const [selectedTaskForDetails, setSelectedTaskForDetails] = useState(null);
+  const [selectedTaskForSubmission, setSelectedTaskForSubmission] = useState(null);
+  const [isSubmittingWork, setIsSubmittingWork] = useState(false);
 
   // ─────────────────────────────────────────────────────────────
-  // 1. DATA FETCHING (Zero N+1: Ingest replies from primary API)
+  // 1. DATA LOADING: Action Plans, Remedial Goals, Submissions
   // ─────────────────────────────────────────────────────────────
-  const fetchGuidanceData = async () => {
-    setIsLoading(true);
+  const loadGuidanceData = useCallback(async (isRefresh = false) => {
+    if (!studentId) return;
+
+    if (isRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
     setError(null);
 
     try {
-      // 1. Concurrently fetch questions list and recommended mentors
-      const [requestsRes, mentorsRes] = await Promise.allSettled([
+      // Concurrently query action-plans for student and guidance submissions
+      const [plansRes, goalsRes, guidanceRes] = await Promise.allSettled([
+        actionPlanService.getMyActionPlans(),
+        goalService.getGoals(studentId, 'all'),
         guidanceService.getRequests(1, 50),
-        mentorService.getRecommendedMentors(),
       ]);
 
-      let loadedQuestions = [];
+      // 1. Action plans
+      if (plansRes.status === 'fulfilled' && plansRes.value) {
+        const plans = plansRes.value.actionPlans || [];
+        setActionPlans(plans);
 
-      if (requestsRes.status === 'fulfilled' && requestsRes.value?.requests) {
-        const rawList = requestsRes.value.requests;
-
-        // Zero N+1: Ingest pre-calculated replies and status from getGuidanceRequests
-        loadedQuestions = rawList.map((req) => ({
-          ...req,
-          replies: req.latestReply ? [req.latestReply] : [],
-          status: req.status === 'replied' || (req.replyCount && req.replyCount > 0) ? 'answered' : 'awaiting',
-        }));
-
-        setQuestions(loadedQuestions);
-
-        // Select the first question by default if none selected or previous selection no longer exists
-        if (loadedQuestions.length > 0) {
-          const defaultSelected =
-            loadedQuestions.find((q) => q.id === selectedQuestionId) || loadedQuestions[0];
-          setSelectedQuestionId(defaultSelected.id);
-          setActiveThread(defaultSelected);
-          handleSelectQuestion(defaultSelected.id);
-        } else {
-          setSelectedQuestionId(null);
-          setActiveThread(null);
+        // If remedialGoals was included in action plan response
+        if (Array.isArray(plansRes.value.remedialGoals)) {
+          setRemedialGoals(plansRes.value.remedialGoals);
         }
       }
 
-      if (mentorsRes.status === 'fulfilled' && Array.isArray(mentorsRes.value)) {
-        setRecommendedMentors(mentorsRes.value);
+      // 2. Fallback goals query if remedial goals not populated
+      if (goalsRes.status === 'fulfilled' && goalsRes.value) {
+        const rawGoals = Array.isArray(goalsRes.value)
+          ? goalsRes.value
+          : goalsRes.value.goals || [];
+        const remedials = rawGoals.filter((g) => g.isRemedial || g.source === 'action_plan');
+        if (remedials.length > 0) {
+          setRemedialGoals(remedials);
+        }
+      }
+
+      // 3. Guidance submissions & replies
+      if (guidanceRes.status === 'fulfilled' && guidanceRes.value) {
+        const requests = Array.isArray(guidanceRes.value)
+          ? guidanceRes.value
+          : guidanceRes.value.requests || [];
+        setGuidanceRequests(requests);
       }
     } catch (err) {
-      console.error('Failed to load mentorship & guidance data:', err);
+      console.error('Failed to load remedial guidance data:', err);
       setError(
         err.response?.data?.message ||
-          err.message ||
-          'Failed to load guidance threads. Please check your network connection.'
+          'Failed to load remedial guidance plans. Please check your network connection.'
       );
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, [studentId]);
 
   useEffect(() => {
-    fetchGuidanceData();
-  }, [user?.id]);
+    loadGuidanceData();
+  }, [loadGuidanceData]);
 
-  // When selected question ID changes, update active thread with race condition prevention
-  const handleSelectQuestion = async (questionId) => {
-    if (!questionId) return;
-    setSelectedQuestionId(questionId);
-    activeRequestIdRef.current = questionId;
-    setMobileView('thread');
+  // ─────────────────────────────────────────────────────────────
+  // 2. DERIVED DATA & UNIFIED REMEDIAL TASK MODEL
+  // ─────────────────────────────────────────────────────────────
+  const {
+    activePlan,
+    archivedPlans,
+    unifiedActiveTasks,
+    unifiedCompletedTasks,
+    allTasksCount,
+    completedTasksCount,
+    nextDeadline,
+  } = useMemo(() => {
+    // Separate active action plan from completed / archived plans
+    const active = actionPlans.find((p) => p.status === 'assigned' || p.status === 'in-progress');
+    const archived = actionPlans.filter(
+      (p) => p.status === 'completed' || (active && p._id !== active._id)
+    );
 
-    // Find locally cached question
-    const cached = questions.find((q) => q.id === questionId);
-    if (cached) {
-      setActiveThread(cached);
-    }
+    // Build map of guidance requests and replies for task matching
+    // Matches by goalId or task title keywords
+    const submissionMap = new Map();
+    guidanceRequests.forEach((req) => {
+      const q = req.question || '';
+      const replies = req.replies || (req.latestReply ? [req.latestReply] : []);
+      
+      // Determine submission state
+      let submissionStatus = 'submitted';
+      let feedback = null;
 
-    // Refresh thread from backend to ensure freshest replies
-    setIsLoadingThread(true);
-    try {
-      const res = await guidanceService.getRequestById(questionId);
-      if (activeRequestIdRef.current === questionId && res?.request) {
-        const updated = {
-          ...res.request,
-          replies: res.replies || [],
-          status: (res.replies || []).length > 0 ? 'answered' : 'awaiting',
-        };
-        setActiveThread(updated);
-        // Also update the question item in the list
-        setQuestions((prev) =>
-          prev.map((q) => (q.id === questionId ? updated : q))
+      replies.forEach((rep) => {
+        const text = rep.answerText || '';
+        if (text.includes('Rework Requested') || text.includes('⚠️')) {
+          submissionStatus = 'rework';
+          feedback = text.replace(/^⚠️\s*Rework Requested:\s*/i, '').trim();
+        } else if (text.includes('Approved') || text.includes('✓')) {
+          submissionStatus = 'approved';
+          feedback = text.replace(/^✓\s*Task Completion Approved:\s*/i, '').trim();
+        } else if (!feedback) {
+          feedback = text;
+        }
+      });
+
+      // Extract repository / link
+      const linkMatch = q.match(/(https?:\/\/[^\s]+)/);
+      const link = linkMatch ? linkMatch[1] : '';
+
+      submissionMap.set(req.id || req._id, {
+        requestId: req.id || req._id,
+        status: submissionStatus,
+        feedback,
+        link,
+        submissionText: q,
+        submittedAt: req.date || req.createdAt,
+      });
+    });
+
+    // Helper: Find matching submission for a task title or goal
+    const findSubmission = (title, goalId) => {
+      if (!title) return null;
+      const cleanTitle = title.replace(/^\[Action Plan: Mock Remedial\]\s*/i, '').toLowerCase().trim();
+
+      for (const req of guidanceRequests) {
+        const q = (req.question || '').toLowerCase();
+        // Check for remedial submission tag or specific task keyword matching
+        if (
+          q.includes(`[remedial submission: ${cleanTitle}]`) ||
+          q.includes(`remedial submission: ${cleanTitle}`) ||
+          (cleanTitle.includes('rest api') && q.includes('rest api remedial task submission')) ||
+          (cleanTitle.includes('concurrency') && q.includes('schema concurrency'))
+        ) {
+          return submissionMap.get(req.id || req._id);
+        }
+      }
+      return null;
+    };
+
+    // Synthesize tasks from active plan's tasks array or remedial goals
+    const rawPlanTasks = active?.tasks && active.tasks.length > 0
+      ? active.tasks
+      : active?.recommendedTasks && active.recommendedTasks.length > 0
+      ? active.recommendedTasks
+      : [];
+
+    let taskItems = [];
+
+    if (rawPlanTasks.length > 0) {
+      taskItems = rawPlanTasks.map((t, idx) => {
+        const title = t.title || t.task || `Remedial Task #${idx + 1}`;
+        const cleanTitle = title.replace(/^\[Action Plan: Mock Remedial\]\s*/i, '').trim();
+        const goal = remedialGoals.find(
+          (g) =>
+            (t.assignedGoalId && g._id === t.assignedGoalId.toString()) ||
+            g.title.toLowerCase().includes(cleanTitle.toLowerCase())
         );
-      }
-    } catch (err) {
-      if (activeRequestIdRef.current === questionId) {
-        console.error('Failed to refresh thread:', err);
-      }
-    } finally {
-      if (activeRequestIdRef.current === questionId) {
-        setIsLoadingThread(false);
-      }
-    }
-  };
 
-  // Guidance Summary Metrics
-  const summaryMetrics = useMemo(() => {
-    const total = questions.length;
-    const answered = questions.filter((q) => q.status === 'answered').length;
-    const awaiting = questions.filter((q) => q.status === 'awaiting').length;
+        const sub = findSubmission(cleanTitle, goal?._id);
+        const isGoalDone = goal?.status === 'completed';
+        const isApproved = sub?.status === 'approved';
 
-    // Latest update
-    let latestDate = null;
-    if (total > 0) {
-      const timestamps = questions
-        .map((q) => (q.date ? new Date(q.date).getTime() : 0))
-        .filter((t) => t > 0);
-      if (timestamps.length > 0) {
-        latestDate = formatDate(new Date(Math.max(...timestamps)));
-      }
+        const finalStatus = isGoalDone || isApproved ? 'completed' : goal?.status || 'in-progress';
+        const dueDate = t.targetDate || t.dueDate || goal?.dueDate;
+
+        // Resource link extraction or default guide
+        const resources = [];
+        if (cleanTitle.toLowerCase().includes('api')) {
+          resources.push({
+            title: 'REST API Design & Error Guidelines (RFC 7807)',
+            url: 'https://www.rfc-editor.org/rfc/rfc7807',
+          });
+        }
+        if (cleanTitle.toLowerCase().includes('concurrency') || cleanTitle.toLowerCase().includes('database')) {
+          resources.push({
+            title: 'Optimistic Concurrency Control in Distributed Databases',
+            url: 'https://en.wikipedia.org/wiki/Optimistic_concurrency_control',
+          });
+        }
+        if (cleanTitle.toLowerCase().includes('saga') || cleanTitle.toLowerCase().includes('transaction')) {
+          resources.push({
+            title: 'Saga Pattern for Distributed Transactions',
+            url: 'https://microservices.io/patterns/data/saga.html',
+          });
+        }
+        if (cleanTitle.toLowerCase().includes('sharding')) {
+          resources.push({
+            title: 'Database Sharding Architecture & Re-balancing',
+            url: 'https://aws.amazon.com/what-is/database-sharding/',
+          });
+        }
+
+        // Priority calculation for ordering
+        // 1. Overdue, 2. Rework, 3. Due Soon, 4. In Progress, 5. Completed
+        const now = Date.now();
+        const dueTime = dueDate ? new Date(dueDate).getTime() : now + 7 * 86400000;
+        const isOverdue = dueTime < now && finalStatus !== 'completed';
+        const isDueSoon = !isOverdue && dueTime - now < 3 * 86400000 && finalStatus !== 'completed';
+        const isRework = sub?.status === 'rework';
+
+        let priorityRank = 4;
+        let priorityCategory = 'in-progress';
+
+        if (finalStatus === 'completed') {
+          priorityRank = 5;
+          priorityCategory = 'completed';
+        } else if (isOverdue) {
+          priorityRank = 1;
+          priorityCategory = 'overdue';
+        } else if (isRework) {
+          priorityRank = 2;
+          priorityCategory = 'rework';
+        } else if (isDueSoon) {
+          priorityRank = 3;
+          priorityCategory = 'due-soon';
+        }
+
+        return {
+          id: t._id || `task-${idx}`,
+          goalId: goal?._id,
+          title: cleanTitle,
+          description: t.task || t.description || active?.facultyFeedback || 'Complete required remedial exercise.',
+          dueDate,
+          category: t.category || 'technical',
+          status: finalStatus,
+          priorityRank,
+          priorityCategory,
+          submission: sub,
+          resources,
+          facultyFeedback: active?.facultyFeedback,
+        };
+      });
+    } else if (remedialGoals.length > 0) {
+      // Fallback: If action plan has no task array, synthesize directly from remedial weekly goals
+      taskItems = remedialGoals.map((g, idx) => {
+        const cleanTitle = g.title.replace(/^\[Action Plan: Mock Remedial\]\s*/i, '').trim();
+        const sub = findSubmission(cleanTitle, g._id);
+        const isCompleted = g.status === 'completed' || sub?.status === 'approved';
+        const dueDate = g.dueDate;
+
+        const now = Date.now();
+        const dueTime = dueDate ? new Date(dueDate).getTime() : now + 7 * 86400000;
+        const isOverdue = dueTime < now && !isCompleted;
+        const isDueSoon = !isOverdue && dueTime - now < 3 * 86400000 && !isCompleted;
+        const isRework = sub?.status === 'rework';
+
+        let priorityRank = 4;
+        let priorityCategory = 'in-progress';
+
+        if (isCompleted) {
+          priorityRank = 5;
+          priorityCategory = 'completed';
+        } else if (isOverdue) {
+          priorityRank = 1;
+          priorityCategory = 'overdue';
+        } else if (isRework) {
+          priorityRank = 2;
+          priorityCategory = 'rework';
+        } else if (isDueSoon) {
+          priorityRank = 3;
+          priorityCategory = 'due-soon';
+        }
+
+        return {
+          id: g._id || `goal-${idx}`,
+          goalId: g._id,
+          title: cleanTitle,
+          description: `Action assigned following interview evaluation. Target deadline: ${new Date(dueDate).toLocaleDateString()}.`,
+          dueDate,
+          category: g.category || 'remedial',
+          status: isCompleted ? 'completed' : g.status,
+          priorityRank,
+          priorityCategory,
+          submission: sub,
+          resources: [
+            {
+              title: 'Curriculum Remedial Guidelines',
+              url: 'https://github.com',
+            },
+          ],
+          facultyFeedback: active?.facultyFeedback,
+        };
+      });
     }
+
+    // Sort strictly by Priority:
+    // Overdue (1) -> Rework (2) -> Due Soon (3) -> In Progress (4) -> Completed (5)
+    // Within same priority, sort by nearest due date
+    const sortedTasks = [...taskItems].sort((a, b) => {
+      if (a.priorityRank !== b.priorityRank) {
+        return a.priorityRank - b.priorityRank;
+      }
+      const timeA = new Date(a.dueDate || 0).getTime();
+      const timeB = new Date(b.dueDate || 0).getTime();
+      return timeA - timeB;
+    });
+
+    const activeList = sortedTasks.filter((t) => t.status !== 'completed');
+    const completedList = sortedTasks.filter((t) => t.status === 'completed');
+
+    // Nearest active deadline
+    const pendingDeadlines = activeList
+      .map((t) => (t.dueDate ? new Date(t.dueDate).getTime() : null))
+      .filter(Boolean);
+    const nearest = pendingDeadlines.length > 0 ? Math.min(...pendingDeadlines) : null;
 
     return {
-      total,
-      answered,
-      awaiting,
-      latestDate: latestDate || 'No recent activity',
+      activePlan: active,
+      archivedPlans: archived,
+      unifiedActiveTasks: activeList,
+      unifiedCompletedTasks: completedList,
+      allTasksCount: sortedTasks.length,
+      completedTasksCount: completedList.length,
+      nextDeadline: nearest ? new Date(nearest) : null,
     };
-  }, [questions]);
+  }, [actionPlans, remedialGoals, guidanceRequests]);
 
-  // Filtered Questions List
-  const filteredQuestions = useMemo(() => {
-    let result = [...questions];
-
-    // Status filter
-    if (statusFilter === 'awaiting') {
-      result = result.filter((q) => q.status === 'awaiting');
-    } else if (statusFilter === 'answered') {
-      result = result.filter((q) => q.status === 'answered');
-    }
-
-    // Search query filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      result = result.filter((item) => item.question.toLowerCase().includes(q));
-    }
-
-    return result;
-  }, [questions, statusFilter, searchQuery]);
-
-  // Filter faculty mentors for direct inquiry
-  const facultyMentors = useMemo(() => {
-    return recommendedMentors.filter(
-      (m) => String(m.role || '').toLowerCase() === 'faculty'
-    );
-  }, [recommendedMentors]);
-
-  // Ensure default targetFacultyId is set when facultyMentors become available
-  useEffect(() => {
-    if (facultyMentors.length > 0 && !targetFacultyId) {
-      setTargetFacultyId(facultyMentors[0].id);
-    }
-  }, [facultyMentors, targetFacultyId]);
-
-  // Form Validation
-  const validateForm = () => {
-    const errors = {};
-    if (!questionText.trim()) {
-      errors.question = 'Please provide details for your question or guidance request.';
-    } else if (questionText.trim().length < 15) {
-      errors.question = 'Question must be at least 15 characters to provide sufficient context for mentors.';
-    }
-
-    if (targetType === 'faculty' && !targetFacultyId) {
-      errors.targetFaculty = 'Please select a specific faculty advisor for direct routing.';
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+  // ─────────────────────────────────────────────────────────────
+  // 3. SUBMISSION HANDLERS (URL, GitHub repo, Comment / Note)
+  // ─────────────────────────────────────────────────────────────
+  const handleOpenSubmitModal = (task) => {
+    setSelectedTaskForSubmission(task);
   };
 
-  // Submit Question Handler
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleCloseSubmitModal = () => {
+    setSelectedTaskForSubmission(null);
+  };
 
-    setIsSubmitting(true);
-    setFormErrors({});
+  const handleOpenTaskDetails = (task) => {
+    setSelectedTaskForDetails(task);
+  };
 
+  const handleCloseTaskDetails = () => {
+    setSelectedTaskForDetails(null);
+  };
+
+  const handleSaveSubmission = async ({
+    taskId,
+    goalId,
+    taskTitle,
+    submissionLink,
+    comments,
+  }) => {
+    setIsSubmittingWork(true);
     try {
-      // Format payload with topic prefix for clean organization
-      const formattedQuestion = `[${formCategory}] ${questionText.trim()}`;
+      // 1. Submit guidance question via existing API with targetType: 'faculty'
+      const formattedSubmission = `[Remedial Submission: ${taskTitle}]\n${comments ? comments + '\n\n' : ''}${
+        submissionLink ? `Evidence Repository:\n${submissionLink}` : ''
+      }`.trim();
 
-      const res = await guidanceService.createRequest({
-        question: formattedQuestion,
-        targetType,
-        targetFacultyId: targetType === 'faculty' ? targetFacultyId : null,
-      });
+      const evaluatorFacultyId = activePlan?.evaluatorId?._id || activePlan?.evaluatorId;
 
-      const successMsg =
-        targetType === 'faculty'
-          ? 'Your guidance question was submitted exclusively to the selected faculty advisor!'
-          : 'Your guidance question was broadcast to all verified alumni mentors!';
+      await guidanceService.createRequest(
+        formattedSubmission,
+        'faculty',
+        evaluatorFacultyId || null
+      );
 
-      setSuccessToast(successMsg);
+      // 2. Mark goal as in-progress or completed if goalId exists
+      if (goalId) {
+        try {
+          await goalService.updateGoalStatus(goalId, 'in-progress');
+        } catch (err) {
+          console.warn('Goal status update notice:', err.message);
+        }
+      }
+
+      setSuccessToast(`Work for "${taskTitle}" has been submitted for faculty review!`);
       setTimeout(() => setSuccessToast(null), 4000);
 
-      // Reset form and close modal
-      setQuestionText('');
-      setFormCategory('General Career');
-      setIsModalOpen(false);
-
-      // Refresh list and select the newly created question
-      await fetchGuidanceData();
-
-      if (res?.request?.id) {
-        handleSelectQuestion(res.request.id);
-      }
+      // Close modal and refresh list
+      handleCloseSubmitModal();
+      await loadGuidanceData(true);
     } catch (err) {
-      console.error('Failed to submit guidance request:', err);
-      setFormErrors({
-        submit:
-          err.response?.data?.message ||
-          'Failed to submit guidance question. Please check your network and try again.',
-      });
+      console.error('Failed to submit remedial work:', err);
+      alert(
+        err.response?.data?.message ||
+          'Failed to submit work for review. Please check your network connection.'
+      );
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingWork(false);
     }
   };
 
-  // Follow-Up Reply Submission (Bi-directional Threading)
-  const handleSendReply = async (e) => {
-    e.preventDefault();
-    if (!replyText.trim() || !activeThread?.id) return;
-    setIsSubmittingReply(true);
-    try {
-      const res = await guidanceService.replyRequest(activeThread.id, replyText.trim());
-      const newReply = res?.reply || {
-        id: Date.now().toString(),
-        mentorName: user?.name || 'You',
-        mentorRole: user?.role || 'student',
-        answerText: replyText.trim(),
-      };
-      setActiveThread((prev) => ({
-        ...prev,
-        status: 'answered',
-        replies: [...(prev?.replies || []), newReply],
-      }));
-      setQuestions((prev) =>
-        prev.map((q) =>
-          q.id === activeThread.id
-            ? { ...q, replies: [...(q.replies || []), newReply] }
-            : q
-        )
-      );
-      setReplyText('');
-      setSuccessToast('Your reply has been posted to the advisory thread.');
-      setTimeout(() => setSuccessToast(null), 3500);
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to post reply.');
-    } finally {
-      setIsSubmittingReply(false);
-    }
-  };
-
-  // Render Role Badge for Responders
-  const renderRoleBadge = (role) => {
-    const normRole = (role || '').toLowerCase();
-    if (normRole === 'faculty') {
-      return (
-        <Badge variant="info" size="xs" icon={<GraduationCap className="w-3 h-3" />}>
-          Faculty Mentor
-        </Badge>
-      );
-    }
-    if (normRole === 'alumni') {
-      return (
-        <Badge variant="tier1" size="xs" icon={<Briefcase className="w-3 h-3" />}>
-          Alumni Mentor
-        </Badge>
-      );
-    }
-    if (normRole === 'student') {
-      return (
-        <Badge variant="neutral" size="xs" icon={<User className="w-3 h-3 text-blue-600" />}>
-          Student (Author)
-        </Badge>
-      );
-    }
-    return (
-      <Badge variant="neutral" size="xs">
-        {role || 'Verified Advisor'}
-      </Badge>
-    );
-  };
-
-  // Loading State
+  // ─────────────────────────────────────────────────────────────
+  // 4. RENDERING: LOADING & ERROR STATES
+  // ─────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-fadeIn pb-12">
-        {/* Header Skeleton */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <Skeleton variant="text" width="240px" height="28px" />
-            <Skeleton variant="text" width="420px" height="16px" />
-          </div>
-          <Skeleton variant="rectangular" width="140px" height="38px" />
+      <div className="space-y-6 pb-12 animate-fadeIn max-w-5xl mx-auto">
+        <div className="space-y-2">
+          <Skeleton variant="text" width="220px" height="28px" />
+          <Skeleton variant="text" width="400px" height="16px" />
         </div>
-
-        {/* Summary Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <SkeletonCard />
+        <div className="space-y-3">
           <SkeletonCard />
           <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-
-        {/* Main Workspace Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-5 space-y-3">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-          <div className="lg:col-span-7">
-            <SkeletonCard />
-          </div>
         </div>
       </div>
     );
   }
 
-  // Error State
-  if (error && questions.length === 0) {
+  if (error && actionPlans.length === 0) {
     return (
-      <ErrorState
-        title="Unable to Load Mentorship & Q&A Hub"
-        message={error}
-        onRetry={fetchGuidanceData}
-        retryText="Retry Loading"
-      />
+      <div className="max-w-5xl mx-auto pt-6">
+        <ErrorState
+          title="Unable to Load Remedial Guidance"
+          message={error}
+          onRetry={() => loadGuidanceData(false)}
+          retryText="Retry Loading"
+        />
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-12 antialiased">
+    <div className="space-y-6 pb-16 antialiased max-w-5xl mx-auto" data-testid="student-guidance-page">
       {/* Toast Notification */}
       {successToast && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-fadeIn">
@@ -449,811 +468,78 @@ export const GuidancePage = () => {
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          1. PAGE HEADER
-      ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-              Mentorship & Q&A
-            </h1>
-            <Badge variant="primary" size="sm" className="hidden sm:inline-flex">
-              Advisory Hub
-            </Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
-            Ask career questions, receive guidance, and connect with faculty and alumni mentors.
-          </p>
-        </div>
+      {/* 1. PAGE HEADER */}
+      <GuidanceHeader
+        onRefresh={() => loadGuidanceData(true)}
+        isRefreshing={isRefreshing}
+      />
 
-        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchGuidanceData}
-            leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-            title="Refresh threads"
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsModalOpen(true)}
-            leftIcon={<Plus className="w-4 h-4" />}
-            className="shadow-sm"
-          >
-            Ask a Question
-          </Button>
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          2. COMPACT GUIDANCE SUMMARY (Real API Data Only)
-      ───────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Questions Submitted */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-slate-500 tracking-tight">
-                Total Inquiries
-              </span>
-              <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
-                  {summaryMetrics.total}
-                </span>
-                <span className="text-xs text-slate-400 font-medium">Submitted</span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-              <MessageSquare className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="text-[11px] text-slate-400 mt-2">
-            Dispatched to departmental advisory board
-          </span>
-        </div>
-
-        {/* Awaiting Reply */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-slate-500 tracking-tight">
-                Awaiting Reply
-              </span>
-              <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 tracking-tight font-mono">
-                  {summaryMetrics.awaiting}
-                </span>
-                <Badge variant="warning" size="sm" dot>
-                  In Review
-                </Badge>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="text-[11px] text-slate-400 mt-2">
-            Queued for mentor guidance review
-          </span>
-        </div>
-
-        {/* Answered */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-slate-500 tracking-tight">
-                Answered Threads
-              </span>
-              <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight font-mono">
-                  {summaryMetrics.answered}
-                </span>
-                <Badge variant="success" size="sm" dot>
-                  Resolved
-                </Badge>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="text-[11px] text-emerald-600 font-medium mt-2">
-            Verified guidance from verified mentors
-          </span>
-        </div>
-
-        {/* Recently Updated */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col justify-between">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-slate-500 tracking-tight">
-                Latest Activity
-              </span>
-              <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-                  {summaryMetrics.latestDate}
-                </span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="text-[11px] text-slate-400 mt-2">
-            Chronological thread synchronization
-          </span>
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          3 & 4. MAIN WORKSPACE: QUESTIONS LIST & THREAD VIEW
-      ───────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: My Questions List (lg:col-span-5) */}
+      {/* 2. ACTIVE ACTION PLAN or EMPTY STATE */}
+      {activePlan ? (
+        <ActivePlanSummary
+          plan={activePlan}
+          completedCount={completedTasksCount}
+          totalCount={allTasksCount}
+          nextDeadline={nextDeadline}
+        />
+      ) : (
         <div
-          className={`
-            lg:col-span-5 space-y-3.5
-            ${mobileView === 'thread' ? 'hidden lg:block' : 'block'}
-          `}
+          className="p-8 sm:p-10 rounded-2xl bg-white border border-slate-200/90 shadow-card text-center flex flex-col items-center gap-3"
+          data-testid="no-active-plan-state"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-                My Inquiries
-              </h2>
-              <span className="text-xs text-slate-400 font-normal">
-                ({filteredQuestions.length})
-              </span>
-            </div>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <Award className="w-6 h-6" />
           </div>
-
-          {/* Search bar */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search your questions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-white placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600/20"
-            />
-          </div>
-
-          {/* Filter Pill Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {[
-              { id: 'all', label: 'All', count: questions.length },
-              { id: 'awaiting', label: 'Awaiting Reply', count: summaryMetrics.awaiting },
-              { id: 'answered', label: 'Answered', count: summaryMetrics.answered },
-            ].map((tab) => {
-              const isActive = statusFilter === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setStatusFilter(tab.id)}
-                  className={`
-                    inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap
-                    ${
-                      isActive
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-50'
-                    }
-                  `}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    className={`
-                      px-1.5 py-0.2 rounded-md text-[10px] font-mono font-bold
-                      ${isActive ? 'bg-blue-700/60 text-white' : 'bg-slate-100 text-slate-600'}
-                    `}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Question Cards Feed */}
-          {filteredQuestions.length === 0 ? (
-            <EmptyState
-              icon={<MessageSquare className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
-              title={
-                searchQuery
-                  ? `No questions matching "${searchQuery}"`
-                  : statusFilter !== 'all'
-                  ? `No questions with status "${statusFilter}"`
-                  : 'No Guidance Requests Yet'
-              }
-              description={
-                searchQuery
-                  ? 'Try searching with different keywords or clear the filter.'
-                  : 'Reach out to faculty and alumni mentors for guidance on roadmaps, interview prep, or career transitions.'
-              }
-              action={
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setIsModalOpen(true)}
-                  leftIcon={<Plus className="w-3.5 h-3.5" />}
-                >
-                  Ask a Question
-                </Button>
-              }
-            />
-          ) : (
-            <div className="space-y-2.5">
-              {filteredQuestions.map((q) => {
-                const isSelected = selectedQuestionId === q.id;
-                const parsed = parseQuestion(q.question);
-                const replyCount = (q.replies || []).length;
-                const isAnswered = replyCount > 0;
-
-                return (
-                  <div
-                    key={q.id}
-                    onClick={() => handleSelectQuestion(q.id)}
-                    className={`
-                      p-4 rounded-2xl border transition-all duration-150 cursor-pointer flex flex-col gap-2.5 text-left
-                      ${
-                        isSelected
-                          ? 'bg-blue-50/40 border-blue-500 shadow-sm ring-1 ring-blue-500/20'
-                          : 'bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-card shadow-xs'
-                      }
-                    `}
-                  >
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-                          {parsed.topic}
-                        </span>
-                        {q.targetType === 'faculty' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                            <GraduationCap className="w-2.5 h-2.5 text-blue-600" />
-                            <span>{q.targetFacultyName ? `Prof. ${q.targetFacultyName}` : 'Faculty Advisor'}</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-800 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
-                            <Briefcase className="w-2.5 h-2.5 text-purple-600" />
-                            <span>All Alumni</span>
-                          </span>
-                        )}
-                      </div>
-                      {isAnswered ? (
-                        <Badge variant="success" size="xs" dot>
-                          {replyCount} {replyCount === 1 ? 'Reply' : 'Replies'}
-                        </Badge>
-                      ) : (
-                        <Badge variant="warning" size="xs" dot>
-                          Awaiting Reply
-                        </Badge>
-                      )}
-                    </div>
-
-                    <p className="text-xs sm:text-sm font-semibold text-slate-900 tracking-tight leading-snug line-clamp-2">
-                      {parsed.body}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-400">
-                      <div className="flex items-center gap-1.5 text-[11px]">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        <span>{formatDate(q.date)}</span>
-                      </div>
-                      <span className="text-blue-600 font-semibold text-[11px] flex items-center gap-0.5">
-                        <span>View thread</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Complete Thread View (lg:col-span-7) */}
-        <div
-          className={`
-            lg:col-span-7 space-y-4
-            ${mobileView === 'list' ? 'hidden lg:block' : 'block'}
-          `}
-        >
-          {/* Mobile Back Button */}
-          <div className="lg:hidden flex items-center gap-2 mb-2">
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={() => setMobileView('list')}
-              leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
-            >
-              Back to Questions List
-            </Button>
-          </div>
-
-          {activeThread ? (
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card p-5 sm:p-6 space-y-6">
-              {/* Question Header */}
-              <div className="space-y-3 pb-5 border-b border-slate-100">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md">
-                      {parseQuestion(activeThread.question).topic}
-                    </span>
-                    {activeThread.targetType === 'faculty' ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
-                        <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Direct to: {activeThread.targetFacultyName ? `Prof. ${activeThread.targetFacultyName}` : 'Faculty Advisor'}</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
-                        <Briefcase className="w-3.5 h-3.5 text-purple-600" />
-                        <span>Routed to: All Alumni Mentors</span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {activeThread.status === 'answered' ? (
-                      <Badge variant="success" size="sm" dot>
-                        Answered
-                      </Badge>
-                    ) : (
-                      <Badge variant="warning" size="sm" dot>
-                        Awaiting Reply
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Question Body */}
-                <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/70 space-y-2">
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-blue-600" />
-                      <span>{activeThread.studentName || user?.name || 'You'}</span>
-                    </span>
-                    <span>{formatDate(activeThread.date)}</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-900 leading-relaxed whitespace-pre-wrap font-normal">
-                    {parseQuestion(activeThread.question).body}
-                  </p>
-                </div>
-              </div>
-
-              {/* Thread Replies Section */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-emerald-600" />
-                    <span>Mentor Responses ({(activeThread.replies || []).length})</span>
-                  </h3>
-                  {isLoadingThread && (
-                    <span className="text-[11px] text-slate-400 animate-pulse">
-                      Syncing thread...
-                    </span>
-                  )}
-                </div>
-
-                {(activeThread.replies || []).length === 0 ? (
-                  <div className="p-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 text-center flex flex-col items-center gap-2">
-                    <Clock className="w-8 h-8 text-amber-500 stroke-[1.5]" />
-                    <h4 className="text-xs font-semibold text-slate-800">
-                      No Mentor Responses Yet
-                    </h4>
-                    <p className="text-xs text-slate-500 max-w-md leading-relaxed">
-                      Your query has been routed to verified Department Faculty and Alumni Mentors.
-                      You will receive guidance here once a mentor replies.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3.5">
-                    {activeThread.replies.map((reply, idx) => (
-                      <div
-                        key={reply.id || idx}
-                        className="p-4 rounded-xl bg-gradient-to-r from-emerald-50/40 via-white to-slate-50/30 border border-emerald-200/80 shadow-xs space-y-2.5"
-                      >
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                              {reply.mentorName ? reply.mentorName.charAt(0).toUpperCase() : 'M'}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold text-slate-900 leading-tight">
-                                {reply.mentorName}
-                              </span>
-                              <span className="text-[10px] text-slate-400">
-                                Verified Institutional Responder
-                              </span>
-                            </div>
-                          </div>
-
-                          <div>{renderRoleBadge(reply.mentorRole)}</div>
-                        </div>
-
-                        {/* Answer Text */}
-                        <p className="text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap pl-1">
-                          {reply.answerText}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Bi-directional Thread Reply Form */}
-                <form
-                  onSubmit={handleSendReply}
-                  className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="guidance-reply-input"
-                      className="text-xs font-bold text-slate-900 flex items-center gap-1.5"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Post a Follow-Up Reply</span>
-                    </label>
-                    <span className="text-[11px] text-slate-400">
-                      Bi-directional Advisory Dialogue
-                    </span>
-                  </div>
-                  <textarea
-                    id="guidance-reply-input"
-                    rows={2}
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Ask a clarifying question or respond to the mentor's advice..."
-                    className="w-full text-xs p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
-                    disabled={isSubmittingReply}
-                  />
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline" />
-                      <span>Replies are shared in this mentoring thread.</span>
-                    </p>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="xs"
-                      disabled={isSubmittingReply || !replyText.trim()}
-                      isLoading={isSubmittingReply}
-                      rightIcon={<Send className="w-3 h-3" />}
-                    >
-                      Send Reply
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card p-10 text-center flex flex-col items-center gap-3">
-              <MessageSquare className="w-10 h-10 text-slate-300 stroke-[1.5]" />
-              <h3 className="text-sm font-semibold text-slate-800">No Question Selected</h3>
-              <p className="text-xs text-slate-500 max-w-sm">
-                Select an inquiry from the list on the left to review the discussion and read mentor
-                replies.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsModalOpen(true)}
-                leftIcon={<Plus className="w-3.5 h-3.5" />}
-              >
-                Ask a Question
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          6 & 7. RECOMMENDED MENTORS DIRECTORY
-      ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-3 pt-4 border-t border-slate-200/80">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-blue-600" />
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-              Recommended Faculty & Alumni Mentors
+          <div className="space-y-1">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+              No active remedial plan.
             </h2>
-          </div>
-          <span className="text-xs text-slate-400 font-normal">
-            ({recommendedMentors.length} active mentors)
-          </span>
-        </div>
-
-        {recommendedMentors.length === 0 ? (
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 text-center flex flex-col items-center gap-2">
-            <User className="w-8 h-8 text-slate-300" />
-            <span className="text-xs font-medium text-slate-600">
-              No recommended mentors currently listed
-            </span>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendedMentors.map((mentor, idx) => (
-              <div
-                key={idx}
-                className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-150 flex flex-col justify-between gap-3.5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
-                      {mentor.name ? mentor.name.charAt(0).toUpperCase() : 'M'}
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight truncate">
-                        {mentor.name}
-                      </span>
-                      <span className="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                        <Building2 className="w-3 h-3 text-slate-400" />
-                        <span>{mentor.careerTag || 'Campus Advisor'}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>{renderRoleBadge(mentor.role)}</div>
-                </div>
-
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-400 font-medium">
-                    Available for Q&A
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    onClick={() => {
-                      if (mentor.role === 'Faculty') {
-                        setTargetType('faculty');
-                        setTargetFacultyId(mentor.id);
-                        setFormCategory('Academic & Research');
-                      } else {
-                        setTargetType('alumni');
-                        setTargetFacultyId('');
-                        setFormCategory('Industry Transition');
-                      }
-                      setQuestionText(`@${mentor.name}: `);
-                      setIsModalOpen(true);
-                    }}
-                    leftIcon={<Send className="w-3 h-3 text-blue-600" />}
-                    className="text-[11px]"
-                  >
-                    Direct Inquiry
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          5. ASK A QUESTION MODAL (Dispatches POST /api/guidance/request)
-      ───────────────────────────────────────────────────────────── */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => !isSubmitting && setIsModalOpen(false)}
-        title="Submit a Guidance Question"
-        description="Choose whether to route directly to 1 specific faculty advisor or broadcast to all verified alumni mentors."
-        size="md"
-      >
-        <form onSubmit={handleCreateSubmit} className="space-y-4 pt-2">
-          {formErrors.submit && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-              <span>{formErrors.submit}</span>
-            </div>
-          )}
-
-          {/* ── 2 TARGETING APPROACHES ── */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-800 block">
-              Guidance Target Audience <span className="text-rose-500">*</span>
-            </label>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Approach 1: Particular Faculty Advisor */}
-              <div
-                onClick={() => {
-                  setTargetType('faculty');
-                  if (!targetFacultyId && facultyMentors.length > 0) {
-                    setTargetFacultyId(facultyMentors[0].id);
-                  }
-                }}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5 ${
-                  targetType === 'faculty'
-                    ? 'bg-blue-50/70 border-blue-600 ring-2 ring-blue-600/20'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <GraduationCap
-                      className={`w-4 h-4 ${
-                        targetType === 'faculty' ? 'text-blue-600' : 'text-slate-500'
-                      }`}
-                    />
-                    <span className="text-xs font-bold text-slate-900">
-                      Particular Faculty
-                    </span>
-                  </div>
-                  <input
-                    type="radio"
-                    name="targetType"
-                    checked={targetType === 'faculty'}
-                    onChange={() => {
-                      setTargetType('faculty');
-                      if (!targetFacultyId && facultyMentors.length > 0) {
-                        setTargetFacultyId(facultyMentors[0].id);
-                      }
-                    }}
-                    className="text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
-                  />
-                </div>
-                <p className="text-[11px] text-slate-500 leading-snug">
-                  Goes <strong>only to 1 selected faculty advisor</strong> (not other faculty or alumni).
-                </p>
-              </div>
-
-              {/* Approach 2: All Alumni Members */}
-              <div
-                onClick={() => setTargetType('alumni')}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5 ${
-                  targetType === 'alumni'
-                    ? 'bg-purple-50/70 border-purple-600 ring-2 ring-purple-600/20'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Briefcase
-                      className={`w-4 h-4 ${
-                        targetType === 'alumni' ? 'text-purple-600' : 'text-slate-500'
-                      }`}
-                    />
-                    <span className="text-xs font-bold text-slate-900">
-                      All Alumni Mentors
-                    </span>
-                  </div>
-                  <input
-                    type="radio"
-                    name="targetType"
-                    checked={targetType === 'alumni'}
-                    onChange={() => setTargetType('alumni')}
-                    className="text-purple-600 focus:ring-purple-500 h-3.5 w-3.5"
-                  />
-                </div>
-                <p className="text-[11px] text-slate-500 leading-snug">
-                  Broadcast to <strong>all verified alumni members</strong> in industry (not faculty).
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Conditional Dropdown for Particular Faculty */}
-          {targetType === 'faculty' && (
-            <div className="space-y-1.5 p-3.5 rounded-xl bg-blue-50/50 border border-blue-200">
-              <label
-                htmlFor="faculty-select"
-                className="text-xs font-semibold text-slate-800 flex items-center justify-between"
-              >
-                <span>Select Faculty Advisor:</span>
-                <span className="text-[11px] font-medium text-blue-700">1:1 Direct Routing</span>
-              </label>
-
-              {facultyMentors.length === 0 ? (
-                <p className="text-xs text-amber-700 font-medium py-1">
-                  Loading available faculty advisors...
-                </p>
-              ) : (
-                <select
-                  id="faculty-select"
-                  value={targetFacultyId}
-                  onChange={(e) => setTargetFacultyId(e.target.value)}
-                  className="w-full bg-white text-slate-900 text-xs rounded-lg border border-slate-300 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600"
-                >
-                  <option value="" disabled>
-                    -- Choose Faculty Advisor --
-                  </option>
-                  {facultyMentors.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name} — {f.careerTag || 'Faculty Advisor'}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {formErrors.targetFaculty && (
-                <p className="text-xs text-rose-600 font-medium">{formErrors.targetFaculty}</p>
-              )}
-            </div>
-          )}
-
-          {targetType === 'alumni' && (
-            <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-200 text-xs text-purple-900 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
-              <span>
-                Your question will be visible to <strong>all campus alumni</strong> working at TechCorp, CloudSys, and other partner companies.
-              </span>
-            </div>
-          )}
-
-          {/* Topic / Category Selection */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-700">
-              Guidance Category
-            </label>
-            <select
-              value={formCategory}
-              onChange={(e) => setFormCategory(e.target.value)}
-              className="w-full bg-white text-slate-900 text-xs rounded-lg border border-slate-200 px-3 py-2.5 transition-colors focus:outline-none focus:border-blue-600 hover:border-slate-300"
-            >
-              <option value="System Design & Architecture">System Design & Architecture</option>
-              <option value="DSA & Competitive Coding">DSA & Competitive Coding</option>
-              <option value="Placement Drive Preparation">Placement Drive Preparation</option>
-              <option value="Capstone & Academic Research">Capstone & Academic Research</option>
-              <option value="Resume & Portfolio Review">Resume & Portfolio Review</option>
-              <option value="General Career Guidance">General Career Guidance</option>
-            </select>
-          </div>
-
-          {/* Question Text */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-              <span>Question Details</span>
-              <span className="text-rose-500">*</span>
-            </label>
-            <textarea
-              rows={5}
-              required
-              placeholder="Clearly state your question or technical blocker. For example: How should I structure my preparation for Tier-1 distributed systems interviews while balancing Semester 5 coursework?"
-              value={questionText}
-              onChange={(e) => setQuestionText(e.target.value)}
-              className={`
-                w-full bg-white text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm rounded-lg border p-3 transition-colors focus:outline-none resize-none
-                ${
-                  formErrors.question
-                    ? 'border-rose-300 focus:border-rose-500 focus:ring-1 focus:ring-rose-500'
-                    : 'border-slate-200 hover:border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600'
-                }
-              `}
-            />
-            {formErrors.question && (
-              <p className="text-xs text-rose-600 font-medium">{formErrors.question}</p>
-            )}
-            <p className="text-[11px] text-slate-400">
-              Questions are shared with institutional mentors. Keep inquiries constructive and professional.
+            <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+              Any follow-up tasks assigned after your faculty evaluations will appear here.
             </p>
           </div>
+        </div>
+      )}
 
-          {/* Modal Actions */}
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              disabled={isSubmitting}
-              onClick={() => setIsModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              isLoading={isSubmitting}
-              loadingText="Submitting..."
-              leftIcon={<Send className="w-3.5 h-3.5" />}
-            >
-              Post Question
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {/* 3. TASK LIST & SUBMISSION FLOW */}
+      {allTasksCount > 0 && (
+        <div className="space-y-3">
+          <RemedialTaskList
+            activeTasks={unifiedActiveTasks}
+            completedTasks={unifiedCompletedTasks}
+            onViewDetails={handleOpenTaskDetails}
+            onSubmitWork={handleOpenSubmitModal}
+            onUpdateSubmission={handleOpenSubmitModal}
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+          />
+        </div>
+      )}
+
+      {/* 4. COMPLETED / ARCHIVED PLANS (Behind expandable accordion) */}
+      {archivedPlans.length > 0 && (
+        <div className="pt-2">
+          <CompletedPlansAccordion plans={archivedPlans} />
+        </div>
+      )}
+
+      {/* 5. TASK DETAILS DRAWER */}
+      <TaskDetailsDrawer
+        isOpen={Boolean(selectedTaskForDetails)}
+        onClose={handleCloseTaskDetails}
+        task={selectedTaskForDetails}
+        onSubmitWork={handleOpenSubmitModal}
+        onUpdateSubmission={handleOpenSubmitModal}
+      />
+
+      {/* 6. SUBMISSION MODAL */}
+      <SubmissionModal
+        isOpen={Boolean(selectedTaskForSubmission)}
+        onClose={handleCloseSubmitModal}
+        task={selectedTaskForSubmission}
+        onSubmit={handleSaveSubmission}
+        isSubmitting={isSubmittingWork}
+      />
     </div>
   );
 };

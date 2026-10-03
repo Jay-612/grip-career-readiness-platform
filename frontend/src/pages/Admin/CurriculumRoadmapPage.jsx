@@ -7,10 +7,11 @@ import {
   BookOpen,
   Users,
   Layers,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
   X,
+  Search,
+  Eye,
 } from 'lucide-react';
 import adminService from '../../services/adminService';
 import Button from '../../components/common/Button';
@@ -24,12 +25,16 @@ export const CurriculumRoadmapPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedRoadmapId, setSelectedRoadmapId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Detail Modal State (Progressive disclosure for inspect)
+  const [viewingRoadmap, setViewingRoadmap] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -176,9 +181,18 @@ export const CurriculumRoadmapPage = () => {
     }
   };
 
+  const filteredRoadmaps = roadmaps.filter((rm) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      rm.careerName.toLowerCase().includes(q) ||
+      (rm.requiredSkills || []).some((s) => s.toLowerCase().includes(q))
+    );
+  });
+
   return (
-    <main className="space-y-6 pb-12 antialiased" aria-label="Curriculum & Roadmaps Master Data">
-      {/* Toast */}
+    <main className="space-y-6 pb-12 antialiased max-w-7xl mx-auto" aria-label="Curriculum Management">
+      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-fadeIn">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -190,10 +204,10 @@ export const CurriculumRoadmapPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Curriculum & Career Track Master Data
+            Curriculum
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Configure accredited degree specializations, required technical skills, and semester-wise learning milestones (SRS R.2).
+            Manage degree career tracks, required competencies, and semester learning plans.
           </p>
         </div>
         <Button
@@ -201,17 +215,34 @@ export const CurriculumRoadmapPage = () => {
           size="sm"
           onClick={handleOpenAddModal}
           leftIcon={<Plus className="w-4 h-4" />}
-          className="shadow-sm"
+          className="shadow-sm self-start sm:self-auto"
         >
           Add Career Track
         </Button>
       </div>
 
-      {/* Roadmaps Grid */}
+      {/* Filter / Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-xs">
+        <div className="relative flex-1 max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search tracks by name or skill..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+          />
+        </div>
+        <span className="text-xs text-slate-500 font-medium self-end sm:self-auto">
+          Showing {filteredRoadmaps.length} of {roadmaps.length} tracks
+        </span>
+      </div>
+
+      {/* Curriculum Table / List View */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <SkeletonCard />
-          <SkeletonCard />
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+          <Skeleton variant="text" className="h-6 w-1/4" />
+          <Skeleton variant="card" className="h-48" />
         </div>
       ) : roadmaps.length === 0 ? (
         <EmptyState
@@ -225,92 +256,150 @@ export const CurriculumRoadmapPage = () => {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {roadmaps.map((rm) => (
-            <article
-              key={rm.id}
-              className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-                      <Compass className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">{rm.careerName}</h3>
-                      <span className="text-[11px] text-slate-400">
-                        {rm.enrolledStudents || 0} enrolled students
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleOpenEditModal(rm)}
-                      title="Edit Track"
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-blue-600 transition cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(rm)}
-                      title="Delete Track"
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                  {rm.description || 'Specialized campus curriculum for placement readiness.'}
-                </p>
-
-                {/* Required Skills */}
-                <div className="space-y-1.5 pt-1">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                    Required Competency Skills
-                  </span>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {(rm.requiredSkills || []).map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Semester Milestone Plans Summary */}
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                    Semester Curricula ({(rm.semesterPlans || []).length} Semesters)
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {(rm.semesterPlans || []).slice(0, 4).map((sp) => (
-                      <div
-                        key={sp.semesterNumber}
-                        className="p-2 rounded-lg bg-slate-50 border border-slate-200/70 text-[11px]"
-                      >
-                        <span className="font-bold text-slate-800">Sem {sp.semesterNumber}: </span>
-                        <span className="text-slate-500">
-                          {(sp.subjects || []).join(' • ') || 'Core Electives'}
-                        </span>
+        <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px] tracking-wider">
+                  <th className="py-3 px-4">Track / Career</th>
+                  <th className="py-3 px-4">Required Skills</th>
+                  <th className="py-3 px-4">Semester Plans</th>
+                  <th className="py-3 px-4 text-center">Enrolled</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredRoadmaps.map((rm) => (
+                  <tr key={rm.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-3.5 px-4 font-medium text-slate-900 min-w-[220px]">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                          <Compass className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900">{rm.careerName}</div>
+                          <div className="text-[11px] text-slate-400 line-clamp-1 max-w-xs">
+                            {rm.description || 'Specialized engineering curriculum track'}
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                <span>Master Syllabus Ref: {rm.id.slice(-6).toUpperCase()}</span>
-                <span className="text-indigo-600 font-semibold text-[11px]">Accreditation Ready ✓</span>
-              </div>
-            </article>
-          ))}
+                    </td>
+                    <td className="py-3.5 px-4 max-w-xs">
+                      <div className="flex flex-wrap gap-1">
+                        {(rm.requiredSkills || []).slice(0, 3).map((skill, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                        {(rm.requiredSkills || []).length > 3 && (
+                          <span className="text-[10px] text-slate-400 font-medium px-1 self-center">
+                            +{(rm.requiredSkills || []).length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 text-[11px] font-medium">
+                        <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                        {(rm.semesterPlans || []).length} Semesters
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="font-bold text-slate-800 text-xs">
+                        {rm.enrolledStudents || 0}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          onClick={() => setViewingRoadmap(rm)}
+                          title="View Details"
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenEditModal(rm)}
+                          title="Edit Track"
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(rm)}
+                          title="Delete Track"
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+      )}
+
+      {/* ─── DETAILS MODAL (PROGRESSIVE DISCLOSURE) ──────────────── */}
+      {viewingRoadmap && (
+        <Modal
+          isOpen={Boolean(viewingRoadmap)}
+          onClose={() => setViewingRoadmap(null)}
+          title={viewingRoadmap.careerName}
+          size="md"
+        >
+          <div className="space-y-4 text-xs">
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                Description
+              </span>
+              <p className="text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
+                {viewingRoadmap.description || 'No detailed syllabus overview provided.'}
+              </p>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1.5">
+                Target Competency Skills ({(viewingRoadmap.requiredSkills || []).length})
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {(viewingRoadmap.requiredSkills || []).map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1.5">
+                Semester Learning Milestones
+              </span>
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {(viewingRoadmap.semesterPlans || []).map((sp) => (
+                  <div key={sp.semesterNumber} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <span className="font-bold text-slate-800">Sem {sp.semesterNumber}: </span>
+                    <span className="text-slate-600">{(sp.subjects || []).join(' • ') || 'General Technical Electives'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-slate-100">
+              <Button variant="outline" size="sm" onClick={() => setViewingRoadmap(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {/* ─── ADD / EDIT MODAL ─────────────────────────────────────── */}
@@ -389,7 +478,7 @@ export const CurriculumRoadmapPage = () => {
                     type="text"
                     value={plan.subjectsStr}
                     onChange={(e) => handleSemesterSubjectsChange(idx, e.target.value)}
-                    placeholder="Subjects / Focus areas (comma separated, e.g. Data Structures, Algorithms)"
+                    placeholder="Subjects / Focus areas (comma separated)"
                     className="flex-1 p-1.5 text-xs rounded-lg border border-slate-200 bg-white"
                   />
                   {formData.semesterPlans.length > 1 && (

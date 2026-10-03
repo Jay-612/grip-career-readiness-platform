@@ -37,10 +37,30 @@ const recruiterService = {
     return response.data;
   },
 
+  // Retrieve company criteria by name
+  getCompanyByName: async (name) => {
+    const response = await apiClient.get('/companies', { params: { name } });
+    return response.data?.company || null;
+  },
+
   // Submit recruiter feedback for a specific candidate
-  submitFeedback: async (studentId, comments) => {
-    const response = await apiClient.post('/feedback', { studentId, comments });
+  submitFeedback: async (studentId, comments, rating = 8) => {
+    const response = await apiClient.post('/feedback', { studentId, comments, rating });
     return response.data;
+  },
+
+  // Get recruiter's feedback submission history
+  getFeedbackHistory: async () => {
+    const response = await apiClient.get('/feedback');
+    return response.data?.feedbacks || [];
+  },
+
+  // Discover candidate pool via placement leaderboard
+  getCandidatesLeaderboard: async (page = 1, limit = 50) => {
+    const response = await apiClient.get('/placement/leaderboard', {
+      params: { page, limit },
+    });
+    return response.data?.leaderboard || [];
   },
 
   // Get interview appointments where the current recruiter is the interviewer

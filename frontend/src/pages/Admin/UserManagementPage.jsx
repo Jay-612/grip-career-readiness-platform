@@ -5,19 +5,15 @@ import {
   Plus,
   Edit2,
   Trash2,
-  GraduationCap,
-  Briefcase,
-  UserCheck,
-  ShieldCheck,
   Filter,
   CheckCircle2,
-  XCircle,
   ChevronLeft,
   ChevronRight,
-  Building2,
+  Eye,
   X,
 } from 'lucide-react';
 import adminService from '../../services/adminService';
+import UserDetailsDrawer from '../../components/admin/UserDetailsDrawer';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
@@ -37,7 +33,9 @@ export const UserManagementPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Modal States
+  // Drawer & Modal States
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -94,6 +92,11 @@ export const UserManagementPage = () => {
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleViewUser = (u) => {
+    setSelectedUser(u);
+    setIsDrawerOpen(true);
   };
 
   const handleOpenAddModal = () => {
@@ -244,32 +247,24 @@ export const UserManagementPage = () => {
     }
   };
 
-  const roleBadges = {
-    student: <Badge variant="primary" size="xs">Student</Badge>,
-    faculty: <Badge variant="info" size="xs">Faculty</Badge>,
-    alumni: <Badge variant="tier1" size="xs">Alumni</Badge>,
-    recruiter: <Badge variant="warning" size="xs">Recruiter</Badge>,
-    admin: <Badge variant="danger" size="xs">Admin</Badge>,
-  };
-
   return (
-    <main className="space-y-6 pb-12 antialiased" aria-label="User Directory & RBAC Governance">
-      {/* Toast Notification */}
+    <div className="space-y-5 max-w-6xl mx-auto pb-12">
+      {/* Toast */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-fadeIn">
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Header & Actions */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            User Directory & Access Governance
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
+            User Management
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage authenticated accounts, assign institutional roles, and configure student profiles.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Manage system users, assigned roles, and institutional credentials.
           </p>
         </div>
         <Button
@@ -277,72 +272,69 @@ export const UserManagementPage = () => {
           size="sm"
           onClick={handleOpenAddModal}
           leftIcon={<Plus className="w-4 h-4" />}
-          className="shadow-sm"
+          className="shadow-xs self-start sm:self-auto"
         >
-          Add New User
+          Add User
         </Button>
       </div>
 
-      {/* Role Filter Tabs & Search Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-card space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Role Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-            {[
-              { id: 'all', label: 'All Roles' },
-              { id: 'student', label: 'Students' },
-              { id: 'faculty', label: 'Faculty' },
-              { id: 'alumni', label: 'Alumni' },
-              { id: 'recruiter', label: 'Recruiters' },
-              { id: 'admin', label: 'Admins' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveRole(tab.id);
-                  setCurrentPage(1);
-                }}
-                className={`
-                  px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer
-                  ${
-                    activeRole === tab.id
-                      ? 'bg-blue-600 text-white shadow-2xs'
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }
-                `}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Search Box */}
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
-            <div className="relative w-full md:w-64">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-              />
-            </div>
-            <Button type="submit" variant="secondary" size="xs">
-              Search
-            </Button>
-          </form>
+      {/* Compact Filter Bar */}
+      <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+        {/* Role Tabs */}
+        <div className="flex items-center gap-1 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+          {[
+            { id: 'all', label: 'All Users' },
+            { id: 'student', label: 'Students' },
+            { id: 'faculty', label: 'Faculty' },
+            { id: 'alumni', label: 'Alumni' },
+            { id: 'recruiter', label: 'Recruiters' },
+            { id: 'admin', label: 'Admins' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveRole(tab.id);
+                setCurrentPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                activeRole === tab.id
+                  ? 'bg-slate-900 text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* User Table */}
+        {/* Search */}
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full md:w-72">
+          <div className="relative flex-1">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name or email..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
+            />
+          </div>
+          <Button type="submit" size="xs" variant="secondary">
+            Filter
+          </Button>
+        </form>
+      </div>
+
+      {/* User Table (Clean & Scannable) */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-50 border-y border-slate-200/80 text-[11px] uppercase tracking-wider text-slate-500 font-bold">
-              <tr>
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                 <th className="py-3 px-4">User</th>
                 <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Role Profile Details</th>
-                <th className="py-3 px-4">Created Date</th>
+                <th className="py-3 px-4">Affiliation / Career</th>
+                <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -351,7 +343,7 @@ export const UserManagementPage = () => {
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx}>
                     <td colSpan={5} className="py-4 px-4">
-                      <Skeleton variant="text" height="24px" />
+                      <Skeleton className="h-6 w-full" />
                     </td>
                   </tr>
                 ))
@@ -364,34 +356,35 @@ export const UserManagementPage = () => {
               ) : (
                 users.map((u) => (
                   <tr key={u.id} className="hover:bg-slate-50/60 transition">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center shrink-0 text-xs shadow-2xs">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-slate-900 text-white font-bold flex items-center justify-center shrink-0 text-xs">
                           {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-900">{u.name}</div>
-                          <div className="text-[11px] text-slate-400">{u.email}</div>
+                        <div className="min-w-0">
+                          <span className="font-bold text-slate-900 block truncate">{u.name}</span>
+                          <span className="text-[11px] text-slate-400 font-mono block truncate">
+                            {u.email}
+                          </span>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4">{roleBadges[u.role] || u.role}</td>
-                    <td className="py-3.5 px-4 text-slate-700">
+
+                    <td className="py-3 px-4">
+                      <Badge variant="primary" size="xs">
+                        {u.role}
+                      </Badge>
+                    </td>
+
+                    <td className="py-3 px-4 text-slate-600">
                       {u.role === 'student' && (
                         <span>
-                          Sem {u.profile?.semester || 1} •{' '}
-                          {u.profile?.selectedCareer ? (
-                            <strong className="text-blue-700">{u.profile.selectedCareer}</strong>
-                          ) : (
-                            <span className="italic text-slate-400">Exploring</span>
-                          )}{' '}
-                          • Readiness: <strong>{u.profile?.readinessScore || 0}%</strong>
+                          Sem {u.profile?.semester || 1} • {u.profile?.selectedCareer || 'Exploring'}
                         </span>
                       )}
                       {u.role === 'faculty' && (
                         <span>
-                          {u.profile?.department || 'CSE'}{' '}
-                          {u.profile?.isHOD && <span className="font-bold text-indigo-600">(HOD)</span>}
+                          {u.profile?.department || 'CSE'} {u.profile?.isHOD && '(HOD)'}
                         </span>
                       )}
                       {u.role === 'alumni' && (
@@ -401,31 +394,41 @@ export const UserManagementPage = () => {
                       )}
                       {u.role === 'recruiter' && (
                         <span>
-                          {u.profile?.designation || 'Talent Lead'} @ {u.profile?.companyName || 'Hiring'}
+                          {u.profile?.designation || 'Lead'} @ {u.profile?.companyName || 'Hiring'}
                         </span>
                       )}
-                      {u.role === 'admin' && <span className="text-slate-400 font-medium">Institutional Administrator</span>}
+                      {u.role === 'admin' && (
+                        <span className="text-slate-400">Institutional Governance</span>
+                      )}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400 text-[11px]">
-                      {new Date(u.createdAt).toLocaleDateString([], {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
+
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1 text-emerald-700 font-medium text-[11px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span>Active</span>
+                      </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleViewUser(u)}
+                          title="View Details"
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => handleOpenEditModal(u)}
-                          title="Edit user"
-                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-blue-600 transition cursor-pointer"
+                          title="Edit User"
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteUser(u)}
-                          title="Delete user"
-                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition cursor-pointer"
+                          title="Delete User"
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -439,41 +442,48 @@ export const UserManagementPage = () => {
         </div>
 
         {/* Pagination Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500">
+        <div className="flex items-center justify-between p-3 border-t border-slate-100 text-xs text-slate-500">
           <span>
-            Showing page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({totalItems} total users)
+            Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({totalItems} users)
           </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="xs"
+          <div className="flex items-center gap-1.5">
+            <button
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 transition"
             >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="xs"
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
               disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 transition"
             >
-              Next
-            </Button>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ─── ADD USER MODAL ───────────────────────────────────────── */}
+      {/* User Details Drawer */}
+      <UserDetailsDrawer
+        user={selectedUser}
+        isOpen={isDrawerOpen}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedUser(null);
+        }}
+        onEdit={(u) => handleOpenEditModal(u)}
+      />
+
+      {/* Add User Modal */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Add New Institutional User"
+        title="Add New Platform Account"
         size="md"
       >
-        <form onSubmit={handleCreateUser} className="space-y-4 text-xs">
+        <form onSubmit={handleCreateUser} className="space-y-3.5 text-xs">
           <div>
             <label className="block font-bold text-slate-700 mb-1">Full Name *</label>
             <input
@@ -481,8 +491,8 @@ export const UserManagementPage = () => {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              placeholder="e.g. Maya Patel"
+              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
+              placeholder="e.g. John Doe"
             />
           </div>
 
@@ -494,152 +504,39 @@ export const UserManagementPage = () => {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                placeholder="maya.patel@campus.edu"
+                className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
+                placeholder="user@campus.edu"
               />
             </div>
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Initial Password *</label>
+              <label className="block font-bold text-slate-700 mb-1">Temporary Password *</label>
               <input
                 type="password"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                placeholder="Temporary password"
+                className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
+                placeholder="Min 6 characters"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">System Role *</label>
+            <label className="block font-bold text-slate-700 mb-1">Account Role *</label>
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold"
+              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
             >
-              <option value="student">Student (Preparing for Placement)</option>
-              <option value="faculty">Faculty Member / Advisor</option>
+              <option value="student">Student</option>
+              <option value="faculty">Faculty</option>
               <option value="alumni">Alumni Mentor</option>
-              <option value="recruiter">Recruiter / Hiring Partner</option>
-              <option value="admin">System Administrator</option>
+              <option value="recruiter">Corporate Recruiter</option>
+              <option value="admin">Administrator</option>
             </select>
           </div>
 
-          {/* Dynamic Role Profile Fields */}
-          {formData.role === 'student' && (
-            <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200/80 space-y-3">
-              <span className="font-bold text-blue-900 block text-xs">Student Profile Specifics</span>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Semester (1 - 8)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="8"
-                    value={formData.semester}
-                    onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Career Track</label>
-                  <input
-                    type="text"
-                    value={formData.selectedCareer}
-                    onChange={(e) => setFormData({ ...formData, selectedCareer: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                    placeholder="e.g. Distributed Systems"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {formData.role === 'faculty' && (
-            <div className="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-200/80 space-y-3">
-              <span className="font-bold text-indigo-900 block text-xs">Faculty Specifics</span>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Department</label>
-                  <input
-                    type="text"
-                    value={formData.department}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Employee ID</label>
-                  <input
-                    type="text"
-                    value={formData.employeeId}
-                    onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                    placeholder="FAC-CSE-001"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {formData.role === 'alumni' && (
-            <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-3">
-              <span className="font-bold text-emerald-900 block text-xs">Alumni Specifics</span>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Current Company</label>
-                  <input
-                    type="text"
-                    value={formData.currentCompany}
-                    onChange={(e) => setFormData({ ...formData, currentCompany: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                    placeholder="e.g. Google"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Job Role</label>
-                  <input
-                    type="text"
-                    value={formData.jobRole}
-                    onChange={(e) => setFormData({ ...formData, jobRole: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                    placeholder="Senior Cloud Architect"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {formData.role === 'recruiter' && (
-            <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-3">
-              <span className="font-bold text-amber-900 block text-xs">Recruiter Specifics</span>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Company Name</label>
-                  <input
-                    type="text"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                    placeholder="e.g. Microsoft"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Designation</label>
-                  <input
-                    type="text"
-                    value={formData.designation}
-                    onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                    className="w-full p-2 rounded-lg border border-slate-200 bg-white"
-                    placeholder="Campus Recruiter"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -653,72 +550,71 @@ export const UserManagementPage = () => {
               variant="primary"
               size="sm"
               disabled={isSubmitting}
-              isLoading={isSubmitting}
             >
-              Create Account
+              {isSubmitting ? 'Creating...' : 'Create Account'}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* ─── EDIT USER MODAL ──────────────────────────────────────── */}
+      {/* Edit User Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit User Profile & Credentials"
+        title="Edit User Profile"
         size="md"
       >
-        <form onSubmit={handleUpdateUser} className="space-y-4 text-xs">
+        <form onSubmit={handleUpdateUser} className="space-y-3.5 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Full Name</label>
+            <label className="block font-bold text-slate-700 mb-1">Full Name *</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Email Address</label>
+              <label className="block font-bold text-slate-700 mb-1">Email Address *</label>
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
               />
             </div>
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Reset Password (Optional)</label>
+              <label className="block font-bold text-slate-700 mb-1">Password</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                placeholder="Leave blank to preserve"
+                className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
+                placeholder="Leave blank to keep unchanged"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Role</label>
+            <label className="block font-bold text-slate-700 mb-1">Account Role *</label>
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold"
+              className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-indigo-500"
             >
               <option value="student">Student</option>
-              <option value="faculty">Faculty Member</option>
+              <option value="faculty">Faculty</option>
               <option value="alumni">Alumni Mentor</option>
-              <option value="recruiter">Recruiter Partner</option>
-              <option value="admin">System Administrator</option>
+              <option value="recruiter">Corporate Recruiter</option>
+              <option value="admin">Administrator</option>
             </select>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -732,14 +628,13 @@ export const UserManagementPage = () => {
               variant="primary"
               size="sm"
               disabled={isSubmitting}
-              isLoading={isSubmitting}
             >
-              Save Changes
+              {isSubmitting ? 'Saving...' : 'Save Updates'}
             </Button>
           </div>
         </form>
       </Modal>
-    </main>
+    </div>
   );
 };
 

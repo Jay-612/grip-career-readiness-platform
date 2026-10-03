@@ -5,10 +5,10 @@ import {
   Trash2,
   Clock,
   Sparkles,
-  Award,
   CheckCircle2,
   User,
-  Layers,
+  Search,
+  Filter,
 } from 'lucide-react';
 import adminService from '../../services/adminService';
 import Button from '../../components/common/Button';
@@ -22,6 +22,7 @@ export const EventManagementPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,8 +100,17 @@ export const EventManagementPage = () => {
     }
   };
 
+  const filteredEvents = events.filter((ev) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      ev.title.toLowerCase().includes(q) ||
+      (ev.targetSkill || '').toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <main className="space-y-6 pb-12 antialiased" aria-label="Department Skill-Improvement Events">
+    <main className="space-y-6 pb-12 antialiased max-w-7xl mx-auto" aria-label="Event Management">
       {/* Toast */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium animate-fadeIn">
@@ -113,10 +123,10 @@ export const EventManagementPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Department Skill-Improvement Events
+            Event Management
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Schedule targeted technical workshops, mock interview bootcamps, and career readiness sessions (SRS R.6.3).
+            Schedule targeted technical workshops, mock interview bootcamps, and career readiness sessions.
           </p>
         </div>
         <Button
@@ -124,18 +134,34 @@ export const EventManagementPage = () => {
           size="sm"
           onClick={handleOpenAdd}
           leftIcon={<Plus className="w-4 h-4" />}
-          className="shadow-sm"
+          className="shadow-sm self-start sm:self-auto"
         >
           Schedule New Event
         </Button>
       </div>
 
-      {/* Events Grid */}
+      {/* Filter / Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-xs">
+        <div className="relative flex-1 max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search events by title or target skill..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+          />
+        </div>
+        <span className="text-xs text-slate-500 font-medium self-end sm:self-auto">
+          Showing {filteredEvents.length} of {events.length} events
+        </span>
+      </div>
+
+      {/* Events Table View */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+          <Skeleton variant="text" className="h-6 w-1/4" />
+          <Skeleton variant="card" className="h-48" />
         </div>
       ) : events.length === 0 ? (
         <EmptyState
@@ -149,78 +175,83 @@ export const EventManagementPage = () => {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {events.map((ev) => (
-            <article
-              key={ev.id}
-              className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                      <Calendar className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">{ev.title}</h3>
-                      <span className="text-[11px] text-slate-400">Department Intervention</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(ev)}
-                    title="Delete Event"
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+        <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px] tracking-wider">
+                  <th className="py-3 px-4">Event Title</th>
+                  <th className="py-3 px-4">Target Skill Domain</th>
+                  <th className="py-3 px-4">Date & Timing</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredEvents.map((ev) => {
+                  const evDate = new Date(ev.date);
+                  const isUpcoming = evDate >= new Date();
 
-                {/* Target Skill Chip */}
-                <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                    Target Skill Focus
-                  </span>
-                  <div className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/60">
-                    {ev.targetSkill}
-                  </div>
-                </div>
-
-                {/* Date & Organizer */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1 text-xs">
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span className="font-semibold">
-                      {new Date(ev.date).toLocaleDateString([], {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                  {ev.organizer && (
-                    <div className="flex items-center gap-2 text-slate-500 text-[11px] pt-1">
-                      <User className="w-3 h-3 text-slate-400 shrink-0" />
-                      <span>Organized by {ev.organizer.name}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                <span>Student Calendar Synced ✓</span>
-                <span className="text-amber-700 font-semibold">Active Event</span>
-              </div>
-            </article>
-          ))}
+                  return (
+                    <tr key={ev.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3.5 px-4 font-medium text-slate-900 min-w-[220px]">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                            <Calendar className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900">{ev.title}</div>
+                            <div className="text-[11px] text-slate-400">
+                              By {typeof ev.organizer === 'object' && ev.organizer !== null ? ev.organizer.name || ev.organizer.email || 'Admin' : ev.organizer || 'Admin'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                          {ev.targetSkill || 'General Technical Readiness'}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600">
+                        <div className="flex items-center gap-1.5 font-medium">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>
+                            {evDate.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Badge variant={isUpcoming ? 'success' : 'neutral'} size="xs">
+                          {isUpcoming ? 'Upcoming' : 'Concluded'}
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          onClick={() => handleDelete(ev)}
+                          title="Delete Event"
+                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* ─── SCHEDULE EVENT MODAL ─────────────────────────────────── */}
+      {/* ─── CREATE EVENT MODAL ───────────────────────────────────── */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Schedule Skill-Improvement Event"
+        title="Schedule Department Event"
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -232,26 +263,26 @@ export const EventManagementPage = () => {
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              placeholder="e.g. System Design & Distributed Caching Masterclass"
+              placeholder="e.g. Distributed System Mock Interview Bootcamp"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">
-              Target Skill Domain (SRS R.6.3) *
-            </label>
+            <label className="block font-bold text-slate-700 mb-1">Target Skill Competency</label>
             <input
               type="text"
-              required
               value={formData.targetSkill}
               onChange={(e) => setFormData({ ...formData, targetSkill: e.target.value })}
               className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              placeholder="e.g. Low-Level System Design, Microservices, Public Speaking"
+              placeholder="e.g. System Design, DSA, Cloud Infrastructure"
             />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Connect this event to weak domains detected in institutional skill gap analytics.
+            </p>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Scheduled Event Date *</label>
+            <label className="block font-bold text-slate-700 mb-1">Event Date *</label>
             <input
               type="date"
               required
@@ -277,7 +308,7 @@ export const EventManagementPage = () => {
               disabled={isSubmitting}
               isLoading={isSubmitting}
             >
-              Publish to Student Calendars
+              Schedule Event
             </Button>
           </div>
         </form>

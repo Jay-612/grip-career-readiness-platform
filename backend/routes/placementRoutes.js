@@ -41,7 +41,7 @@ router.get(
 router.get(
   '/leaderboard',
   protect,
-  authorize('faculty', 'admin', 'student'),
+  authorize('faculty', 'admin', 'student', 'recruiter'),
   getLeaderboard
 );
 

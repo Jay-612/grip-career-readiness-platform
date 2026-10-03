@@ -1,0 +1,96 @@
+{
+  "dashboard": {
+    "desktop": {
+      "totalCards": 35,
+      "buttons": 38,
+      "scrollHeight": 2142,
+      "windowHeight": 900,
+      "folds": 2.4,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0,
+    "tablet": {
+      "totalCards": 35,
+      "buttons": 38,
+      "scrollHeight": 2237,
+      "windowHeight": 1024,
+      "folds": 2.2,
+      "hasHorizontalOverflow": false
+    },
+    "mobile": {
+      "totalCards": 35,
+      "buttons": 38,
+      "scrollHeight": 3787,
+      "windowHeight": 844,
+      "folds": 4.5,
+      "hasHorizontalOverflow": false
+    }
+  },
+  "company": {
+    "desktop": {
+      "totalCards": 20,
+      "buttons": 15,
+      "scrollHeight": 1087,
+      "windowHeight": 900,
+      "folds": 1.2,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0,
+    "tablet": {
+      "totalCards": 20,
+      "buttons": 15,
+      "scrollHeight": 1107,
+      "windowHeight": 1024,
+      "folds": 1.1,
+      "hasHorizontalOverflow": false
+    },
+    "mobile": {
+      "totalCards": 20,
+      "buttons": 15,
+      "scrollHeight": 1676,
+      "windowHeight": 844,
+      "folds": 2,
+      "hasHorizontalOverflow": false
+    }
+  },
+  "feedback": {
+    "desktop": {
+      "totalCards": 21,
+      "buttons": 25,
+      "scrollHeight": 1337,
+      "windowHeight": 900,
+      "folds": 1.5,
+      "hasHorizontalOverflow": false
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0,
+    "tablet": {
+      "totalCards": 21,
+      "buttons": 25,
+      "scrollHeight": 1356,
+      "windowHeight": 1024,
+      "folds": 1.3,
+      "hasHorizontalOverflow": false
+    },
+    "mobile": {
+      "totalCards": 21,
+      "buttons": 25,
+      "scrollHeight": 1981,
+      "windowHeight": 844,
+      "folds": 2.3,
+      "hasHorizontalOverflow": false
+    }
+  },
+  "interactions": {
+    "candidateSearchWorks": true,
+    "candidateDrawerWorks": true,
+    "shortlistToggleWorks": true,
+    "shortlistPanelWorks": true,
+    "companyEditModalWorks": true,
+    "companySaveWorks": true,
+    "feedbackModalWorks": true,
+    "feedbackSubmitWorks": true
+  }
+}

@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Search,
   Bell,
   Menu,
   LogOut,
   User as UserIcon,
-  Shield,
   ChevronDown,
   BookOpen,
   Target,
@@ -22,8 +21,8 @@ import {
   Building,
   Briefcase,
   BarChart2,
-  FileText,
-  CheckCheck
+  CheckCheck,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../common/Avatar';
@@ -60,7 +59,7 @@ const ROLE_NOTIFICATIONS = {
         path: '/student/career-compass',
       },
     ],
-    footerText: 'View All Sprint Commitments →',
+    footerText: 'View All Goals →',
     footerPath: '/student/goals',
   },
   faculty: {
@@ -68,7 +67,7 @@ const ROLE_NOTIFICATIONS = {
       {
         id: 'faculty-1',
         title: 'Mock Interview Requests',
-        description: 'Student interview requests awaiting your acceptance & Google Meet generation.',
+        description: 'Student interview requests awaiting evaluation in your schedule.',
         time: 'Action required',
         icon: Video,
         iconColor: 'text-blue-600',
@@ -77,7 +76,7 @@ const ROLE_NOTIFICATIONS = {
       {
         id: 'faculty-2',
         title: 'Student Guidance Inquiries',
-        description: 'Unanswered student career guidance questions awaiting your review in the inbox.',
+        description: 'Unanswered student career guidance questions awaiting your review.',
         time: 'Requires review',
         icon: MessageSquare,
         iconColor: 'text-amber-500',
@@ -93,7 +92,7 @@ const ROLE_NOTIFICATIONS = {
         path: '/faculty/analytics',
       },
     ],
-    footerText: 'Open Faculty Evaluation Center →',
+    footerText: 'Open Interview Center →',
     footerPath: '/faculty/interviews',
   },
   alumni: {
@@ -110,15 +109,15 @@ const ROLE_NOTIFICATIONS = {
       {
         id: 'alumni-2',
         title: 'Placement Experience Shared',
-        description: 'Your shared placement insights article is receiving positive student feedback.',
+        description: 'Your shared placement insights article is receiving student feedback.',
         time: 'Trending',
         icon: Sparkles,
         iconColor: 'text-amber-500',
-        path: '/alumni/stories',
+        path: '/alumni/experience',
       },
       {
         id: 'alumni-3',
-        title: 'Annual Referral Drive 2026',
+        title: 'Campus Referral Drive',
         description: 'Spring campus referral drive is now accepting alumni company openings.',
         time: 'Active cycle',
         icon: Briefcase,
@@ -133,7 +132,7 @@ const ROLE_NOTIFICATIONS = {
     items: [
       {
         id: 'recruiter-1',
-        title: 'Tier-1 Candidate Matches',
+        title: 'Candidate Matches',
         description: '14 verified candidates meet your Cloud Backend & Full-Stack criteria.',
         time: 'Updated today',
         icon: Users,
@@ -151,10 +150,10 @@ const ROLE_NOTIFICATIONS = {
       },
       {
         id: 'recruiter-3',
-        title: 'Institutional Drive Verified',
+        title: 'Drive Verified',
         description: 'Company credentials verified for Spring 2026 campus placement hiring.',
         time: 'Verified',
-        icon: Shield,
+        icon: Building,
         iconColor: 'text-emerald-500',
         path: '/recruiter/company',
       },
@@ -169,7 +168,7 @@ const ROLE_NOTIFICATIONS = {
         title: 'User Role Access Requests',
         description: 'Faculty, recruiter, and alumni accounts pending administrative verification.',
         time: 'Pending approval',
-        icon: Shield,
+        icon: Users,
         iconColor: 'text-amber-500',
         path: '/admin/users',
       },
@@ -203,22 +202,13 @@ const ROLE_SEARCH_SUGGESTIONS = {
     {
       category: 'Student Portal Modules',
       items: [
-        { label: 'Student Dashboard', path: '/student/dashboard', icon: Sparkles },
-        { label: 'Weekly Goals Workspace', path: '/student/goals', icon: Target },
-        { label: 'Career Compass & Roadmaps', path: '/student/career-compass', icon: Compass },
-        { label: 'Mock Interview Center', path: '/student/interviews', icon: Video },
-        { label: 'Faculty & Mentorship Guidance', path: '/student/guidance', icon: Users },
-        { label: 'Profile & Skills Competencies', path: '/student/profile', icon: UserIcon },
-        { label: 'Alumni Placement Stories', path: '/student/alumni-posts', icon: BookOpen },
-      ],
-    },
-    {
-      category: 'Engineering Tracks',
-      items: [
-        { label: 'Cloud Backend Engineering', path: '/student/career-compass', icon: BookOpen },
-        { label: 'Full-Stack Product Engineering', path: '/student/career-compass', icon: BookOpen },
-        { label: 'DevOps & Cloud Infrastructure', path: '/student/career-compass', icon: BookOpen },
-        { label: 'AI & Data Systems Engineering', path: '/student/career-compass', icon: BookOpen },
+        { label: 'Dashboard', path: '/student/dashboard', icon: Sparkles },
+        { label: 'Career Compass', path: '/student/career-compass', icon: Compass },
+        { label: 'Goals', path: '/student/goals', icon: Target },
+        { label: 'Interviews', path: '/student/interviews', icon: Video },
+        { label: 'Guidance', path: '/student/guidance', icon: MessageSquare },
+        { label: 'Alumni Insights', path: '/student/alumni-posts', icon: BookOpen },
+        { label: 'Profile', path: '/student/profile', icon: UserIcon },
       ],
     },
   ],
@@ -226,10 +216,10 @@ const ROLE_SEARCH_SUGGESTIONS = {
     {
       category: 'Faculty Management Console',
       items: [
-        { label: 'Faculty Dashboard & Cohort Overview', path: '/faculty/dashboard', icon: Sparkles },
-        { label: 'Interview Evaluation & Rubrics', path: '/faculty/interviews', icon: Video },
-        { label: 'Student Guidance & Inquiries Inbox', path: '/faculty/guidance', icon: MessageSquare },
-        { label: 'HOD Department Readiness Analytics', path: '/faculty/analytics', icon: BarChart2 },
+        { label: 'Dashboard', path: '/faculty/dashboard', icon: Sparkles },
+        { label: 'Interviews', path: '/faculty/interviews', icon: Video },
+        { label: 'Guidance', path: '/faculty/guidance', icon: MessageSquare },
+        { label: 'Analytics', path: '/faculty/analytics', icon: BarChart2 },
       ],
     },
   ],
@@ -237,9 +227,9 @@ const ROLE_SEARCH_SUGGESTIONS = {
     {
       category: 'Alumni Mentorship Console',
       items: [
-        { label: 'Alumni Dashboard & Community Hub', path: '/alumni/dashboard', icon: Sparkles },
-        { label: 'Student Mentorship Inquiries', path: '/alumni/mentorship', icon: Users },
-        { label: 'Publish Placement Stories', path: '/alumni/stories', icon: BookOpen },
+        { label: 'Dashboard', path: '/alumni/dashboard', icon: Sparkles },
+        { label: 'Mentorship', path: '/alumni/mentorship', icon: Users },
+        { label: 'Experience', path: '/alumni/experience', icon: BookOpen },
       ],
     },
   ],
@@ -247,9 +237,9 @@ const ROLE_SEARCH_SUGGESTIONS = {
     {
       category: 'Campus Recruitment Console',
       items: [
-        { label: 'Recruiter Dashboard & Candidate Search', path: '/recruiter/dashboard', icon: Sparkles },
-        { label: 'Corporate Company Profile', path: '/recruiter/company', icon: Building },
-        { label: 'Student Interview Feedback & Ratings', path: '/recruiter/feedback', icon: CheckCircle2 },
+        { label: 'Dashboard', path: '/recruiter/dashboard', icon: Sparkles },
+        { label: 'Company', path: '/recruiter/company', icon: Building },
+        { label: 'Feedback', path: '/recruiter/feedback', icon: CheckCircle2 },
       ],
     },
   ],
@@ -257,21 +247,53 @@ const ROLE_SEARCH_SUGGESTIONS = {
     {
       category: 'System Administration Modules',
       items: [
-        { label: 'Admin Dashboard & System Overview', path: '/admin/dashboard', icon: Sparkles },
-        { label: 'User & Role Access Management', path: '/admin/users', icon: Shield },
-        { label: 'Curriculum & Semester Frameworks', path: '/admin/curriculum', icon: BookOpen },
-        { label: 'Corporate Company Directory', path: '/admin/companies', icon: Building },
-        { label: 'Campus Placement Drives & Events', path: '/admin/events', icon: Calendar },
-        { label: 'Placement Telemetry & System Analytics', path: '/admin/analytics', icon: BarChart2 },
+        { label: 'Dashboard', path: '/admin/dashboard', icon: Sparkles },
+        { label: 'Users', path: '/admin/users', icon: Users },
+        { label: 'Curriculum', path: '/admin/curriculum', icon: BookOpen },
+        { label: 'Companies', path: '/admin/companies', icon: Building },
+        { label: 'Events', path: '/admin/events', icon: Calendar },
+        { label: 'Analytics', path: '/admin/analytics', icon: BarChart2 },
       ],
     },
   ],
 };
 
+// Route-to-section label mapping for breadcrumb/title display
+const SECTION_TITLES = {
+  // Student
+  '/student/dashboard': 'Dashboard',
+  '/student/career-compass': 'Career Compass',
+  '/student/goals': 'Goals',
+  '/student/interviews': 'Interviews',
+  '/student/guidance': 'Guidance',
+  '/student/alumni-posts': 'Alumni Insights',
+  '/student/profile': 'Profile',
+  // Faculty
+  '/faculty/dashboard': 'Dashboard',
+  '/faculty/interviews': 'Interviews',
+  '/faculty/guidance': 'Guidance',
+  '/faculty/analytics': 'Analytics',
+  // Alumni
+  '/alumni/dashboard': 'Dashboard',
+  '/alumni/mentorship': 'Mentorship',
+  '/alumni/experience': 'Experience',
+  // Recruiter
+  '/recruiter/dashboard': 'Dashboard',
+  '/recruiter/company': 'Company',
+  '/recruiter/feedback': 'Feedback',
+  // Admin
+  '/admin/dashboard': 'Dashboard',
+  '/admin/users': 'Users',
+  '/admin/curriculum': 'Curriculum',
+  '/admin/companies': 'Companies',
+  '/admin/events': 'Events',
+  '/admin/analytics': 'Analytics',
+};
+
 const TopBar = ({
   breadcrumbs = [],
-  statusBadge,
-  searchPlaceholder = 'Search roadmaps, competencies, modules...',
+  statusBadge = null,
+  searchPlaceholder = 'Search portal...',
   onSearch,
   quickAction,
   primaryAction,
@@ -280,6 +302,7 @@ const TopBar = ({
   className = '',
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -327,7 +350,15 @@ const TopBar = ({
     navigate(item.path);
   };
 
-  // Filter spotlight suggestions based on role-specific list
+  // Derive section title from current pathname if breadcrumbs are not provided
+  const currentSection = useMemo(() => {
+    if (breadcrumbs.length > 0) {
+      return breadcrumbs[breadcrumbs.length - 1];
+    }
+    return SECTION_TITLES[location.pathname] || 'Dashboard';
+  }, [breadcrumbs, location.pathname]);
+
+  // Filter spotlight suggestions
   const filteredSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return searchSuggestions;
     return searchSuggestions
@@ -358,54 +389,52 @@ const TopBar = ({
         ${className}
       `}
     >
-      {/* Left: Mobile Toggle & Breadcrumbs & Status */}
+      {/* Left: Mobile Menu Toggle & Clean Section Title / Breadcrumbs */}
       <div className="flex items-center gap-3 min-w-0">
         <button
           type="button"
           onClick={onMenuToggle}
-          className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-          aria-label="Toggle Navigation Menu"
+          className="lg:hidden p-2 -ml-1 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          aria-label="Toggle navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Breadcrumb Trail */}
-        {breadcrumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500">
-            {breadcrumbs.map((crumb, idx) => {
-              const isLast = idx === breadcrumbs.length - 1;
-              return (
-                <React.Fragment key={idx}>
-                  {idx > 0 && <span className="text-slate-300">/</span>}
-                  <span
-                    className={`truncate ${
-                      isLast
-                        ? 'font-semibold text-slate-900'
-                        : 'hover:text-slate-700 transition-colors cursor-default'
-                    }`}
-                  >
-                    {crumb}
-                  </span>
-                </React.Fragment>
-              );
-            })}
-          </nav>
-        )}
-
-        {/* Status Badge */}
-        {statusBadge || (
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[11px] font-semibold text-blue-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Session: Spring 2026 Cycle</span>
-          </div>
-        )}
+        {/* Concise Section Title / Breadcrumb Trail */}
+        <div className="flex items-center gap-2 min-w-0">
+          {breadcrumbs.length > 1 ? (
+            <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500">
+              {breadcrumbs.map((crumb, idx) => {
+                const isLast = idx === breadcrumbs.length - 1;
+                return (
+                  <React.Fragment key={idx}>
+                    {idx > 0 && <span className="text-slate-300">/</span>}
+                    <span
+                      className={`truncate ${
+                        isLast
+                          ? 'font-semibold text-slate-900'
+                          : 'hover:text-slate-700 transition-colors cursor-default'
+                      }`}
+                    >
+                      {crumb}
+                    </span>
+                  </React.Fragment>
+                );
+              })}
+            </nav>
+          ) : (
+            <span className="font-semibold text-sm sm:text-base text-slate-900 tracking-tight truncate">
+              {currentSection}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Middle: Interactive Spotlight Global Search */}
-      <div ref={searchContainerRef} className="flex-1 max-w-md hidden md:flex items-center relative">
+      {/* Middle: Optional Global Navigation Search */}
+      <div ref={searchContainerRef} className="flex-1 max-w-sm hidden md:flex items-center relative">
         <div className="relative w-full">
           <label htmlFor="global-search-input" className="sr-only">
-            Search roadmaps, competencies, and portal modules
+            Search portal sections
           </label>
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -413,7 +442,7 @@ const TopBar = ({
             type="text"
             placeholder={searchPlaceholder}
             value={searchQuery}
-            aria-label="Search roadmaps, competencies, and portal modules"
+            aria-label="Search portal sections"
             aria-expanded={isSearchFocused}
             onFocus={() => setIsSearchFocused(true)}
             onChange={(e) => {
@@ -424,7 +453,7 @@ const TopBar = ({
           />
         </div>
 
-        {/* Spotlight Suggestions Dropdown */}
+        {/* Search Suggestions Dropdown */}
         {isSearchFocused && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2 z-50 text-xs animate-fadeIn max-h-80 overflow-y-auto">
             {filteredSuggestions.length > 0 ? (
@@ -460,19 +489,16 @@ const TopBar = ({
               ))
             ) : (
               <div className="p-4 text-center text-slate-400 text-xs">
-                No matching portal roadmaps or competencies found.
+                No matching portal sections found.
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Right: Actions, Notifications & Avatar Dropdown */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        {quickAction && <div className="hidden sm:block">{quickAction}</div>}
-        {primaryAction && <div>{primaryAction}</div>}
-
-        {/* Interactive Notification Bell */}
+      {/* Right: Notifications & Profile Menu Only */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Notification Bell */}
         <div className="relative">
           <button
             type="button"
@@ -481,7 +507,7 @@ const TopBar = ({
               setIsProfileOpen(false);
             }}
             className="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            aria-label={`Platform Notifications (${unreadCount} Unread)`}
+            aria-label={`Platform notifications (${unreadCount} unread)`}
             aria-expanded={isNotificationsOpen}
           >
             <Bell className="w-4 h-4" />
@@ -500,10 +526,7 @@ const TopBar = ({
               <div className="absolute right-0 mt-2 w-80 sm:w-88 bg-white rounded-2xl border border-slate-200 shadow-2xl py-3 z-50 text-xs animate-fadeIn">
                 <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900">Notifications & Alerts</span>
-                    <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
-                      {displayRole}
-                    </span>
+                    <span className="font-bold text-slate-900">Notifications</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
@@ -571,7 +594,7 @@ const TopBar = ({
           )}
         </div>
 
-        {/* Profile Avatar & Popover Menu */}
+        {/* Profile Avatar & Subdued Menu */}
         <div className="relative">
           <button
             type="button"
@@ -603,9 +626,8 @@ const TopBar = ({
                 <div className="px-3.5 py-2 border-b border-slate-100">
                   <div className="font-semibold text-slate-900 truncate">{displayName}</div>
                   <div className="text-[11px] text-slate-400 truncate">{displayEmail}</div>
-                  <div className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-semibold uppercase tracking-wider">
-                    <Shield className="w-2.5 h-2.5" />
-                    <span className="capitalize">{displayRole}</span>
+                  <div className="text-[10px] text-slate-500 font-medium capitalize mt-0.5">
+                    {displayRole}
                   </div>
                 </div>
 
@@ -629,7 +651,25 @@ const TopBar = ({
                     className="w-full px-3.5 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                   >
                     <UserIcon className="w-3.5 h-3.5 text-slate-400" />
-                    <span>My Profile</span>
+                    <span>Profile</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      const targetPath =
+                        displayRole === 'student'
+                          ? '/student/profile'
+                          : displayRole === 'recruiter'
+                          ? '/recruiter/company'
+                          : `/${displayRole}/dashboard`;
+                      navigate(targetPath);
+                    }}
+                    className="w-full px-3.5 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Settings</span>
                   </button>
                 </div>
 
