@@ -6,7 +6,15 @@ import googleCalendarService from '../services/googleCalendarService.js';
 // ─── POST /api/appointments — Request Mock Interview (Status: Pending) ──
 export const scheduleMockInterview = async (req, res) => {
   try {
-    const { date, time, facultyId, duration = 45 } = req.body;
+    const {
+      date,
+      time,
+      facultyId,
+      duration = 45,
+      dateTime: reqDateTime,
+      timezoneOffset,
+      customMeetLink = '',
+    } = req.body;
     const studentId = req.user?.id || req.user?.userId;
 
     if (!date || !time || !facultyId) {
@@ -32,9 +40,16 @@ export const scheduleMockInterview = async (req, res) => {
       });
     }
 
-    // Construct Date object from date and time strings (supports any arbitrary time)
+    // Construct Date object with timezone awareness without timezone skew
     let dateTime;
-    if (date.includes('T')) {
+    if (reqDateTime) {
+      dateTime = new Date(reqDateTime);
+    } else if (timezoneOffset !== undefined && timezoneOffset !== null && date && time) {
+      const timeClean = time.length === 5 ? `${time}:00` : time;
+      const localIsoLike = `${date}T${timeClean}.000Z`;
+      const utcMillis = new Date(localIsoLike).getTime() + Number(timezoneOffset) * 60 * 1000;
+      dateTime = new Date(utcMillis);
+    } else if (date.includes('T')) {
       dateTime = new Date(date);
     } else {
       dateTime = new Date(`${date}T${time.length === 5 ? `${time}:00` : time}`);
@@ -50,14 +65,31 @@ export const scheduleMockInterview = async (req, res) => {
       }
     }
 
-    // Appointment starts in pending status with no meet link generated yet.
-    // The Google Meet link is generated strictly when the faculty accepts.
+    // Guard against scheduling in the past
+    const now = new Date();
+    if (dateTime.getTime() < now.getTime() - 60 * 1000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Interview appointment cannot be scheduled in the past. Please select a future date and time.',
+      });
+    }
+
+    let cleanMeetLink = '';
+    if (customMeetLink && typeof customMeetLink === 'string' && customMeetLink.trim()) {
+      cleanMeetLink = customMeetLink.trim();
+      if (!/^https?:\/\//i.test(cleanMeetLink)) {
+        cleanMeetLink = `https://${cleanMeetLink}`;
+      }
+    }
+
+    // Appointment starts in pending status.
+    // The Google Meet link is generated strictly when the faculty accepts, unless custom link was provided.
     const createdInterview = await MockInterview.create({
       studentId,
       interviewerId: facultyId,
       dateTime,
       duration: Number(duration) || 45,
-      meetLink: '',
+      meetLink: cleanMeetLink || null,
       googleEventId: '',
       calendarHtmlLink: '',
       status: 'pending',
@@ -93,9 +125,14 @@ export const getAppointments = async (req, res) => {
       });
     }
 
-    const appointments = await MockInterview.find({
+    const filter = {
       $or: [{ studentId: currentUserId }, { interviewerId: currentUserId }],
-    })
+    };
+    if (req.query.status && req.query.status !== 'all') {
+      filter.status = req.query.status;
+    }
+
+    const appointments = await MockInterview.find(filter)
       .populate('studentId', 'name email')
       .populate('interviewerId', 'name email')
       .sort({ dateTime: -1 });
@@ -109,6 +146,7 @@ export const getAppointments = async (req, res) => {
 
       const startTime = apt.dateTime ? new Date(apt.dateTime) : new Date();
       const durationMs = (apt.duration || 45) * 60 * 1000;
+      const unlockTime = new Date(startTime.getTime() - EARLY_BUFFER_MS);
       const endTime = new Date(startTime.getTime() + durationMs + 15 * 60 * 1000);
 
       // Determine time-gate join status
@@ -138,10 +176,10 @@ export const getAppointments = async (req, res) => {
         joinMessage = 'Faculty host access active.';
       } else {
         // Student time check: strictly prevent joining before the scheduled start window (5 min prior)
-        if (now.getTime() < startTime.getTime() - EARLY_BUFFER_MS) {
+        if (now.getTime() < unlockTime.getTime()) {
           canJoin = false;
           joinStatusReason = 'EARLY_LOCK';
-          const diffMs = startTime.getTime() - now.getTime();
+          const diffMs = unlockTime.getTime() - now.getTime();
           const diffMins = Math.ceil(diffMs / (60 * 1000));
           const diffHrs = Math.floor(diffMins / 60);
           const remainingMins = diffMins % 60;
@@ -170,10 +208,24 @@ export const getAppointments = async (req, res) => {
         status: apt.status,
         meetLink: visibleMeetLink,
         rawMeetLinkAvailable: Boolean(apt.meetLink),
+        meetingType: apt.meetLink?.includes('meet.google.com')
+          ? 'google_meet'
+          : apt.meetLink?.includes('jit.si')
+          ? 'instant_webrtc'
+          : apt.meetLink
+          ? 'custom_video'
+          : 'none',
+        meetingProvider: apt.meetLink?.includes('meet.google.com')
+          ? 'Google Meet'
+          : apt.meetLink?.includes('jit.si')
+          ? 'Instant WebRTC Room'
+          : apt.meetLink
+          ? 'Custom Video Room'
+          : 'None',
         canJoin,
         joinStatusReason,
         joinMessage,
-        opensAt: new Date(startTime.getTime() - EARLY_BUFFER_MS),
+        opensAt: unlockTime,
         googleEventId: apt.googleEventId || '',
         calendarHtmlLink: isStudent && !canJoin ? '' : (apt.calendarHtmlLink || ''),
         student: apt.studentId
@@ -252,12 +304,15 @@ export const createOrRefreshMeetLink = async (req, res) => {
       appointment.meetLink = cleanLink;
       await appointment.save();
 
+      const isGoogle = cleanLink.includes('meet.google.com');
       return res.status(200).json({
         success: true,
         message: 'Meeting room link updated successfully',
         meetLink: appointment.meetLink,
         googleEventId: appointment.googleEventId,
         calendarHtmlLink: appointment.calendarHtmlLink,
+        meetingType: isGoogle ? 'google_meet' : 'custom_url',
+        meetingProvider: isGoogle ? 'Google Meet' : 'Custom Meeting URL',
       });
     }
 
@@ -282,6 +337,8 @@ export const createOrRefreshMeetLink = async (req, res) => {
       meetLink: appointment.meetLink,
       googleEventId: appointment.googleEventId,
       calendarHtmlLink: appointment.calendarHtmlLink,
+      meetingType: calendarResult.meetingType || (appointment.meetLink?.includes('meet.google.com') ? 'google_meet' : 'instant_webrtc'),
+      meetingProvider: calendarResult.meetingProvider || (appointment.meetLink?.includes('meet.google.com') ? 'Google Meet' : 'Instant WebRTC Room'),
     });
   } catch (error) {
     return res.status(500).json({
@@ -431,8 +488,22 @@ export const acceptAppointment = async (req, res) => {
         meetLink: appointment.meetLink,
         googleEventId: appointment.googleEventId,
         calendarHtmlLink: appointment.calendarHtmlLink,
-        student: appointment.studentId,
-        interviewer: appointment.interviewerId,
+        meetingType: calendarResult.meetingType || (appointment.meetLink?.includes('meet.google.com') ? 'google_meet' : 'instant_webrtc'),
+        meetingProvider: calendarResult.meetingProvider || (appointment.meetLink?.includes('meet.google.com') ? 'Google Meet' : 'Instant WebRTC Room'),
+        student: appointment.studentId
+          ? {
+              id: appointment.studentId._id,
+              name: appointment.studentId.name,
+              email: appointment.studentId.email,
+            }
+          : null,
+        interviewer: appointment.interviewerId
+          ? {
+              id: appointment.interviewerId._id,
+              name: appointment.interviewerId.name,
+              email: appointment.interviewerId.email,
+            }
+          : null,
       },
     });
   } catch (error) {
@@ -524,8 +595,10 @@ export const joinAppointment = async (req, res) => {
       });
     }
 
-    const isStudent = (appointment.studentId || '').toString() === currentUserId;
-    const isInterviewer = (appointment.interviewerId || '').toString() === currentUserId;
+    const studentIdStr = (appointment.studentId?._id || appointment.studentId || '').toString();
+    const interviewerIdStr = (appointment.interviewerId?._id || appointment.interviewerId || '').toString();
+    const isStudent = studentIdStr === currentUserId;
+    const isInterviewer = interviewerIdStr === currentUserId;
     const isAdmin = userRole === 'admin';
 
     if (!isStudent && !isInterviewer && !isAdmin) {
@@ -536,7 +609,7 @@ export const joinAppointment = async (req, res) => {
     }
 
     if (appointment.status === 'pending') {
-      return res.status(400).json({
+      return res.status(403).json({
         success: false,
         code: 'APPOINTMENT_PENDING',
         message: 'This interview appointment is still pending faculty acceptance.',
@@ -559,22 +632,24 @@ export const joinAppointment = async (req, res) => {
       });
     }
 
+    // Faculty host / Admin can enter at any time
     // Time-gate validation for student: cannot join before scheduled start (with 5-minute pre-session buffer)
     if (isStudent && !isAdmin) {
       const now = new Date();
       const startTime = new Date(appointment.dateTime);
       const EARLY_BUFFER_MS = 5 * 60 * 1000; // 5 min prior
       const durationMs = (appointment.duration || 45) * 60 * 1000;
+      const unlockTime = new Date(startTime.getTime() - EARLY_BUFFER_MS);
       const endTime = new Date(startTime.getTime() + durationMs + 15 * 60 * 1000);
 
-      if (now.getTime() < startTime.getTime() - EARLY_BUFFER_MS) {
-        const diffMs = startTime.getTime() - now.getTime();
+      if (now.getTime() < unlockTime.getTime()) {
+        const diffMs = unlockTime.getTime() - now.getTime();
         const diffMins = Math.ceil(diffMs / (60 * 1000));
         return res.status(403).json({
           success: false,
           code: 'EARLY_JOIN_FORBIDDEN',
           message: `You cannot join the meeting before the scheduled time. Room opens 5 minutes before the session (in ${diffMins} minutes).`,
-          opensAt: new Date(startTime.getTime() - EARLY_BUFFER_MS),
+          opensAt: unlockTime,
         });
       }
 
@@ -590,6 +665,7 @@ export const joinAppointment = async (req, res) => {
     return res.status(200).json({
       success: true,
       meetLink: appointment.meetLink,
+      status: appointment.status,
     });
   } catch (error) {
     return res.status(500).json({

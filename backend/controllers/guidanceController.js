@@ -103,12 +103,10 @@ export const getGuidanceRequests = async (req, res) => {
       // Students can only see their own requests
       filter.studentId = currentUserId;
     } else if (userRole === 'faculty') {
-      // Approach 1: Faculty member sees requests sent specifically to THEM (or legacy 'all')
+      // Faculty member sees requests sent specifically to THEM or general 'all'
       filter.$or = [
         { targetType: 'faculty', targetFacultyId: currentUserId },
         { targetType: 'all' },
-        { targetType: { $exists: false } },
-        { targetType: null },
       ];
     } else if (userRole === 'alumni') {
       // Approach 2: Alumni member sees requests sent to ALL alumni (or legacy 'all')

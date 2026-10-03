@@ -3,13 +3,12 @@ import crypto from 'crypto';
 import { getGoogleOAuthClient, isGoogleConfigured } from '../config/googleOAuth.js';
 
 /**
- * Generate a realistic Google Meet URL format (e.g., https://meet.google.com/abc-defg-hij)
+ * Generate an instant, active WebRTC room URL (Jitsi Meet).
+ * NEVER returns fake meet.google.com URLs that error on Google's servers.
  */
 export const generateSimulatedMeetLink = () => {
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  const part = (length) =>
-    Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  return `https://meet.google.com/${part(3)}-${part(4)}-${part(3)}`;
+  const roomId = crypto.randomUUID().slice(0, 10);
+  return `https://meet.jit.si/grip-mock-interview-${roomId}`;
 };
 
 /**
@@ -22,7 +21,7 @@ export const generateWebCalendarLink = ({ summary, description, startDateTime, e
     const endStr = formatTime(endDateTime);
     const title = encodeURIComponent(summary || 'GRIP Mock Technical Interview');
     const details = encodeURIComponent(
-      `${description || 'GRIP Platform Mock Interview Session'}\n\nJoin Google Meet: ${meetLink}`
+      `${description || 'GRIP Platform Mock Interview Session'}\n\nJoin Video Room: ${meetLink}`
     );
     const location = encodeURIComponent(meetLink);
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
@@ -32,7 +31,7 @@ export const generateWebCalendarLink = ({ summary, description, startDateTime, e
 };
 
 /**
- * Create a Google Calendar Event with an attached Google Meet room
+ * Create a Google Calendar Event with an attached video room
  *
  * @param {Object} params
  * @param {string} params.summary - Event title
@@ -41,7 +40,8 @@ export const generateWebCalendarLink = ({ summary, description, startDateTime, e
  * @param {number} [params.durationMinutes=45] - Duration in minutes
  * @param {Object} [params.student] - Student user object ({ name, email })
  * @param {Object} [params.faculty] - Faculty user object ({ name, email })
- * @returns {Promise<{ success: boolean, eventId: string, meetLink: string, calendarHtmlLink: string, isSimulated: boolean }>}
+ * @param {string} [params.customMeetLink] - User-supplied custom meeting link (e.g. from meet.google.com/new)
+ * @returns {Promise<{ success: boolean, eventId: string, meetLink: string, calendarHtmlLink: string, isSimulated: boolean, meetingType: string, meetingProvider: string }>}
  */
 export const createCalendarEventWithMeet = async ({
   summary = 'GRIP Mock Technical Interview',
@@ -57,12 +57,18 @@ export const createCalendarEventWithMeet = async ({
 
   // If a valid custom meeting link was explicitly supplied by user (e.g., from meet.google.com/new)
   if (customMeetLink && typeof customMeetLink === 'string' && customMeetLink.trim()) {
-    const cleanLink = customMeetLink.trim();
+    let cleanLink = customMeetLink.trim();
+    if (!/^https?:\/\//i.test(cleanLink)) {
+      cleanLink = `https://${cleanLink}`;
+    }
+    const isGoogleMeet = cleanLink.includes('meet.google.com');
     const simulatedEventId = `grip-custom-${crypto.randomUUID().slice(0, 12)}`;
     return {
       success: true,
       eventId: simulatedEventId,
       meetLink: cleanLink,
+      meetingType: isGoogleMeet ? 'google_meet' : 'custom_webrtc',
+      meetingProvider: isGoogleMeet ? 'Google Meet (Custom Link)' : 'Custom Video Room',
       calendarHtmlLink: generateWebCalendarLink({
         summary,
         description,
@@ -135,16 +141,18 @@ export const createCalendarEventWithMeet = async ({
         success: true,
         eventId: data.id,
         meetLink: hangoutLink || '',
+        meetingType: 'google_meet',
+        meetingProvider: 'Google Meet',
         calendarHtmlLink: data.htmlLink || generateWebCalendarLink({ summary, description, startDateTime: start, endDateTime: end, meetLink: hangoutLink }),
         isSimulated: false,
       };
     } catch (apiError) {
-      console.warn('⚠️ Google Calendar API call failed (falling back to simulated video room):', apiError.message);
+      console.warn('⚠️ Google Calendar API call failed (falling back to instant WebRTC room):', apiError.message);
     }
   }
 
   // ─── Fallback Mode (When Google OAuth is unconfigured in .env) ───
-  // Note: Random fake strings on meet.google.com are rejected by Google's servers.
+  // Note: Random fake strings on meet.google.com are rejected with "Invalid meeting code".
   // We provide an active, instant, working WebRTC room fallback (no login/keys required)
   // or allow faculty/students to paste their real Google Meet link created at meet.google.com/new.
   const simulatedEventId = `grip-${crypto.randomUUID().slice(0, 10)}`;
@@ -161,6 +169,8 @@ export const createCalendarEventWithMeet = async ({
     success: true,
     eventId: simulatedEventId,
     meetLink: workingVideoRoom,
+    meetingType: 'instant_webrtc',
+    meetingProvider: 'Instant WebRTC Room (Jitsi Meet)',
     calendarHtmlLink,
     isSimulated: true,
   };

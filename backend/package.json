@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "nodemon index.js",
     "seed": "node seed/seed.js",
-    "seed:reset": "node seed/cleanup.js"
+    "test": "node test-action-plan-e2e.js && node test-mock-interview-e2e.js",
+    "test:action-plan": "node test-action-plan-e2e.js",
+    "test:mock-interview": "node test-mock-interview-e2e.js"
   },
   "type": "module",
   "keywords": [],

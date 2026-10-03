@@ -20,7 +20,7 @@ const mockInterviewSchema = new mongoose.Schema(
     },
     meetLink: {
       type: String,
-      default: '',
+      default: null,
       trim: true,
     },
     googleEventId: {

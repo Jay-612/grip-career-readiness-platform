@@ -1,0 +1,1640 @@
+{
+  "timestamp": "2026-10-03T10:10:31.957Z",
+  "totalRoutes": 26,
+  "desktop": [
+    {
+      "id": "public-landing",
+      "path": "/",
+      "actualUrl": "http://localhost:5173/",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": null,
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\public-landing.png",
+      "uiMetrics": {
+        "totalCards": 98,
+        "buttons": 17,
+        "inputs": 0,
+        "headings": 25,
+        "scrollHeight": 4176,
+        "windowHeight": 900,
+        "scrollFoldRatio": 4.6
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "public-login",
+      "path": "/login",
+      "actualUrl": "http://localhost:5173/login",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": null,
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\public-login.png",
+      "uiMetrics": {
+        "totalCards": 25,
+        "buttons": 10,
+        "inputs": 3,
+        "headings": 1,
+        "scrollHeight": 1102,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.2
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "public-register",
+      "path": "/register",
+      "actualUrl": "http://localhost:5173/register",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": null,
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\public-register.png",
+      "uiMetrics": {
+        "totalCards": 34,
+        "buttons": 8,
+        "inputs": 6,
+        "headings": 1,
+        "scrollHeight": 1198,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-dashboard",
+      "path": "/student/dashboard",
+      "actualUrl": "http://localhost:5173/student/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\student-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 97,
+        "buttons": 11,
+        "inputs": 1,
+        "headings": 12,
+        "scrollHeight": 2110,
+        "windowHeight": 900,
+        "scrollFoldRatio": 2.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-profile",
+      "path": "/student/profile",
+      "actualUrl": "http://localhost:5173/student/profile",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\student-profile.png",
+      "uiMetrics": {
+        "totalCards": 90,
+        "buttons": 17,
+        "inputs": 1,
+        "headings": 16,
+        "scrollHeight": 1994,
+        "windowHeight": 900,
+        "scrollFoldRatio": 2.2
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-career-compass",
+      "path": "/student/career-compass",
+      "actualUrl": "http://localhost:5173/student/career-compass",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\student-career-compass.png",
+      "uiMetrics": {
+        "totalCards": 135,
+        "buttons": 15,
+        "inputs": 1,
+        "headings": 22,
+        "scrollHeight": 3553,
+        "windowHeight": 900,
+        "scrollFoldRatio": 3.9
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-goals",
+      "path": "/student/goals",
+      "actualUrl": "http://localhost:5173/student/goals",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\student-goals.png",
+      "uiMetrics": {
+        "totalCards": 115,
+        "buttons": 24,
+        "inputs": 7,
+        "headings": 5,
+        "scrollHeight": 1869,
+        "windowHeight": 900,
+        "scrollFoldRatio": 2.1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-guidance",
+      "path": "/student/guidance",
+      "actualUrl": "http://localhost:5173/student/guidance",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\student-guidance.png",
+      "uiMetrics": {
+        "totalCards": 90,
+        "buttons": 19,
+        "inputs": 3,
+        "headings": 4,
+        "scrollHeight": 1491,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.7
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-interviews",
+      "path": "/student/interviews",
+      "actualUrl": "http://localhost:5173/student/interviews",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\student-interviews.png",
+      "uiMetrics": {
+        "totalCards": 77,
+        "buttons": 19,
+        "inputs": 1,
+        "headings": 5,
+        "scrollHeight": 1205,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-alumni-posts",
+      "path": "/student/alumni-posts",
+      "actualUrl": "http://localhost:5173/student/alumni-posts",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\student-alumni-posts.png",
+      "uiMetrics": {
+        "totalCards": 92,
+        "buttons": 38,
+        "inputs": 3,
+        "headings": 6,
+        "scrollHeight": 1355,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.5
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "faculty-dashboard",
+      "path": "/faculty/dashboard",
+      "actualUrl": "http://localhost:5173/faculty/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\faculty-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 93,
+        "buttons": 16,
+        "inputs": 1,
+        "headings": 7,
+        "scrollHeight": 1769,
+        "windowHeight": 900,
+        "scrollFoldRatio": 2
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "faculty-interviews",
+      "path": "/faculty/interviews",
+      "actualUrl": "http://localhost:5173/faculty/interviews",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\faculty-interviews.png",
+      "uiMetrics": {
+        "totalCards": 124,
+        "buttons": 49,
+        "inputs": 16,
+        "headings": 8,
+        "scrollHeight": 2761,
+        "windowHeight": 900,
+        "scrollFoldRatio": 3.1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "faculty-guidance",
+      "path": "/faculty/guidance",
+      "actualUrl": "http://localhost:5173/faculty/guidance",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\faculty-guidance.png",
+      "uiMetrics": {
+        "totalCards": 66,
+        "buttons": 13,
+        "inputs": 2,
+        "headings": 10,
+        "scrollHeight": 1157,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load guidance request 6abf2785a161cd1690727ae6: AxiosError: Request failed with status code 403\n    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f70ef43:1799:12)\n    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f70ef43:2329:7)\n    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f70ef43:3340:43)\n    at async Object.getGuidanceRequestById (http://localhost:5173/src/services/facultyService.js:65:22)\n    at async fetchSelectedDetail (http://localhost:5173/src/pages/Faculty/GuidanceInboxPage.jsx:137:25)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://localhost:5000/api/guidance/requests/6abf2785a161cd1690727ae6",
+          "status": 403,
+          "statusText": "Forbidden"
+        }
+      ]
+    },
+    {
+      "id": "faculty-analytics",
+      "path": "/faculty/analytics",
+      "actualUrl": "http://localhost:5173/faculty/analytics",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\faculty-analytics.png",
+      "uiMetrics": {
+        "totalCards": 195,
+        "buttons": 32,
+        "inputs": 5,
+        "headings": 10,
+        "scrollHeight": 3505,
+        "windowHeight": 900,
+        "scrollFoldRatio": 3.9
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "alumni-dashboard",
+      "path": "/alumni/dashboard",
+      "actualUrl": "http://localhost:5173/alumni/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "alumni",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\alumni-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 85,
+        "buttons": 18,
+        "inputs": 1,
+        "headings": 11,
+        "scrollHeight": 1890,
+        "windowHeight": 900,
+        "scrollFoldRatio": 2.1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "alumni-experience",
+      "path": "/alumni/experience",
+      "actualUrl": "http://localhost:5173/alumni/experience",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "alumni",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\alumni-experience.png",
+      "uiMetrics": {
+        "totalCards": 46,
+        "buttons": 26,
+        "inputs": 2,
+        "headings": 4,
+        "scrollHeight": 1162,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "alumni-mentorship",
+      "path": "/alumni/mentorship",
+      "actualUrl": "http://localhost:5173/alumni/mentorship",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "alumni",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\alumni-mentorship.png",
+      "uiMetrics": {
+        "totalCards": 82,
+        "buttons": 20,
+        "inputs": 3,
+        "headings": 5,
+        "scrollHeight": 1395,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.6
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "recruiter-dashboard",
+      "path": "/recruiter/dashboard",
+      "actualUrl": "http://localhost:5173/recruiter/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "recruiter",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\recruiter-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 57,
+        "buttons": 15,
+        "inputs": 1,
+        "headings": 6,
+        "scrollHeight": 1453,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.6
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "recruiter-company",
+      "path": "/recruiter/company",
+      "actualUrl": "http://localhost:5173/recruiter/company",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "recruiter",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\recruiter-company.png",
+      "uiMetrics": {
+        "totalCards": 65,
+        "buttons": 16,
+        "inputs": 8,
+        "headings": 7,
+        "scrollHeight": 1927,
+        "windowHeight": 900,
+        "scrollFoldRatio": 2.1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "recruiter-feedback",
+      "path": "/recruiter/feedback",
+      "actualUrl": "http://localhost:5173/recruiter/feedback",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "recruiter",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\recruiter-feedback.png",
+      "uiMetrics": {
+        "totalCards": 51,
+        "buttons": 12,
+        "inputs": 3,
+        "headings": 5,
+        "scrollHeight": 1281,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.4
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-dashboard",
+      "path": "/admin/dashboard",
+      "actualUrl": "http://localhost:5173/admin/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\admin-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 73,
+        "buttons": 9,
+        "inputs": 1,
+        "headings": 5,
+        "scrollHeight": 1281,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.4
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-users",
+      "path": "/admin/users",
+      "actualUrl": "http://localhost:5173/admin/users",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\admin-users.png",
+      "uiMetrics": {
+        "totalCards": 74,
+        "buttons": 37,
+        "inputs": 2,
+        "headings": 1,
+        "scrollHeight": 1022,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-curriculum",
+      "path": "/admin/curriculum",
+      "actualUrl": "http://localhost:5173/admin/curriculum",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\admin-curriculum.png",
+      "uiMetrics": {
+        "totalCards": 85,
+        "buttons": 16,
+        "inputs": 1,
+        "headings": 5,
+        "scrollHeight": 1248,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.4
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-companies",
+      "path": "/admin/companies",
+      "actualUrl": "http://localhost:5173/admin/companies",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\admin-companies.png",
+      "uiMetrics": {
+        "totalCards": 77,
+        "buttons": 18,
+        "inputs": 1,
+        "headings": 6,
+        "scrollHeight": 900,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-events",
+      "path": "/admin/events",
+      "actualUrl": "http://localhost:5173/admin/events",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\admin-events.png",
+      "uiMetrics": {
+        "totalCards": 38,
+        "buttons": 11,
+        "inputs": 1,
+        "headings": 4,
+        "scrollHeight": 900,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-analytics",
+      "path": "/admin/analytics",
+      "actualUrl": "http://localhost:5173/admin/analytics",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "desktop",
+      "screenshot": ".claude\\audit\\screenshots\\desktop\\admin-analytics.png",
+      "uiMetrics": {
+        "totalCards": 70,
+        "buttons": 7,
+        "inputs": 1,
+        "headings": 7,
+        "scrollHeight": 1301,
+        "windowHeight": 900,
+        "scrollFoldRatio": 1.4
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    }
+  ],
+  "mobile": [
+    {
+      "id": "public-landing",
+      "path": "/",
+      "actualUrl": "http://localhost:5173/",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": null,
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\public-landing.png",
+      "uiMetrics": {
+        "totalCards": 98,
+        "buttons": 17,
+        "inputs": 0,
+        "headings": 25,
+        "scrollHeight": 7789,
+        "windowHeight": 844,
+        "scrollFoldRatio": 9.2
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "public-login",
+      "path": "/login",
+      "actualUrl": "http://localhost:5173/login",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": null,
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\public-login.png",
+      "uiMetrics": {
+        "totalCards": 25,
+        "buttons": 10,
+        "inputs": 3,
+        "headings": 1,
+        "scrollHeight": 1148,
+        "windowHeight": 844,
+        "scrollFoldRatio": 1.4
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "public-register",
+      "path": "/register",
+      "actualUrl": "http://localhost:5173/register",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": null,
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\public-register.png",
+      "uiMetrics": {
+        "totalCards": 34,
+        "buttons": 8,
+        "inputs": 6,
+        "headings": 1,
+        "scrollHeight": 1559,
+        "windowHeight": 844,
+        "scrollFoldRatio": 1.8
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-dashboard",
+      "path": "/student/dashboard",
+      "actualUrl": "http://localhost:5173/student/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\student-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 97,
+        "buttons": 11,
+        "inputs": 1,
+        "headings": 12,
+        "scrollHeight": 4880,
+        "windowHeight": 844,
+        "scrollFoldRatio": 5.8
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-profile",
+      "path": "/student/profile",
+      "actualUrl": "http://localhost:5173/student/profile",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\student-profile.png",
+      "uiMetrics": {
+        "totalCards": 90,
+        "buttons": 17,
+        "inputs": 1,
+        "headings": 16,
+        "scrollHeight": 4446,
+        "windowHeight": 844,
+        "scrollFoldRatio": 5.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-career-compass",
+      "path": "/student/career-compass",
+      "actualUrl": "http://localhost:5173/student/career-compass",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\student-career-compass.png",
+      "uiMetrics": {
+        "totalCards": 135,
+        "buttons": 15,
+        "inputs": 1,
+        "headings": 22,
+        "scrollHeight": 6987,
+        "windowHeight": 844,
+        "scrollFoldRatio": 8.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-goals",
+      "path": "/student/goals",
+      "actualUrl": "http://localhost:5173/student/goals",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\student-goals.png",
+      "uiMetrics": {
+        "totalCards": 115,
+        "buttons": 24,
+        "inputs": 7,
+        "headings": 5,
+        "scrollHeight": 3838,
+        "windowHeight": 844,
+        "scrollFoldRatio": 4.5
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-guidance",
+      "path": "/student/guidance",
+      "actualUrl": "http://localhost:5173/student/guidance",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\student-guidance.png",
+      "uiMetrics": {
+        "totalCards": 90,
+        "buttons": 19,
+        "inputs": 3,
+        "headings": 4,
+        "scrollHeight": 2675,
+        "windowHeight": 844,
+        "scrollFoldRatio": 3.2
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-interviews",
+      "path": "/student/interviews",
+      "actualUrl": "http://localhost:5173/student/interviews",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\student-interviews.png",
+      "uiMetrics": {
+        "totalCards": 77,
+        "buttons": 19,
+        "inputs": 1,
+        "headings": 5,
+        "scrollHeight": 2287,
+        "windowHeight": 844,
+        "scrollFoldRatio": 2.7
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "student-alumni-posts",
+      "path": "/student/alumni-posts",
+      "actualUrl": "http://localhost:5173/student/alumni-posts",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "student",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\student-alumni-posts.png",
+      "uiMetrics": {
+        "totalCards": 92,
+        "buttons": 38,
+        "inputs": 3,
+        "headings": 6,
+        "scrollHeight": 2420,
+        "windowHeight": 844,
+        "scrollFoldRatio": 2.9
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "faculty-dashboard",
+      "path": "/faculty/dashboard",
+      "actualUrl": "http://localhost:5173/faculty/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\faculty-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 93,
+        "buttons": 16,
+        "inputs": 1,
+        "headings": 7,
+        "scrollHeight": 3663,
+        "windowHeight": 844,
+        "scrollFoldRatio": 4.3
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "faculty-interviews",
+      "path": "/faculty/interviews",
+      "actualUrl": "http://localhost:5173/faculty/interviews",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\faculty-interviews.png",
+      "uiMetrics": {
+        "totalCards": 124,
+        "buttons": 49,
+        "inputs": 16,
+        "headings": 8,
+        "scrollHeight": 4777,
+        "windowHeight": 844,
+        "scrollFoldRatio": 5.7
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "faculty-guidance",
+      "path": "/faculty/guidance",
+      "actualUrl": "http://localhost:5173/faculty/guidance",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\faculty-guidance.png",
+      "uiMetrics": {
+        "totalCards": 66,
+        "buttons": 13,
+        "inputs": 2,
+        "headings": 10,
+        "scrollHeight": 1361,
+        "windowHeight": 844,
+        "scrollFoldRatio": 1.6
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load guidance request 6abf2785a161cd1690727ae6: AxiosError: Request failed with status code 403\n    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f70ef43:1799:12)\n    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f70ef43:2329:7)\n    at Axios.request (http://localhost:5173/node_modules/.vite/deps/axios.js?v=6f70ef43:3340:43)\n    at async Object.getGuidanceRequestById (http://localhost:5173/src/services/facultyService.js:65:22)\n    at async fetchSelectedDetail (http://localhost:5173/src/pages/Faculty/GuidanceInboxPage.jsx:137:25)"
+        }
+      ],
+      "failedRequests": [
+        {
+          "url": "http://localhost:5000/api/guidance/requests/6abf2785a161cd1690727ae6",
+          "status": 403,
+          "statusText": "Forbidden"
+        }
+      ]
+    },
+    {
+      "id": "faculty-analytics",
+      "path": "/faculty/analytics",
+      "actualUrl": "http://localhost:5173/faculty/analytics",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "faculty",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\faculty-analytics.png",
+      "uiMetrics": {
+        "totalCards": 195,
+        "buttons": 32,
+        "inputs": 5,
+        "headings": 10,
+        "scrollHeight": 6754,
+        "windowHeight": 844,
+        "scrollFoldRatio": 8
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "alumni-dashboard",
+      "path": "/alumni/dashboard",
+      "actualUrl": "http://localhost:5173/alumni/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "alumni",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\alumni-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 85,
+        "buttons": 18,
+        "inputs": 1,
+        "headings": 11,
+        "scrollHeight": 3761,
+        "windowHeight": 844,
+        "scrollFoldRatio": 4.5
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "alumni-experience",
+      "path": "/alumni/experience",
+      "actualUrl": "http://localhost:5173/alumni/experience",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "alumni",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\alumni-experience.png",
+      "uiMetrics": {
+        "totalCards": 46,
+        "buttons": 26,
+        "inputs": 2,
+        "headings": 4,
+        "scrollHeight": 1692,
+        "windowHeight": 844,
+        "scrollFoldRatio": 2
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "alumni-mentorship",
+      "path": "/alumni/mentorship",
+      "actualUrl": "http://localhost:5173/alumni/mentorship",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "alumni",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\alumni-mentorship.png",
+      "uiMetrics": {
+        "totalCards": 82,
+        "buttons": 20,
+        "inputs": 3,
+        "headings": 5,
+        "scrollHeight": 1356,
+        "windowHeight": 844,
+        "scrollFoldRatio": 1.6
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "recruiter-dashboard",
+      "path": "/recruiter/dashboard",
+      "actualUrl": "http://localhost:5173/recruiter/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "recruiter",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\recruiter-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 57,
+        "buttons": 15,
+        "inputs": 1,
+        "headings": 6,
+        "scrollHeight": 2638,
+        "windowHeight": 844,
+        "scrollFoldRatio": 3.1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "recruiter-company",
+      "path": "/recruiter/company",
+      "actualUrl": "http://localhost:5173/recruiter/company",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "recruiter",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\recruiter-company.png",
+      "uiMetrics": {
+        "totalCards": 65,
+        "buttons": 16,
+        "inputs": 8,
+        "headings": 7,
+        "scrollHeight": 3179,
+        "windowHeight": 844,
+        "scrollFoldRatio": 3.8
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "recruiter-feedback",
+      "path": "/recruiter/feedback",
+      "actualUrl": "http://localhost:5173/recruiter/feedback",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "recruiter",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\recruiter-feedback.png",
+      "uiMetrics": {
+        "totalCards": 51,
+        "buttons": 12,
+        "inputs": 3,
+        "headings": 5,
+        "scrollHeight": 2012,
+        "windowHeight": 844,
+        "scrollFoldRatio": 2.4
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-dashboard",
+      "path": "/admin/dashboard",
+      "actualUrl": "http://localhost:5173/admin/dashboard",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\admin-dashboard.png",
+      "uiMetrics": {
+        "totalCards": 73,
+        "buttons": 9,
+        "inputs": 1,
+        "headings": 5,
+        "scrollHeight": 3184,
+        "windowHeight": 844,
+        "scrollFoldRatio": 3.8
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-users",
+      "path": "/admin/users",
+      "actualUrl": "http://localhost:5173/admin/users",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\admin-users.png",
+      "uiMetrics": {
+        "totalCards": 74,
+        "buttons": 37,
+        "inputs": 2,
+        "headings": 1,
+        "scrollHeight": 1756,
+        "windowHeight": 844,
+        "scrollFoldRatio": 2.1
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-curriculum",
+      "path": "/admin/curriculum",
+      "actualUrl": "http://localhost:5173/admin/curriculum",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\admin-curriculum.png",
+      "uiMetrics": {
+        "totalCards": 85,
+        "buttons": 16,
+        "inputs": 1,
+        "headings": 5,
+        "scrollHeight": 2948,
+        "windowHeight": 844,
+        "scrollFoldRatio": 3.5
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-companies",
+      "path": "/admin/companies",
+      "actualUrl": "http://localhost:5173/admin/companies",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\admin-companies.png",
+      "uiMetrics": {
+        "totalCards": 77,
+        "buttons": 18,
+        "inputs": 1,
+        "headings": 6,
+        "scrollHeight": 2007,
+        "windowHeight": 844,
+        "scrollFoldRatio": 2.4
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-events",
+      "path": "/admin/events",
+      "actualUrl": "http://localhost:5173/admin/events",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\admin-events.png",
+      "uiMetrics": {
+        "totalCards": 38,
+        "buttons": 11,
+        "inputs": 1,
+        "headings": 4,
+        "scrollHeight": 1255,
+        "windowHeight": 844,
+        "scrollFoldRatio": 1.5
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    },
+    {
+      "id": "admin-analytics",
+      "path": "/admin/analytics",
+      "actualUrl": "http://localhost:5173/admin/analytics",
+      "pageTitle": "GRIP - Campus to Career Readiness Platform",
+      "role": "admin",
+      "viewport": "mobile",
+      "screenshot": ".claude\\audit\\screenshots\\mobile\\admin-analytics.png",
+      "uiMetrics": {
+        "totalCards": 70,
+        "buttons": 7,
+        "inputs": 1,
+        "headings": 7,
+        "scrollHeight": 2113,
+        "windowHeight": 844,
+        "scrollFoldRatio": 2.5
+      },
+      "consoleMessages": [
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+        },
+        {
+          "type": "warning",
+          "text": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+        }
+      ],
+      "failedRequests": []
+    }
+  ]
+}

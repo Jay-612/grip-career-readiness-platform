@@ -1,0 +1,50 @@
+{
+  "desktop": {
+    "viewport": "1440x900",
+    "pageHeight": 1114,
+    "mobileFolds": "1.2",
+    "cardsCount": 8,
+    "actionButtonsCount": 15,
+    "horizontalOverflow": false,
+    "tabSwitchingWorked": true,
+    "rosterPaginationRows": 10,
+    "drawerWorked": true,
+    "exportWorked": true,
+    "consoleErrorsCount": 0,
+    "failedRequestsCount": 0,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "tablet": {
+    "viewport": "768x1024",
+    "pageHeight": 1574,
+    "mobileFolds": "1.5",
+    "cardsCount": 8,
+    "actionButtonsCount": 15,
+    "horizontalOverflow": false,
+    "tabSwitchingWorked": true,
+    "rosterPaginationRows": 10,
+    "drawerWorked": true,
+    "exportWorked": true,
+    "consoleErrorsCount": 0,
+    "failedRequestsCount": 0,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "pageHeight": 2145,
+    "mobileFolds": "2.5",
+    "cardsCount": 8,
+    "actionButtonsCount": 15,
+    "horizontalOverflow": false,
+    "tabSwitchingWorked": true,
+    "rosterPaginationRows": 10,
+    "drawerWorked": true,
+    "exportWorked": true,
+    "consoleErrorsCount": 0,
+    "failedRequestsCount": 0,
+    "consoleErrors": [],
+    "failedRequests": []
+  }
+}

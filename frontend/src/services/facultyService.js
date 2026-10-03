@@ -84,19 +84,44 @@ export const facultyService = {
     return response.data;
   },
 
-  // Submit mock interview rubric evaluation
+  // Submit mock interview rubric evaluation (with automated Action Plan triggers)
   // POST /api/skills/evaluation
   submitEvaluation: async ({
     interviewId,
     communication,
     confidence,
     technical,
+    technicalNotes,
+    communicationNotes,
+    confidenceNotes,
+    overallSynthesis,
+    facultyFeedback,
+    hiringVerdict,
+    actionPlanTasks,
   }) => {
     const response = await apiClient.post('/skills/evaluation', {
       interviewId,
       communication,
       confidence,
       technical,
+      technicalNotes,
+      communicationNotes,
+      confidenceNotes,
+      overallSynthesis,
+      facultyFeedback,
+      hiringVerdict,
+      actionPlanTasks,
+    });
+    return response.data;
+  },
+
+  // Real-time preview of the automated action plan based on rubric scores (< 7/10)
+  // POST /api/action-plans/preview
+  previewActionPlan: async (scores, notes = {}, tasks = []) => {
+    const response = await apiClient.post('/action-plans/preview', {
+      scores,
+      notes,
+      tasks,
     });
     return response.data;
   },

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import EvaluationScore from '../model/EvaluationScore.js';
 import MockInterview from '../model/MockInterview.js';
 import { calculateStudentReadiness } from '../services/readinessService.js';
+import { createAndAssignActionPlan } from '../services/actionPlanService.js';
 
 // ─── POST /api/skills/evaluation — Save Skill Evaluation Scores ────
 export const saveEvaluationScore = async (req, res) => {
@@ -23,6 +24,13 @@ export const saveEvaluationScore = async (req, res) => {
       communicationScore,
       confidenceScore,
       technicalScore,
+      technicalNotes,
+      communicationNotes,
+      confidenceNotes,
+      overallSynthesis,
+      facultyFeedback,
+      hiringVerdict,
+      actionPlanTasks,
     } = req.body;
 
     if (!interviewId) {
@@ -89,8 +97,38 @@ export const saveEvaluationScore = async (req, res) => {
       });
     }
 
-    // Recalculate student readiness asynchronously
+    // Automatically trigger Action Plan and assign remedial WeeklyGoal items
+    // (Based on SRS Section R.4.5 & Lab-3 Sequence & Activity Diagrams)
+    let actionPlan = null;
+    let assignedGoals = [];
     if (interview.studentId) {
+      const evaluatorId = req.user?.id || req.user?._id || interview.interviewerId;
+
+      const actionPlanResult = await createAndAssignActionPlan({
+        studentId: interview.studentId,
+        interviewId: interview._id,
+        evaluatorId,
+        scores: {
+          technical: techVal,
+          communication: commVal,
+          confidence: confVal,
+        },
+        notes: {
+          technicalNotes,
+          communicationNotes,
+          confidenceNotes,
+          overallSynthesis,
+          facultyFeedback: facultyFeedback || overallSynthesis,
+          hiringVerdict,
+        },
+        tasks: Array.isArray(actionPlanTasks) ? actionPlanTasks : [],
+        facultyFeedback: facultyFeedback || overallSynthesis,
+      });
+
+      actionPlan = actionPlanResult.actionPlan;
+      assignedGoals = actionPlanResult.assignedGoals;
+
+      // Recalculate student readiness asynchronously
       calculateStudentReadiness(interview.studentId).catch((err) =>
         console.error('Async readiness update failed after interview evaluation:', err.message)
       );
@@ -98,8 +136,10 @@ export const saveEvaluationScore = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Scores saved successfully',
+      message: 'Scores saved and action plan processed successfully',
       evaluation: scoreRecord,
+      actionPlan,
+      assignedGoals,
     });
   } catch (error) {
     return res.status(500).json({
@@ -108,4 +148,8 @@ export const saveEvaluationScore = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export default {
+  saveEvaluationScore,
 };

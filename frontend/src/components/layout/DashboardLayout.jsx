@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import Sidebar from './Sidebar';
 import MobileSidebar from './MobileSidebar';
 import TopBar from './TopBar';
+import ErrorBoundary from '../common/ErrorBoundary';
 
 const DashboardLayout = ({
   role: propRole,
@@ -74,7 +75,9 @@ const DashboardLayout = ({
 
         {/* Dynamic Page Container with Outlet / Children */}
         <main className={`flex-1 p-6 ${maxWidth} w-full mx-auto space-y-6 ${className}`}>
-          {children || <Outlet />}
+          <ErrorBoundary fallbackTitle="Portal Workspace Display Error">
+            {children || <Outlet />}
+          </ErrorBoundary>
         </main>
       </div>
     </div>

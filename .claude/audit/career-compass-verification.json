@@ -1,0 +1,35 @@
+{
+  "desktop": {
+    "totalCards": 66,
+    "buttons": 15,
+    "inputs": 1,
+    "headings": 5,
+    "scrollHeight": 1048,
+    "windowHeight": 900,
+    "scrollFoldRatio": 1.2,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "tablet": {
+    "totalCards": 66,
+    "buttons": 15,
+    "inputs": 1,
+    "headings": 5,
+    "scrollHeight": 1330,
+    "windowHeight": 1024,
+    "scrollFoldRatio": 1.3,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "mobile": {
+    "totalCards": 66,
+    "buttons": 15,
+    "inputs": 1,
+    "headings": 5,
+    "scrollHeight": 1889,
+    "windowHeight": 844,
+    "scrollFoldRatio": 2.2,
+    "consoleErrors": [],
+    "failedRequests": []
+  }
+}

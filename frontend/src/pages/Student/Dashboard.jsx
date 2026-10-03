@@ -1,42 +1,21 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  GraduationCap,
-  Award,
-  BookOpen,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  ChevronRight,
-  Sparkles,
-  RefreshCw,
-  Target,
-  Layers,
-  Briefcase,
-  AlertTriangle,
-  ArrowRight,
-  TrendingUp,
-  Check,
-  Building2,
-  UserCheck,
-  Plus,
-  Edit2,
-  Trash2,
-  XCircle,
-} from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import goalService from '../../services/goalService';
 import guidanceService from '../../services/guidanceService';
-import interviewService from '../../services/interviewService';
-import analyticsApi from '../../services/analyticsApi';
-import Button from '../../components/common/Button';
-import Badge from '../../components/common/Badge';
-import ProgressBar from '../../components/common/ProgressBar';
-import RadialGauge from '../../components/common/RadialGauge';
-import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
+import {
+  DashboardHeader,
+  ReadinessSummary,
+  UpcomingInterviewCard,
+  PriorityTaskList,
+  LatestFeedbackCard,
+  PlacementPulse,
+  QuickNav,
+} from '../../components/student/dashboard';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -47,21 +26,15 @@ export const Dashboard = () => {
   const [actionSuccessToast, setActionSuccessToast] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
-  const [cancellingAptId, setCancellingAptId] = useState(null);
-  const [deletingGoalId, setDeletingGoalId] = useState(null);
 
-  // Consolidated Dashboard Data State from Real APIs
+  // Consolidated Lean Dashboard State
   const [dashboardData, setDashboardData] = useState({
     profile: null,
-    progress: null,
     readiness: null,
     companyMatches: [],
-    studentSkills: [],
     goals: [],
-    roadmap: null,
     appointments: [],
     guidanceRequests: [],
-    alumniPosts: [],
     leaderboardRank: null,
     leaderboardTotal: null,
   });
@@ -69,7 +42,7 @@ export const Dashboard = () => {
   const toastTimerRef = useRef(null);
 
   // ─────────────────────────────────────────────────────────────
-  // 1. DATA FETCHING (Single Efficient Parallel Request Suite)
+  // 1. DATA FETCHING (Parallel & Lean)
   // ─────────────────────────────────────────────────────────────
   const fetchDashboardData = async (signal) => {
     setIsLoading(true);
@@ -90,30 +63,25 @@ export const Dashboard = () => {
 
       const selectedCareer = currentProfile?.selectedCareer || '';
 
-      // 2. Fetch parallel endpoints concurrently (Zero N+1, Zero Leaderboard Overfetching)
+      // 2. Concurrently fetch essential dashboard widgets
       const [
         readinessRes,
         myRankRes,
         companyRes,
         goalsRes,
-        roadmapRes,
         appointmentsRes,
         guidanceRes,
-        alumniPostsRes,
       ] = await Promise.allSettled([
         studentService.getPlacementReadiness(studentId),
         studentService.getMyRank(),
         selectedCareer ? studentService.getCompanyMatch(studentId) : null,
         studentService.getGoals(studentId),
-        selectedCareer ? studentService.getCareerRoadmap(selectedCareer) : null,
         studentService.getAppointments(),
-        guidanceService.getRequests(1, 10),
-        studentService.getAlumniPosts({ limit: 4 }),
+        guidanceService.getRequests(1, 5),
       ]);
 
       if (signal?.aborted) return;
 
-      // Process direct lightweight student rank (<10ms indexed endpoint)
       let myRank = null;
       let totalStudents = null;
       if (myRankRes.status === 'fulfilled' && myRankRes.value?.success) {
@@ -123,21 +91,15 @@ export const Dashboard = () => {
 
       setDashboardData({
         profile: currentProfile,
-        progress: null, // Removed unused 5-query progress dashboard
         readiness: readinessRes.status === 'fulfilled' ? readinessRes.value : null,
         companyMatches:
           companyRes.status === 'fulfilled' && companyRes.value?.matches
             ? companyRes.value.matches
             : [],
-        studentSkills:
-          companyRes.status === 'fulfilled' && companyRes.value?.studentSkills
-            ? companyRes.value.studentSkills
-            : [],
         goals:
           goalsRes.status === 'fulfilled' && goalsRes.value?.goals
             ? goalsRes.value.goals
             : [],
-        roadmap: roadmapRes.status === 'fulfilled' ? roadmapRes.value : null,
         appointments:
           appointmentsRes.status === 'fulfilled' &&
           (Array.isArray(appointmentsRes.value)
@@ -147,13 +109,10 @@ export const Dashboard = () => {
           guidanceRes.status === 'fulfilled' && guidanceRes.value?.requests
             ? guidanceRes.value.requests
             : [],
-        alumniPosts:
-          alumniPostsRes.status === 'fulfilled' && alumniPostsRes.value?.posts
-            ? alumniPostsRes.value.posts
-            : [],
         leaderboardRank: myRank,
         leaderboardTotal: totalStudents,
       });
+
       setLastSynced(new Date());
     } catch (err) {
       if (signal?.aborted) return;
@@ -183,14 +142,12 @@ export const Dashboard = () => {
   }, [user?.id]);
 
   // ─────────────────────────────────────────────────────────────
-  // 2. DETERMINISTIC DERIVATIONS (Zero Hardcoded Mocks)
+  // 2. DETERMINISTIC DERIVATIONS
   // ─────────────────────────────────────────────────────────────
-
   const studentName = user?.name || dashboardData.profile?.name || 'Student';
   const semester = dashboardData.profile?.semester || 1;
   const targetTrack = dashboardData.profile?.selectedCareer || '';
 
-  // Profile Completeness Score (0-100%)
   const profileCompletion = useMemo(() => {
     let score = 0;
     if (user?.name || dashboardData.profile?.name) score += 25;
@@ -200,7 +157,6 @@ export const Dashboard = () => {
     return score;
   }, [user?.name, user?.email, dashboardData.profile?.name, semester, targetTrack]);
 
-  // Readiness Score & Target Tier
   const readinessScore =
     dashboardData.readiness?.readinessScore ??
     dashboardData.profile?.readinessScore ??
@@ -210,7 +166,6 @@ export const Dashboard = () => {
     dashboardData.readiness?.targetTier ||
     (readinessScore >= 80 ? 'Tier 1' : readinessScore >= 60 ? 'Tier 2' : 'General');
 
-  // Placement Percentile Rank
   const placementPercentile = useMemo(() => {
     if (dashboardData.leaderboardRank && dashboardData.leaderboardTotal) {
       const pct = Math.max(
@@ -222,159 +177,76 @@ export const Dashboard = () => {
     return targetTier ? `${targetTier} Eligible` : 'Candidate';
   }, [dashboardData.leaderboardRank, dashboardData.leaderboardTotal, targetTier]);
 
-  // Active Goals (in-progress + pending)
-  const activeGoals = useMemo(() => {
-    return dashboardData.goals.filter(
-      (g) => g.status === 'in-progress' || g.status === 'pending'
-    );
-  }, [dashboardData.goals]);
-
-  // Completed Goals
-  const completedGoals = useMemo(() => {
-    return dashboardData.goals.filter((g) => g.status === 'completed');
-  }, [dashboardData.goals]);
-
-  // Goal Completion Rate
-  const goalCompletionRate = useMemo(() => {
-    if (dashboardData.goals.length === 0) return 0;
-    return Math.round((completedGoals.length / dashboardData.goals.length) * 100);
-  }, [dashboardData.goals.length, completedGoals.length]);
-
-  // Goals Due Soon (within 7 days and not completed)
-  const dueSoonGoalsCount = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const in7Days = new Date(today);
-    in7Days.setDate(in7Days.getDate() + 7);
-
-    return dashboardData.goals.filter((g) => {
-      if (g.status === 'completed' || !g.dueDate) return false;
-      const due = new Date(g.dueDate);
-      return due >= today && due <= in7Days;
-    }).length;
-  }, [dashboardData.goals]);
-
-  // Top Active Priorities (sorted by nearest due date)
-  const priorityGoals = useMemo(() => {
-    return [...activeGoals]
+  // Active Goals sorted by nearest deadline (Top 2 priority tasks)
+  const activePriorityGoals = useMemo(() => {
+    return dashboardData.goals
+      .filter((g) => g.status === 'in-progress' || g.status === 'pending')
       .sort((a, b) => {
         const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
         const db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
         return da - db;
       })
-      .slice(0, 3);
-  }, [activeGoals]);
+      .slice(0, 2);
+  }, [dashboardData.goals]);
 
-  // Next Upcoming Scheduled Session
+  // Next Upcoming Session (scheduled or pending)
   const nextSession = useMemo(() => {
-    const scheduled = dashboardData.appointments.filter(
-      (a) => a.status === 'scheduled'
+    const candidates = dashboardData.appointments.filter(
+      (a) => a.status === 'scheduled' || a.status === 'pending'
     );
-    if (scheduled.length === 0) return null;
+    if (candidates.length === 0) return null;
 
-    // Sort chronologically by date/time
-    return scheduled.sort((a, b) => {
-      const da = a.dateTime ? new Date(a.dateTime).getTime() : 0;
-      const db = b.dateTime ? new Date(b.dateTime).getTime() : 0;
+    return candidates.sort((a, b) => {
+      if (a.status === 'scheduled' && b.status === 'pending') return -1;
+      if (a.status === 'pending' && b.status === 'scheduled') return 1;
+      const da = a.dateTime || a.date ? new Date(a.dateTime || a.date).getTime() : 0;
+      const db = b.dateTime || b.date ? new Date(b.dateTime || b.date).getTime() : 0;
       return da - db;
     })[0];
   }, [dashboardData.appointments]);
 
-  // Roadmap Progress (derived from semester / 8)
-  const roadmapProgress = useMemo(() => {
-    return Math.min(100, Math.round((semester / 8) * 100));
-  }, [semester]);
-
-  // Recent Feedback items (combining mentor replies and evaluations)
-  const recentFeedbackList = useMemo(() => {
-    const list = [];
-
-    // From Guidance Requests with replies
-    dashboardData.guidanceRequests.forEach((req) => {
-      if (req.latestReply) {
-        list.push({
-          id: `guidance-${req.id}`,
-          author: req.latestReply.mentorName || 'Faculty Advisor',
-          title: `Guidance Reply: ${req.question}`,
-          content: req.latestReply.answerText,
-          date: req.date,
-          type: 'guidance',
-        });
-      }
-    });
-
-    return list.slice(0, 2);
-  }, [dashboardData.guidanceRequests]);
-
-  // Helper: Format Dates safely
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Flexible';
-    try {
-      const d = new Date(dateString);
-      if (isNaN(d.getTime())) return dateString;
-      return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  // Helper: Get Deadline Status with WCAG Colorblind-Safe Icons
-  const getDeadlineBadge = (dueDate) => {
-    if (!dueDate) return { text: 'Flexible', variant: 'neutral', icon: <Check className="w-3 h-3 text-slate-500" /> };
-    const due = new Date(dueDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDay = new Date(due);
-    dueDay.setHours(0, 0, 0, 0);
-
-    const diffDays = Math.round((dueDay - today) / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
+  // Latest Evaluation / Mentor Feedback
+  const latestFeedback = useMemo(() => {
+    // 1. Guidance replies
+    const answeredRequest = dashboardData.guidanceRequests.find((req) => req.latestReply);
+    if (answeredRequest) {
       return {
-        text: `Overdue by ${Math.abs(diffDays)}d`,
-        variant: 'danger',
-        icon: <AlertTriangle className="w-3 h-3 text-rose-600" />,
+        author: answeredRequest.latestReply.mentorName || 'Faculty Advisor',
+        title: `Reply: ${answeredRequest.question}`,
+        content: answeredRequest.latestReply.answerText,
+        date: answeredRequest.date || answeredRequest.createdAt,
       };
     }
-    if (diffDays === 0) {
+
+    // 2. Completed mock interview with feedback
+    const evaluatedAppointment = dashboardData.appointments.find(
+      (apt) => apt.status === 'completed' && apt.feedback
+    );
+    if (evaluatedAppointment) {
       return {
-        text: 'Due Today',
-        variant: 'warning',
-        icon: <Clock className="w-3 h-3 text-amber-600" />,
+        author: evaluatedAppointment.interviewer?.name || 'Faculty Evaluator',
+        title: evaluatedAppointment.focusArea || 'Mock Interview Evaluation',
+        content:
+          evaluatedAppointment.feedback?.notes ||
+          evaluatedAppointment.feedback?.generalRemarks ||
+          'Session remarks recorded.',
+        score:
+          evaluatedAppointment.feedback?.overallScore ||
+          evaluatedAppointment.feedback?.score,
+        date: evaluatedAppointment.date,
       };
     }
-    if (diffDays === 1) {
-      return {
-        text: 'Due Tomorrow',
-        variant: 'warning',
-        icon: <Clock className="w-3 h-3 text-amber-600" />,
-      };
-    }
-    if (diffDays <= 7) {
-      return {
-        text: `${diffDays}d Left`,
-        variant: 'info',
-        icon: <Calendar className="w-3 h-3 text-blue-600" />,
-      };
-    }
-    return {
-      text: `${diffDays}d Left`,
-      variant: 'neutral',
-      icon: <Calendar className="w-3 h-3 text-slate-500" />,
-    };
-  };
+
+    return null;
+  }, [dashboardData.guidanceRequests, dashboardData.appointments]);
 
   // ─────────────────────────────────────────────────────────────
-  // 3. QUICK GOAL STATUS UPDATE (PUT /api/goals/:goalId)
+  // 3. ACTION HANDLERS
   // ─────────────────────────────────────────────────────────────
   const handleQuickCompleteGoal = async (goalId) => {
     if (updatingGoalId) return;
     setUpdatingGoalId(goalId);
 
-    // Optimistic local update
     const previousGoals = [...dashboardData.goals];
     setDashboardData((prev) => ({
       ...prev,
@@ -385,75 +257,11 @@ export const Dashboard = () => {
 
     try {
       await goalService.updateGoalStatus(goalId, 'completed');
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current);
-      }
-      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
-
-      // Refresh background readiness & personal rank telemetry
-      const studentId = user?.id;
-      if (studentId) {
-        const [readinessRes, myRankRes] = await Promise.allSettled([
-          studentService.getPlacementReadiness(studentId),
-          studentService.getMyRank(),
-        ]);
-
-        setDashboardData((prev) => {
-          const next = { ...prev };
-          if (readinessRes.status === 'fulfilled') {
-            next.readiness = readinessRes.value;
-          }
-          if (myRankRes.status === 'fulfilled' && myRankRes.value?.success) {
-            next.leaderboardRank = myRankRes.value.rank;
-            next.leaderboardTotal = myRankRes.value.totalStudents;
-          }
-          return next;
-        });
-      }
-    } catch (err) {
-      console.error('Failed to update goal:', err);
-      setDashboardData((prev) => ({ ...prev, goals: previousGoals }));
-      alert(err.response?.data?.message || 'Failed to complete goal.');
-    } finally {
-      setUpdatingGoalId(null);
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────
-  // 3.1 LIVE REFRESH TELEMETRY
-  // ─────────────────────────────────────────────────────────────
-  const handleManualRefresh = async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    try {
-      await fetchDashboardData();
-      setActionSuccessToast('Dashboard telemetry synced with live backend');
+      setActionSuccessToast('Task marked as complete! Readiness updating...');
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
       toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3000);
-    } catch (err) {
-      console.error('Refresh error:', err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
-  // ─────────────────────────────────────────────────────────────
-  // 3.2 DELETE SPRINT GOAL
-  // ─────────────────────────────────────────────────────────────
-  const handleDeleteGoal = async (goalId) => {
-    if (!window.confirm('Are you sure you want to delete this sprint goal?')) return;
-    setDeletingGoalId(goalId);
-    try {
-      await goalService.deleteGoal(goalId);
-      setDashboardData((prev) => ({
-        ...prev,
-        goals: prev.goals.filter((g) => g.id !== goalId),
-      }));
-      setActionSuccessToast('Goal removed successfully');
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
-
-      // Trigger background readiness recalculation
+      // Refresh telemetry
       const studentId = user?.id;
       if (studentId) {
         const [readinessRes, myRankRes] = await Promise.allSettled([
@@ -471,56 +279,26 @@ export const Dashboard = () => {
         });
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete goal.');
+      console.error('Failed to update goal:', err);
+      setDashboardData((prev) => ({ ...prev, goals: previousGoals }));
+      alert(err.response?.data?.message || 'Failed to complete goal.');
     } finally {
-      setDeletingGoalId(null);
+      setUpdatingGoalId(null);
     }
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // 3.3 EDIT SPRINT GOAL TITLE
-  // ─────────────────────────────────────────────────────────────
-  const handleEditGoal = async (goal) => {
-    const newText = window.prompt('Update sprint goal title:', goal.title);
-    if (!newText || newText.trim() === '' || newText.trim() === goal.title) return;
-
+  const handleManualRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
     try {
-      await goalService.editGoal(goal.id, { text: newText.trim() });
-      setDashboardData((prev) => ({
-        ...prev,
-        goals: prev.goals.map((g) =>
-          g.id === goal.id ? { ...g, title: newText.trim() } : g
-        ),
-      }));
-      setActionSuccessToast('Goal updated successfully');
+      await fetchDashboardData();
+      setActionSuccessToast('Dashboard synced with live campus records');
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
+      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 2500);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update goal.');
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────
-  // 3.4 CANCEL MOCK INTERVIEW APPOINTMENT
-  // ─────────────────────────────────────────────────────────────
-  const handleCancelAppointment = async (appointmentId) => {
-    if (!window.confirm('Are you sure you want to cancel this mock interview appointment?')) return;
-    setCancellingAptId(appointmentId);
-    try {
-      await interviewService.cancelAppointment(appointmentId);
-      setDashboardData((prev) => ({
-        ...prev,
-        appointments: prev.appointments.map((a) =>
-          a.id === appointmentId ? { ...a, status: 'cancelled' } : a
-        ),
-      }));
-      setActionSuccessToast('Appointment cancelled successfully');
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3500);
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to cancel appointment.');
+      console.error('Refresh error:', err);
     } finally {
-      setCancellingAptId(null);
+      setIsRefreshing(false);
     }
   };
 
@@ -529,23 +307,17 @@ export const Dashboard = () => {
   // ─────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-6 antialiased pb-12">
-        <Skeleton variant="card" className="h-44" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <SkeletonCard />
+      <div className="space-y-6 antialiased pb-10">
+        <Skeleton variant="card" className="h-32 rounded-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <SkeletonCard />
           <SkeletonCard />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 space-y-6">
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-          <div className="lg:col-span-4 space-y-6">
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
+        <Skeleton variant="card" className="h-28 rounded-2xl" />
       </div>
     );
   }
@@ -553,7 +325,7 @@ export const Dashboard = () => {
   if (error && !dashboardData.profile) {
     return (
       <ErrorState
-        title="Student Dashboard Unavailable"
+        title="Student Action Center Unavailable"
         message={error}
         onRetry={fetchDashboardData}
         retryText="Reload Dashboard"
@@ -563,10 +335,10 @@ export const Dashboard = () => {
 
   return (
     <main
-      className="space-y-6 pb-12 antialiased"
-      aria-label="Student Career Readiness Dashboard"
+      className="space-y-5 pb-10 antialiased"
+      aria-label="Student Daily Action Center"
     >
-      {/* Toast Alert with Screen Reader Accessibility */}
+      {/* Toast Notification */}
       {actionSuccessToast && (
         <div
           role="status"
@@ -578,878 +350,47 @@ export const Dashboard = () => {
         </div>
       )}
 
-      {/* Top Sync & Status Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-500 px-1">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-semibold text-slate-700">Live Campus Telemetry</span>
-          <span className="text-slate-300">•</span>
-          <span>
-            Last synced: {lastSynced ? lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            to="/student/profile"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition"
-          >
-            <span>Profile: <strong className="text-emerald-600">{profileCompletion}% Complete</strong></span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-          <button
-            onClick={handleManualRefresh}
-            disabled={isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition shadow-2xs disabled:opacity-60 cursor-pointer"
-            title="Refresh student dashboard telemetry"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Syncing...' : 'Refresh Telemetry'}</span>
-          </button>
-        </div>
-      </div>
+      {/* 1. Header Block */}
+      <DashboardHeader
+        studentName={studentName}
+        semester={semester}
+        targetTrack={targetTrack}
+        profileCompletion={profileCompletion}
+        lastSynced={lastSynced}
+        isRefreshing={isRefreshing}
+        onRefresh={handleManualRefresh}
+      />
 
-      {/* ─────────────────────────────────────────────────────────────
-          1. COMPACT HERO BANNER (Authenticated Student)
-      ───────────────────────────────────────────────────────────── */}
-      <section
-        className="relative rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-600 to-slate-900 text-white p-6 shadow-card overflow-hidden"
-        data-purpose="welcome-hero"
-      >
-        <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute top-0 right-1/4 w-40 h-40 bg-blue-400/20 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-          {/* Left Details */}
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-sm text-blue-100 border border-white/20">
-                <GraduationCap className="w-3.5 h-3.5" />
-                <span>Campus Career Readiness Platform</span>
-              </span>
-              <Link
-                to="/student/profile"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-sm text-emerald-200 border border-emerald-400/30 hover:bg-white/25 transition"
-              >
-                <span>Profile {profileCompletion}% Complete</span>
-              </Link>
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-white">
-              Welcome back, {studentName}!
-            </h1>
-            <p className="text-xs md:text-sm text-blue-100/90 leading-relaxed font-normal">
-              {targetTrack ? (
-                <>
-                  Target Track: <strong className="font-semibold text-white">{targetTrack}</strong>
-                </>
-              ) : (
-                <span className="italic text-amber-200">No career track chosen yet</span>
-              )}{' '}
-              • Semester {semester} of 8
-            </p>
-          </div>
-
-          {/* Right Highlight & CTA */}
-          <div className="flex md:flex-col items-start md:items-end justify-between md:justify-center gap-3 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shrink-0">
-            <div>
-              <span className="block text-[11px] uppercase tracking-wider text-blue-200 font-bold">
-                Placement Status
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-extrabold text-white font-mono">
-                  {placementPercentile}
-                </span>
-                {readinessScore >= 80 ? (
-                  <span className="text-[11px] font-semibold text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-400/30">
-                    ✨ Super Dream
-                  </span>
-                ) : (
-                  <span className="text-[11px] font-semibold text-blue-200 bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-400/30">
-                    {targetTier}
-                  </span>
-                )}
-              </div>
-            </div>
-            <Link to="/student/goals">
-              <Button variant="secondary" size="xs" className="bg-white text-blue-700 hover:bg-blue-50">
-                Weekly Sprint Workspace →
-              </Button>
-            </Link>
-          </div>
-        </div>
+      {/* 2. Primary Action Row: Readiness Summary + Upcoming Interview */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <ReadinessSummary
+          score={readinessScore}
+          tier={targetTier}
+          percentile={placementPercentile}
+          delta={dashboardData.readiness?.delta || '+5% this cycle'}
+          statusMessage={dashboardData.readiness?.statusMessage}
+        />
+        <UpcomingInterviewCard interview={nextSession} />
       </section>
 
-      {/* Quiz Prompt Banner if Career Track is not selected */}
-      {!targetTrack && (
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-600 to-indigo-800 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-blue-400/40 animate-fadeIn">
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-white">
-              <Sparkles className="w-5 h-5 text-amber-300" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded text-amber-200">
-                  Step 1 Required
-                </span>
-                <h3 className="text-sm font-bold text-white">
-                  Career Track & Semester Roadmap Not Selected
-                </h3>
-              </div>
-              <p className="text-xs text-blue-100 mt-1 leading-relaxed max-w-2xl">
-                Take the 2-minute Career Discovery Quiz to let our predictive engine deduce your best-fit engineering track, generate your custom semester-wise learning roadmap, and unlock recruiter matching.
-              </p>
-            </div>
-          </div>
-          <Link to="/student/career-compass?takeQuiz=true" className="shrink-0 w-full md:w-auto">
-            <Button variant="secondary" size="sm" className="w-full md:w-auto bg-white text-blue-700 hover:bg-blue-50 font-bold shadow-sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-              Take Career Quiz Now
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────
-          2. KEY SUMMARY METRICS (Derived from Real Backend Records)
-      ───────────────────────────────────────────────────────────── */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-5" data-purpose="summary-metrics">
-        {/* Card 1: Overall Placement Readiness */}
-        <section className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-2">
-              <span className="font-semibold text-slate-700">Placement Readiness Score</span>
-              <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-                <Award className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="flex items-baseline gap-2.5">
-                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
-                    {readinessScore}%
-                  </span>
-                  <Badge variant={readinessScore >= 80 ? 'tier1' : readinessScore >= 60 ? 'tier2' : 'neutral'} size="sm">
-                    {targetTier}
-                  </Badge>
-                </div>
-                <div className="mt-3 w-40">
-                  <ProgressBar
-                    value={readinessScore}
-                    max={100}
-                    variant={readinessScore >= 80 ? 'success' : 'primary'}
-                    size="xs"
-                  />
-                </div>
-              </div>
-              <RadialGauge
-                value={readinessScore}
-                max={100}
-                size={68}
-                strokeWidth={7}
-                variant={readinessScore >= 80 ? 'tier1' : 'primary'}
-                className="shrink-0"
-              />
-            </div>
-          </div>
-          <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between mt-3">
-            <span>
-              Goals ({dashboardData.readiness?.breakdown?.goalScore ?? 0}%) • Interviews ({dashboardData.readiness?.breakdown?.interviewScore ?? 0}%) • Feedback ({dashboardData.readiness?.breakdown?.feedbackScore ?? 0}%)
-            </span>
-          </div>
-        </section>
-
-        {/* Card 2: Active Goals & Sprint Velocity */}
-        <article className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-2">
-              <span className="font-semibold text-slate-700">Active Weekly Goals</span>
-              <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                <Target className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
-                {activeGoals.length}
-              </span>
-              {dueSoonGoalsCount > 0 ? (
-                <Badge variant="warning" size="sm">
-                  {dueSoonGoalsCount} Due Soon
-                </Badge>
-              ) : (
-                <Badge variant="neutral" size="sm">
-                  All Scheduled
-                </Badge>
-              )}
-            </div>
-            <div className="mt-3">
-              <ProgressBar
-                value={goalCompletionRate}
-                max={100}
-                variant={goalCompletionRate >= 75 ? 'success' : 'primary'}
-                size="xs"
-              />
-            </div>
-          </div>
-          <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between mt-3">
-            <span>
-              {completedGoals.length} of {dashboardData.goals.length} completed
-            </span>
-            <span className="font-mono font-semibold text-slate-700">{goalCompletionRate}% Velocity</span>
-          </div>
-        </article>
-
-        {/* Card 3: Next Scheduled Mock Interview / Appointment */}
-        <article className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:shadow-card-hover transition-shadow flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-2">
-              <span className="font-semibold text-slate-700">Next Scheduled Session</span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-                <Calendar className="w-4 h-4" />
-              </div>
-            </div>
-
-            {nextSession ? (
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-slate-900">
-                    {formatDate(nextSession.date)}
-                  </span>
-                  {nextSession.time && (
-                    <Badge variant="info" size="xs">
-                      {nextSession.time}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-slate-600 mt-1.5 truncate">
-                  Evaluator: <strong>{nextSession.interviewer?.name || 'Faculty Mentor'}</strong>
-                </p>
-                <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                  {nextSession.meetLink ? 'Online Video Meeting' : 'Campus Evaluation Lab'}
-                </p>
-              </div>
-            ) : (
-              <div className="py-2">
-                <span className="text-sm font-semibold text-slate-700 block">
-                  No Upcoming Sessions
-                </span>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Book a faculty mock interview to benchmark your competencies.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-3 border-t border-slate-100 text-xs flex items-center justify-between mt-3">
-            {nextSession ? (
-              <Link
-                to="/student/interviews"
-                className="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-              >
-                <span>View Session Details →</span>
-              </Link>
-            ) : (
-              <Link
-                to="/student/interviews"
-                className="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-              >
-                <span>Book Evaluation Session →</span>
-              </Link>
-            )}
-          </div>
-        </article>
+      {/* 3. Daily Action Row: Priority Tasks + Recent Feedback */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <PriorityTaskList
+          tasks={activePriorityGoals}
+          onCompleteTask={handleQuickCompleteGoal}
+          completingTaskId={updatingGoalId}
+        />
+        <LatestFeedbackCard feedback={latestFeedback} />
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          3. MAIN 2-COLUMN WORKSPACE (70% Left / 30% Right)
-      ───────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* ================= LEFT COLUMN: 8 COLS ================= */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Section A: Today's Priorities / Active Goals */}
-          <section
-            className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card"
-            data-purpose="todays-priorities"
-          >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-base font-bold text-slate-900 tracking-tight">
-                  Immediate Sprint Priorities
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Active milestones sorted chronologically by nearest completion date
-                </p>
-              </div>
-              <Link
-                to="/student/goals"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-              >
-                <span>Goal Workspace ({activeGoals.length} Active) →</span>
-              </Link>
-            </div>
+      {/* 4. Placement Pulse / Important Updates */}
+      <PlacementPulse
+        companyMatches={dashboardData.companyMatches}
+        targetTrack={targetTrack}
+      />
 
-            {priorityGoals.length === 0 ? (
-              <EmptyState
-                icon={<CheckCircle2 className="w-6 h-6 text-emerald-500 stroke-[1.5]" />}
-                title="No Pending Priorities"
-                description="You are caught up on all commitments. Create a new weekly goal to maintain progress toward your placement readiness."
-                action={
-                  <Button
-                    as={Link}
-                    to="/student/goals"
-                    variant="primary"
-                    size="xs"
-                    leftIcon={<Plus className="w-3.5 h-3.5" />}
-                  >
-                    Add Weekly Goal
-                  </Button>
-                }
-                compact
-              />
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {priorityGoals.map((goal) => {
-                  const deadline = getDeadlineBadge(goal.dueDate);
-                  const isUpdating = updatingGoalId === goal.id;
-
-                  return (
-                    <article
-                      key={goal.id}
-                      className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
-                    >
-                      <div className="space-y-1 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant={deadline.variant} size="xs" icon={deadline.icon}>
-                            {deadline.text}
-                          </Badge>
-                          <span className="text-xs text-slate-400">
-                            • Target: {formatDate(goal.dueDate)}
-                          </span>
-                        </div>
-                        <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                          {goal.title}
-                        </h3>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                          <Badge variant="neutral" size="xs">
-                            {goal.status}
-                          </Badge>
-                          <span>• Weekly Sprint Commitment</span>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 flex items-center gap-1.5">
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          disabled={isUpdating || deletingGoalId === goal.id}
-                          isLoading={isUpdating}
-                          onClick={() => handleQuickCompleteGoal(goal.id)}
-                          aria-label={`Mark goal "${goal.title}" as completed`}
-                          leftIcon={<Check className="w-3.5 h-3.5 text-emerald-600" />}
-                          className="text-emerald-700 hover:bg-emerald-50"
-                        >
-                          Mark Complete
-                        </Button>
-                        <button
-                          type="button"
-                          onClick={() => handleEditGoal(goal)}
-                          disabled={isUpdating || deletingGoalId === goal.id}
-                          title="Edit sprint goal"
-                          aria-label={`Edit goal "${goal.title}"`}
-                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-blue-600 transition disabled:opacity-50 cursor-pointer"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteGoal(goal.id)}
-                          disabled={isUpdating || deletingGoalId === goal.id}
-                          title="Delete sprint goal"
-                          aria-label={`Delete goal "${goal.title}"`}
-                          className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition disabled:opacity-50 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-
-          {/* Section B: Curriculum & Semester Roadmap */}
-          <section
-            className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card"
-            data-purpose="track-roadmap"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-5 border-b border-slate-100">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="primary" size="sm">
-                    Semester {semester} of 8
-                  </Badge>
-                  <span className="text-xs text-slate-400">Accredited Syllabus</span>
-                </div>
-                <h2 className="text-base font-bold text-slate-900 mt-1">
-                  {dashboardData.roadmap?.career || targetTrack || 'Curriculum Track Roadmap'}
-                </h2>
-              </div>
-              <div className="text-right">
-                <span className="text-sm font-extrabold text-blue-700 font-mono">
-                  {roadmapProgress}%
-                </span>
-                <p className="text-[11px] text-slate-400 uppercase font-semibold">
-                  Degree Progress
-                </p>
-              </div>
-            </div>
-
-            {((dashboardData.roadmap?.steps && dashboardData.roadmap.steps.length > 0) ||
-              (dashboardData.roadmap?.semesterPlans && dashboardData.roadmap.semesterPlans.length > 0)) ? (
-              <div className="pt-4 space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {dashboardData.roadmap?.steps && dashboardData.roadmap.steps.length > 0 ? (
-                    dashboardData.roadmap.steps.map((step, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 flex items-start gap-3 text-xs"
-                      >
-                        <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-blue-600 font-bold flex items-center justify-center shrink-0 shadow-2xs text-[11px] font-mono mt-0.5">
-                          {idx + 1}
-                        </div>
-                        <div className="flex flex-col gap-0.5 min-w-0">
-                          <span className="font-semibold text-slate-800 leading-snug">
-                            {step}
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            Curriculum Benchmark • Placement Syllabus
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    dashboardData.roadmap.semesterPlans.map((plan, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 flex items-start gap-3 text-xs"
-                      >
-                        <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-blue-600 font-bold flex items-center justify-center shrink-0 shadow-2xs text-[11px] font-mono mt-0.5">
-                          Sem {plan.semesterNumber}
-                        </div>
-                        <div className="flex flex-col gap-1 min-w-0">
-                          <span className="font-semibold text-slate-800 leading-snug">
-                            {(plan.subjects || []).join(' • ') || 'Core Electives & Placement Prep'}
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            Semester {plan.semesterNumber} Milestones
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            ) : (
-              <EmptyState
-                icon={<BookOpen className="w-6 h-6 text-slate-400" />}
-                title="No Career Roadmap Configured"
-                description={
-                  targetTrack
-                    ? `No semester roadmap plan configured for: ${targetTrack}.`
-                    : 'Select a career track in your profile to load semester milestone plans.'
-                }
-                action={
-                  <Button
-                    as={Link}
-                    to="/student/profile"
-                    variant="outline"
-                    size="xs"
-                  >
-                    Configure Career Track
-                  </Button>
-                }
-                compact
-              />
-            )}
-          </section>
-        </div>
-
-        {/* ================= RIGHT COLUMN: 4 COLS ================= */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Right Card 1: Scheduled Sessions */}
-          <section
-            className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card"
-            data-purpose="scheduled-sessions"
-          >
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-600" />
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight">
-                  Scheduled Sessions
-                </h3>
-              </div>
-              <Link
-                to="/student/interviews"
-                className="text-xs text-slate-500 hover:text-blue-600 font-medium"
-              >
-                Calendar →
-              </Link>
-            </div>
-
-            {dashboardData.appointments.length === 0 ? (
-              <EmptyState
-                icon={<Calendar className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
-                title="No Sessions Scheduled"
-                description="Book a mock interview with department faculty to benchmark your readiness."
-                action={
-                  <Button
-                    as={Link}
-                    to="/student/interviews"
-                    variant="outline"
-                    size="xs"
-                  >
-                    Schedule Session
-                  </Button>
-                }
-                compact
-              />
-            ) : (
-              <div className="space-y-3 mt-4">
-                {dashboardData.appointments.slice(0, 3).map((apt) => (
-                  <div
-                    key={apt.id}
-                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Badge
-                        variant={apt.status === 'scheduled' ? 'info' : 'neutral'}
-                        size="xs"
-                      >
-                        {apt.status}
-                      </Badge>
-                      <span className="text-[11px] font-medium text-slate-500">
-                        {formatDate(apt.date)} • {apt.time || 'TBD'}
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">
-                        {apt.interviewer?.name || 'Faculty Evaluator'}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        {apt.meetLink ? 'Online Video Interview' : 'Department Evaluation Lab'}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 pt-1">
-                      <Link to="/student/interviews" className="flex-1">
-                        <Button variant="secondary" size="xs" className="w-full">
-                          View
-                        </Button>
-                      </Link>
-                      {apt.status !== 'cancelled' && (
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          disabled={cancellingAptId === apt.id}
-                          isLoading={cancellingAptId === apt.id}
-                          onClick={() => handleCancelAppointment(apt.id)}
-                          className="text-rose-600 hover:bg-rose-50 border-rose-200"
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Right Card 2: Placement Pulse & Recruiter Matching */}
-          <section
-            className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card"
-            data-purpose="placement-pulse"
-          >
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 tracking-tight">
-                Placement Pulse
-              </h3>
-              <Badge variant={readinessScore >= 80 ? 'tier1' : 'neutral'} size="xs">
-                {targetTier}
-              </Badge>
-            </div>
-
-            {/* Live Company Matches Count with Visual Donut Telemetry */}
-            {dashboardData.companyMatches.length > 0 ? (
-              <div className="space-y-4 pt-3">
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <Building2 className="w-5 h-5 text-blue-600 shrink-0" />
-                    <div>
-                      <span className="text-xs font-bold text-slate-900 block">
-                        {dashboardData.companyMatches.length} Matching Companies
-                      </span>
-                      <span className="text-[11px] text-slate-500">
-                        Eligible hiring criteria for {targetTrack}
-                      </span>
-                    </div>
-                  </div>
-                  <RadialGauge
-                    value={
-                      Math.round(
-                        dashboardData.companyMatches.reduce((acc, c) => acc + (c.matchPercentage || 0), 0) /
-                        (dashboardData.companyMatches.length || 1)
-                      )
-                    }
-                    max={100}
-                    size={64}
-                    strokeWidth={6}
-                    variant={readinessScore >= 80 ? 'tier1' : 'primary'}
-                    className="shrink-0"
-                  />
-                </div>
-
-                {/* Top Matched Companies */}
-                <div className="space-y-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                    Top Company Matches
-                  </span>
-                  {dashboardData.companyMatches.slice(0, 3).map((comp, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded-lg border border-slate-200/70 bg-white flex items-center justify-between text-xs"
-                    >
-                      <span className="font-semibold text-slate-800">
-                        {comp.companyName}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-bold text-blue-700">
-                          {comp.matchPercentage}%
-                        </span>
-                        {comp.isEligible && (
-                          <Badge variant="success" size="xs">
-                            Eligible
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Real Verified Competencies */}
-                {dashboardData.studentSkills.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                      Required Track Competencies
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {dashboardData.studentSkills.slice(0, 6).map((sk, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-700 rounded-md border border-slate-200/60"
-                        >
-                          {sk}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <EmptyState
-                icon={<Building2 className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
-                title="No Placement Matches Yet"
-                description={
-                  targetTrack
-                    ? 'Computing company eligibility against active recruiter criteria.'
-                    : 'Set a target career track in your profile to view matching companies.'
-                }
-                action={
-                  <Button
-                    as={Link}
-                    to="/student/profile"
-                    variant="outline"
-                    size="xs"
-                  >
-                    Select Career Track
-                  </Button>
-                }
-                compact
-              />
-            )}
-
-            <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-              <Link
-                to="/student/career-compass"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-              >
-                <span>Explore Placement Matches →</span>
-              </Link>
-            </div>
-          </section>
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          4. RECENT FEEDBACK & INSTITUTIONAL ACTIVITY (Full Width)
-      ───────────────────────────────────────────────────────────── */}
-      <section
-        className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card"
-        data-purpose="recent-feedback"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Recent Feedback &amp; Institutional Activity
-              </h3>
-              <Badge variant="primary" size="sm">
-                Live Feed
-              </Badge>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Verified evaluations and guidance replies from faculty and alumni mentors
-            </p>
-          </div>
-          <Link
-            to="/student/guidance"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-          >
-            <span>Ask a Mentor →</span>
-          </Link>
-        </div>
-
-        {recentFeedbackList.length === 0 ? (
-          <EmptyState
-            icon={<UserCheck className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
-            title="No Recent Feedback Recorded"
-            description="Responses to your guidance requests and mock interview evaluation remarks will appear here once submitted by your mentors."
-            action={
-              <Button
-                as={Link}
-                to="/student/guidance"
-                variant="outline"
-                size="xs"
-              >
-                Request Guidance
-              </Button>
-            }
-            compact
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            {recentFeedbackList.map((item) => (
-              <article
-                key={item.id}
-                className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/60 flex items-start gap-3.5"
-              >
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
-                  {(item.author || 'M')[0]}
-                </div>
-                <div className="space-y-1 min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-slate-900 truncate">
-                      {item.author}
-                    </span>
-                    <span className="text-[11px] text-slate-400 shrink-0">
-                      {formatDate(item.date)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-700 font-medium truncate">
-                    {item.title}
-                  </p>
-                  <blockquote className="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200/80 italic mt-1 leading-relaxed">
-                    "{item.content}"
-                  </blockquote>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ─── SECTION 5: ALUMNI INSIGHTS & PLACEMENT STORIES ───────── */}
-      <section
-        className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-card space-y-4"
-        data-purpose="student-alumni-posts-feed"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
-          <div>
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-blue-600" />
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Alumni Placement Stories &amp; Playbooks
-              </h3>
-              <Badge variant="primary" size="sm">
-                Verified Alumni
-              </Badge>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Real interview strategies, system design walkthroughs, and career lessons from verified alumni
-            </p>
-          </div>
-          <Link
-            to="/student/alumni-posts"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-          >
-            <span>View All Stories ({dashboardData.alumniPosts.length || 0}) →</span>
-          </Link>
-        </div>
-
-        {dashboardData.alumniPosts.length === 0 ? (
-          <EmptyState
-            icon={<BookOpen className="w-6 h-6 text-slate-400 stroke-[1.5]" />}
-            title="No Alumni Stories Available Yet"
-            description="Placement advice and interview playbooks from campus alumni will appear here once published."
-            compact
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {dashboardData.alumniPosts.slice(0, 3).map((post) => (
-              <article
-                key={post.id || post._id}
-                className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-card transition-all flex flex-col justify-between"
-              >
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500">
-                    <span className="font-bold text-slate-800 truncate">
-                      {post.author?.name || post.alumniId?.name || 'Verified Alumni'}
-                    </span>
-                    <span className="shrink-0">{formatDate(post.date)}</span>
-                  </div>
-                  {(post.author?.currentCompany || post.alumniProfile?.currentCompany) && (
-                    <div className="flex items-center gap-1.5 text-xs text-blue-700 font-semibold">
-                      <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                      <span className="truncate">
-                        {post.author?.currentCompany || post.alumniProfile?.currentCompany}
-                        {(post.author?.jobRole || post.alumniProfile?.jobRole) && (
-                          <span className="text-slate-500 font-normal">
-                            {' '}• {post.author?.jobRole || post.alumniProfile?.jobRole}
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                  )}
-                  <h4 className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug">
-                    {post.title}
-                  </h4>
-                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                    {post.content}
-                  </p>
-                </div>
-                <div className="mt-3 pt-3 border-t border-slate-200/60 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400 font-medium">
-                    {Array.isArray(post.tags) && post.tags[0] ? `#${post.tags[0]}` : 'Placement'}
-                  </span>
-                  <Link
-                    to="/student/alumni-posts"
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-0.5"
-                  >
-                    <span>Read Story →</span>
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* 5. Lightweight Quick Hub Navigation */}
+      <QuickNav />
     </main>
   );
 };

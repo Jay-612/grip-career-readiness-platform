@@ -1,0 +1,44 @@
+{
+  "desktop": {
+    "viewport": "1440x900",
+    "metrics": {
+      "totalCards": 5,
+      "buttons": 19,
+      "inputs": 1,
+      "headings": 3,
+      "scrollHeight": 900,
+      "windowHeight": 900,
+      "scrollFoldRatio": 1
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "tablet": {
+    "viewport": "768x1024",
+    "metrics": {
+      "totalCards": 6,
+      "buttons": 20,
+      "inputs": 1,
+      "headings": 3,
+      "scrollHeight": 1024,
+      "windowHeight": 1024,
+      "scrollFoldRatio": 1
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "metrics": {
+      "totalCards": 6,
+      "buttons": 20,
+      "inputs": 1,
+      "headings": 3,
+      "scrollHeight": 1530,
+      "windowHeight": 844,
+      "scrollFoldRatio": 1.8
+    },
+    "consoleErrors": 0,
+    "failedRequests": 0
+  }
+}

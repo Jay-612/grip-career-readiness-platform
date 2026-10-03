@@ -21,6 +21,7 @@ import progressRoutes from './routes/progressRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import actionPlanRoutes from './routes/actionPlanRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -47,6 +48,8 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/department', departmentRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/action-plans', actionPlanRoutes);
+app.use('/api/action-plan', actionPlanRoutes);
 
 // ─── Health check ─────────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -95,7 +98,10 @@ const startServer = async () => {
     console.log(`                        GET    /api/progress/interviews/:studentId`);
     console.log(`🏫 Department routes:   GET    /api/department/analytics`);
     console.log(`                        GET    /api/department/skill-gaps`);
-    console.log(`                        GET    /api/department/placement-stats\n`);
+    console.log(`                        GET    /api/department/placement-stats`);
+    console.log(`📋 Action Plan routes:  POST   /api/action-plans/preview`);
+    console.log(`                        GET    /api/action-plans/student/:studentId`);
+    console.log(`                        GET    /api/action-plans/interview/:interviewId\n`);
   });
 };
 

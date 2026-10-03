@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -18,37 +18,260 @@ import {
   Clock,
   Sparkles,
   ExternalLink,
+  MessageSquare,
+  Building,
+  Briefcase,
+  BarChart2,
+  FileText,
+  CheckCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../common/Avatar';
 
-const SEARCH_SUGGESTIONS = [
-  {
-    category: 'Navigation',
+// Role-specific notification definitions
+const ROLE_NOTIFICATIONS = {
+  student: {
     items: [
-      { label: 'Student Dashboard', path: '/student/dashboard', icon: Sparkles },
-      { label: 'Weekly Goals Workspace', path: '/student/goals', icon: Target },
-      { label: 'Career Compass & Roadmaps', path: '/student/career-compass', icon: Compass },
-      { label: 'Mock Interview Center', path: '/student/interviews', icon: Video },
-      { label: 'Faculty & Mentorship Guidance', path: '/student/guidance', icon: Users },
-      { label: 'Profile & Skills Competencies', path: '/student/profile', icon: UserIcon },
+      {
+        id: 'student-1',
+        title: 'Mock Technical Interview',
+        description: 'Upcoming session with Faculty Evaluator scheduled on your calendar.',
+        time: 'Upcoming',
+        icon: Calendar,
+        iconColor: 'text-blue-600',
+        path: '/student/interviews',
+      },
+      {
+        id: 'student-2',
+        title: 'Weekly Sprint Due',
+        description: '2 weekly goals have target deadlines approaching in the next 48 hours.',
+        time: 'Due soon',
+        icon: Clock,
+        iconColor: 'text-amber-500',
+        path: '/student/goals',
+      },
+      {
+        id: 'student-3',
+        title: 'Placement Readiness Updated',
+        description: 'Your latest interview evaluation pushed your score to Tier 1 eligibility.',
+        time: 'Updated',
+        icon: CheckCircle2,
+        iconColor: 'text-emerald-500',
+        path: '/student/career-compass',
+      },
     ],
+    footerText: 'View All Sprint Commitments →',
+    footerPath: '/student/goals',
   },
-  {
-    category: 'Engineering Tracks',
+  faculty: {
     items: [
-      { label: 'Cloud Backend Engineering', path: '/student/career-compass', icon: BookOpen },
-      { label: 'Full-Stack Product Engineering', path: '/student/career-compass', icon: BookOpen },
-      { label: 'DevOps & Cloud Infrastructure', path: '/student/career-compass', icon: BookOpen },
-      { label: 'AI & Data Systems Engineering', path: '/student/career-compass', icon: BookOpen },
+      {
+        id: 'faculty-1',
+        title: 'Mock Interview Requests',
+        description: 'Student interview requests awaiting your acceptance & Google Meet generation.',
+        time: 'Action required',
+        icon: Video,
+        iconColor: 'text-blue-600',
+        path: '/faculty/interviews',
+      },
+      {
+        id: 'faculty-2',
+        title: 'Student Guidance Inquiries',
+        description: 'Unanswered student career guidance questions awaiting your review in the inbox.',
+        time: 'Requires review',
+        icon: MessageSquare,
+        iconColor: 'text-amber-500',
+        path: '/faculty/guidance',
+      },
+      {
+        id: 'faculty-3',
+        title: 'Department Placement Telemetry',
+        description: 'Cohort benchmark updated: 85% placement readiness achieved in CS & IT.',
+        time: 'Today',
+        icon: BarChart2,
+        iconColor: 'text-emerald-500',
+        path: '/faculty/analytics',
+      },
     ],
+    footerText: 'Open Faculty Evaluation Center →',
+    footerPath: '/faculty/interviews',
   },
-];
+  alumni: {
+    items: [
+      {
+        id: 'alumni-1',
+        title: 'New Mentorship Inquiries',
+        description: 'Students requested 1-on-1 guidance on company interview preparation.',
+        time: 'New inquiry',
+        icon: Users,
+        iconColor: 'text-blue-600',
+        path: '/alumni/mentorship',
+      },
+      {
+        id: 'alumni-2',
+        title: 'Placement Experience Shared',
+        description: 'Your shared placement insights article is receiving positive student feedback.',
+        time: 'Trending',
+        icon: Sparkles,
+        iconColor: 'text-amber-500',
+        path: '/alumni/stories',
+      },
+      {
+        id: 'alumni-3',
+        title: 'Annual Referral Drive 2026',
+        description: 'Spring campus referral drive is now accepting alumni company openings.',
+        time: 'Active cycle',
+        icon: Briefcase,
+        iconColor: 'text-emerald-500',
+        path: '/alumni/dashboard',
+      },
+    ],
+    footerText: 'Open Mentorship Inbox →',
+    footerPath: '/alumni/mentorship',
+  },
+  recruiter: {
+    items: [
+      {
+        id: 'recruiter-1',
+        title: 'Tier-1 Candidate Matches',
+        description: '14 verified candidates meet your Cloud Backend & Full-Stack criteria.',
+        time: 'Updated today',
+        icon: Users,
+        iconColor: 'text-blue-600',
+        path: '/recruiter/dashboard',
+      },
+      {
+        id: 'recruiter-2',
+        title: 'Applicant Evaluation Scores',
+        description: 'Recent interview feedback scores compiled for campus applicants.',
+        time: 'Pending review',
+        icon: CheckCircle2,
+        iconColor: 'text-amber-500',
+        path: '/recruiter/feedback',
+      },
+      {
+        id: 'recruiter-3',
+        title: 'Institutional Drive Verified',
+        description: 'Company credentials verified for Spring 2026 campus placement hiring.',
+        time: 'Verified',
+        icon: Shield,
+        iconColor: 'text-emerald-500',
+        path: '/recruiter/company',
+      },
+    ],
+    footerText: 'Go to Candidate Shortlists →',
+    footerPath: '/recruiter/dashboard',
+  },
+  admin: {
+    items: [
+      {
+        id: 'admin-1',
+        title: 'User Role Access Requests',
+        description: 'Faculty, recruiter, and alumni accounts pending administrative verification.',
+        time: 'Pending approval',
+        icon: Shield,
+        iconColor: 'text-amber-500',
+        path: '/admin/users',
+      },
+      {
+        id: 'admin-2',
+        title: 'Curriculum Framework Revisions',
+        description: '2 department skill tracks awaiting syllabus roadmap sign-off.',
+        time: 'Audit required',
+        icon: BookOpen,
+        iconColor: 'text-blue-600',
+        path: '/admin/curriculum',
+      },
+      {
+        id: 'admin-3',
+        title: 'System Telemetry & Placement Reports',
+        description: 'Campus-wide readiness scores and placement drive analytics compiled.',
+        time: 'Report ready',
+        icon: BarChart2,
+        iconColor: 'text-emerald-500',
+        path: '/admin/analytics',
+      },
+    ],
+    footerText: 'Open Administration Console →',
+    footerPath: '/admin/dashboard',
+  },
+};
+
+// Role-specific spotlight search suggestions
+const ROLE_SEARCH_SUGGESTIONS = {
+  student: [
+    {
+      category: 'Student Portal Modules',
+      items: [
+        { label: 'Student Dashboard', path: '/student/dashboard', icon: Sparkles },
+        { label: 'Weekly Goals Workspace', path: '/student/goals', icon: Target },
+        { label: 'Career Compass & Roadmaps', path: '/student/career-compass', icon: Compass },
+        { label: 'Mock Interview Center', path: '/student/interviews', icon: Video },
+        { label: 'Faculty & Mentorship Guidance', path: '/student/guidance', icon: Users },
+        { label: 'Profile & Skills Competencies', path: '/student/profile', icon: UserIcon },
+        { label: 'Alumni Placement Stories', path: '/student/alumni-posts', icon: BookOpen },
+      ],
+    },
+    {
+      category: 'Engineering Tracks',
+      items: [
+        { label: 'Cloud Backend Engineering', path: '/student/career-compass', icon: BookOpen },
+        { label: 'Full-Stack Product Engineering', path: '/student/career-compass', icon: BookOpen },
+        { label: 'DevOps & Cloud Infrastructure', path: '/student/career-compass', icon: BookOpen },
+        { label: 'AI & Data Systems Engineering', path: '/student/career-compass', icon: BookOpen },
+      ],
+    },
+  ],
+  faculty: [
+    {
+      category: 'Faculty Management Console',
+      items: [
+        { label: 'Faculty Dashboard & Cohort Overview', path: '/faculty/dashboard', icon: Sparkles },
+        { label: 'Interview Evaluation & Rubrics', path: '/faculty/interviews', icon: Video },
+        { label: 'Student Guidance & Inquiries Inbox', path: '/faculty/guidance', icon: MessageSquare },
+        { label: 'HOD Department Readiness Analytics', path: '/faculty/analytics', icon: BarChart2 },
+      ],
+    },
+  ],
+  alumni: [
+    {
+      category: 'Alumni Mentorship Console',
+      items: [
+        { label: 'Alumni Dashboard & Community Hub', path: '/alumni/dashboard', icon: Sparkles },
+        { label: 'Student Mentorship Inquiries', path: '/alumni/mentorship', icon: Users },
+        { label: 'Publish Placement Stories', path: '/alumni/stories', icon: BookOpen },
+      ],
+    },
+  ],
+  recruiter: [
+    {
+      category: 'Campus Recruitment Console',
+      items: [
+        { label: 'Recruiter Dashboard & Candidate Search', path: '/recruiter/dashboard', icon: Sparkles },
+        { label: 'Corporate Company Profile', path: '/recruiter/company', icon: Building },
+        { label: 'Student Interview Feedback & Ratings', path: '/recruiter/feedback', icon: CheckCircle2 },
+      ],
+    },
+  ],
+  admin: [
+    {
+      category: 'System Administration Modules',
+      items: [
+        { label: 'Admin Dashboard & System Overview', path: '/admin/dashboard', icon: Sparkles },
+        { label: 'User & Role Access Management', path: '/admin/users', icon: Shield },
+        { label: 'Curriculum & Semester Frameworks', path: '/admin/curriculum', icon: BookOpen },
+        { label: 'Corporate Company Directory', path: '/admin/companies', icon: Building },
+        { label: 'Campus Placement Drives & Events', path: '/admin/events', icon: Calendar },
+        { label: 'Placement Telemetry & System Analytics', path: '/admin/analytics', icon: BarChart2 },
+      ],
+    },
+  ],
+};
 
 const TopBar = ({
   breadcrumbs = [],
   statusBadge,
-  searchPlaceholder = 'Search roadmaps, competencies, faculty...',
+  searchPlaceholder = 'Search roadmaps, competencies, modules...',
   onSearch,
   quickAction,
   primaryAction,
@@ -62,6 +285,7 @@ const TopBar = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [readNotifications, setReadNotifications] = useState([]);
 
   const searchContainerRef = useRef(null);
 
@@ -70,7 +294,10 @@ const TopBar = ({
     navigate('/login', { replace: true });
   };
 
-  const displayRole = user?.role || 'student';
+  const displayRole = (user?.role || 'student').toLowerCase();
+  const roleConfig = ROLE_NOTIFICATIONS[displayRole] || ROLE_NOTIFICATIONS.student;
+  const searchSuggestions = ROLE_SEARCH_SUGGESTIONS[displayRole] || ROLE_SEARCH_SUGGESTIONS.student;
+
   const displayName =
     user?.name ||
     (displayRole === 'faculty'
@@ -79,18 +306,39 @@ const TopBar = ({
       ? 'Alumni Mentor'
       : displayRole === 'recruiter'
       ? 'Campus Recruiter'
+      : displayRole === 'admin'
+      ? 'System Administrator'
       : 'Verified Student');
   const displayEmail = user?.email || `${displayRole}@campus.edu`;
 
-  // Filter spotlight suggestions
-  const filteredSuggestions = searchQuery.trim()
-    ? SEARCH_SUGGESTIONS.map((group) => ({
+  // Calculate unread count
+  const unreadCount = roleConfig.items.filter(
+    (item) => !readNotifications.includes(item.id)
+  ).length;
+
+  const handleMarkAllRead = (e) => {
+    e.stopPropagation();
+    setReadNotifications(roleConfig.items.map((i) => i.id));
+  };
+
+  const handleNotificationClick = (item) => {
+    setReadNotifications((prev) => [...new Set([...prev, item.id])]);
+    setIsNotificationsOpen(false);
+    navigate(item.path);
+  };
+
+  // Filter spotlight suggestions based on role-specific list
+  const filteredSuggestions = useMemo(() => {
+    if (!searchQuery.trim()) return searchSuggestions;
+    return searchSuggestions
+      .map((group) => ({
         ...group,
         items: group.items.filter((item) =>
           item.label.toLowerCase().includes(searchQuery.toLowerCase())
         ),
-      })).filter((group) => group.items.length > 0)
-    : SEARCH_SUGGESTIONS;
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [searchQuery, searchSuggestions]);
 
   // Close search suggestions when clicking outside
   useEffect(() => {
@@ -233,11 +481,13 @@ const TopBar = ({
               setIsProfileOpen(false);
             }}
             className="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            aria-label="Platform Notifications (3 Unread)"
+            aria-label={`Platform Notifications (${unreadCount} Unread)`}
             aria-expanded={isNotificationsOpen}
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+            )}
           </button>
 
           {/* Notifications Drawer */}
@@ -247,58 +497,73 @@ const TopBar = ({
                 className="fixed inset-0 z-40"
                 onClick={() => setIsNotificationsOpen(false)}
               />
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl border border-slate-200 shadow-2xl py-3 z-50 text-xs animate-fadeIn">
+              <div className="absolute right-0 mt-2 w-80 sm:w-88 bg-white rounded-2xl border border-slate-200 shadow-2xl py-3 z-50 text-xs animate-fadeIn">
                 <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
-                  <span className="font-bold text-slate-900">Notifications & Alerts</span>
-                  <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold">
-                    3 Active
-                  </span>
-                </div>
-                <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
-                  <div className="p-3 hover:bg-slate-50 transition-colors flex items-start gap-2.5">
-                    <Calendar className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold text-slate-800 block">
-                        Mock Technical Interview
-                      </span>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Upcoming session with Faculty Evaluator scheduled for tomorrow at 10:00 AM.
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900">Notifications & Alerts</span>
+                    <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
+                      {displayRole}
+                    </span>
                   </div>
-                  <div className="p-3 hover:bg-slate-50 transition-colors flex items-start gap-2.5">
-                    <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold text-slate-800 block">
-                        Weekly Sprint Due
-                      </span>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        2 weekly goals have target deadlines approaching in the next 48 hours.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-3 hover:bg-slate-50 transition-colors flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold text-slate-800 block">
-                        Placement Readiness Updated
-                      </span>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Your latest interview evaluation pushed your score to Tier 1 eligibility.
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">
+                      {unreadCount} New
+                    </span>
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleMarkAllRead}
+                        className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 transition"
+                        title="Mark all notifications as read"
+                      >
+                        <CheckCheck className="w-3 h-3" />
+                        <span>Mark read</span>
+                      </button>
+                    )}
                   </div>
                 </div>
+
+                <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+                  {roleConfig.items.map((item) => {
+                    const Icon = item.icon;
+                    const isRead = readNotifications.includes(item.id);
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => handleNotificationClick(item)}
+                        className={`p-3 transition-colors flex items-start gap-2.5 cursor-pointer hover:bg-slate-50 ${
+                          !isRead ? 'bg-blue-50/25' : ''
+                        }`}
+                      >
+                        <Icon className={`w-4 h-4 ${item.iconColor} shrink-0 mt-0.5`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-semibold text-slate-800 truncate block">
+                              {item.title}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-medium shrink-0">
+                              {item.time}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                            {item.description}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 <div className="px-4 pt-2.5 border-t border-slate-100 text-center">
                   <button
                     type="button"
                     onClick={() => {
                       setIsNotificationsOpen(false);
-                      navigate('/student/goals');
+                      navigate(roleConfig.footerPath);
                     }}
-                    className="text-blue-600 hover:text-blue-700 font-semibold text-[11px]"
+                    className="text-blue-600 hover:text-blue-700 font-semibold text-[11px] inline-flex items-center gap-1"
                   >
-                    View All Sprint Commitments →
+                    <span>{roleConfig.footerText}</span>
                   </button>
                 </div>
               </div>
@@ -352,9 +617,13 @@ const TopBar = ({
                       const targetPath =
                         displayRole === 'student'
                           ? '/student/profile'
+                          : displayRole === 'faculty'
+                          ? '/faculty/dashboard'
+                          : displayRole === 'alumni'
+                          ? '/alumni/dashboard'
                           : displayRole === 'recruiter'
                           ? '/recruiter/company'
-                          : '/';
+                          : '/admin/dashboard';
                       navigate(targetPath);
                     }}
                     className="w-full px-3.5 py-2 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2"

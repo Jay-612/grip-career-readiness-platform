@@ -6,7 +6,10 @@
     "frontend": "cd frontend && npm run dev",
     "client": "cd frontend && npm run dev",
     "seed": "cd backend && npm run seed",
-    "seed:reset": "cd backend && npm run seed:reset"
+    "seed:reset": "cd backend && npm run seed:reset",
+    "build": "cd frontend && npm run build",
+    "test:action-plan": "cd backend && npm run test:action-plan",
+    "test:mock-interview": "cd backend && npm run test:mock-interview"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

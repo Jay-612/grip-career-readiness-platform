@@ -33,13 +33,9 @@ export const interviewService = {
   },
 
   // Schedule/book a new mock interview appointment
-  // POST /api/appointments -> body: { date, time, facultyId }
-  scheduleAppointment: async ({ date, time, facultyId }) => {
-    const response = await apiClient.post('/appointments', {
-      date,
-      time,
-      facultyId,
-    });
+  // POST /api/appointments -> body: { date, time, facultyId, dateTime, timezoneOffset, customMeetLink }
+  scheduleAppointment: async (payload) => {
+    const response = await apiClient.post('/appointments', payload);
     return response.data;
   },
 

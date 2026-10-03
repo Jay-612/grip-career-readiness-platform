@@ -120,8 +120,14 @@ export const getProgressDashboard = async (req, res) => {
     const scheduledInterviews = interviewAgg.filter(
       (i) => i.status === 'scheduled'
     ).length;
+    const pendingInterviews = interviewAgg.filter(
+      (i) => i.status === 'pending'
+    ).length;
     const cancelledInterviews = interviewAgg.filter(
       (i) => i.status === 'cancelled'
+    ).length;
+    const rejectedInterviews = interviewAgg.filter(
+      (i) => i.status === 'rejected'
     ).length;
 
     // Average scores from completed interviews with evaluations
@@ -172,7 +178,9 @@ export const getProgressDashboard = async (req, res) => {
         total: totalInterviews,
         completed: completedInterviews,
         scheduled: scheduledInterviews,
+        pending: pendingInterviews,
         cancelled: cancelledInterviews,
+        rejected: rejectedInterviews,
         averageScores: {
           technical: avgTechnical,
           communication: avgCommunication,
@@ -183,8 +191,14 @@ export const getProgressDashboard = async (req, res) => {
       actionPlans: {
         total: actionPlans.length,
         items: actionPlans.map((ap) => ({
+          id: ap._id,
           weakSkill: ap.weakSkill,
           recommendedTask: ap.recommendedTask,
+          weakSkills: ap.weakSkills || [],
+          recommendedTasks: ap.recommendedTasks || [],
+          domainScores: ap.domainScores,
+          status: ap.status,
+          createdAt: ap.createdAt,
         })),
       },
       guidanceRequests: {
@@ -225,7 +239,7 @@ export const getGoalsAnalysis = async (req, res) => {
     // Get all goals (unfiltered) for summary, and filtered goals for list
     const [allGoals, filteredGoals] = await Promise.all([
       WeeklyGoal.find({ studentId }).sort({ dueDate: -1 }),
-      WeeklyGoal.find(filter).sort({ dueDate: -1 }),
+      WeeklyGoal.find(filter).populate('assignedBy', 'name email role').sort({ dueDate: -1 }),
     ]);
 
     const total = allGoals.length;
@@ -249,6 +263,12 @@ export const getGoalsAnalysis = async (req, res) => {
         title: g.title,
         status: g.status,
         dueDate: g.dueDate,
+        category: g.category || 'general',
+        isRemedial: Boolean(g.isRemedial),
+        source: g.source || 'self',
+        actionPlanId: g.actionPlanId || null,
+        assignedBy: g.assignedBy || null,
+        interviewId: g.interviewId || null,
       })),
     });
   } catch (error) {
@@ -293,6 +313,17 @@ export const getInterviewAnalysis = async (req, res) => {
       {
         $unwind: { path: '$interviewer', preserveNullAndEmptyArrays: true },
       },
+      {
+        $lookup: {
+          from: 'Action_Plans',
+          localField: '_id',
+          foreignField: 'interviewId',
+          as: 'actionPlan',
+        },
+      },
+      {
+        $unwind: { path: '$actionPlan', preserveNullAndEmptyArrays: true },
+      },
       { $sort: { dateTime: -1 } },
       {
         $project: {
@@ -304,6 +335,20 @@ export const getInterviewAnalysis = async (req, res) => {
           googleEventId: 1,
           duration: 1,
           status: 1,
+          actionPlan: {
+            $cond: {
+              if: { $ifNull: ['$actionPlan', false] },
+              then: {
+                id: '$actionPlan._id',
+                status: '$actionPlan.status',
+                weakSkills: '$actionPlan.weakSkills',
+                recommendedTasks: '$actionPlan.recommendedTasks',
+                domainScores: '$actionPlan.domainScores',
+                evaluatorNotes: '$actionPlan.evaluatorNotes',
+              },
+              else: null,
+            },
+          },
           scores: {
             technical: { $ifNull: ['$evaluation.technicalScore', null] },
             communication: {
@@ -337,7 +382,9 @@ export const getInterviewAnalysis = async (req, res) => {
     const total = interviews.length;
     const completed = interviews.filter((i) => i.status === 'completed').length;
     const scheduled = interviews.filter((i) => i.status === 'scheduled').length;
+    const pending = interviews.filter((i) => i.status === 'pending').length;
     const cancelled = interviews.filter((i) => i.status === 'cancelled').length;
+    const rejected = interviews.filter((i) => i.status === 'rejected').length;
 
     const scored = interviews.filter(
       (i) => i.status === 'completed' && i.scores.technical !== null
@@ -362,6 +409,67 @@ export const getInterviewAnalysis = async (req, res) => {
       );
     }
 
+    // Optional status filter
+    let filteredInterviews = interviews;
+    if (req.query.status && req.query.status !== 'all') {
+      filteredInterviews = interviews.filter((i) => i.status === req.query.status);
+    }
+
+    const now = new Date();
+    const isStudent = (req.user?.role || '').toLowerCase() === 'student';
+    const EARLY_BUFFER_MS = 5 * 60 * 1000;
+
+    const mappedInterviews = filteredInterviews.map((i) => {
+      const startTime = i.dateTime ? new Date(i.dateTime) : new Date();
+      const durationMs = (i.duration || 45) * 60 * 1000;
+      const unlockTime = new Date(startTime.getTime() - EARLY_BUFFER_MS);
+      const endTime = new Date(startTime.getTime() + durationMs + 15 * 60 * 1000);
+
+      let canJoin = false;
+      if (i.status === 'scheduled' && i.meetLink) {
+        if (!isStudent) {
+          canJoin = true; // faculty / admin hosts
+        } else if (now.getTime() >= unlockTime.getTime() && now.getTime() <= endTime.getTime()) {
+          canJoin = true;
+        }
+      }
+
+      // If student and session is not open yet, protect the raw meetLink from exposure
+      const visibleMeetLink = isStudent && !canJoin ? '' : (i.meetLink || '');
+      const visibleCalendarLink = isStudent && !canJoin ? '' : (i.calendarHtmlLink || '');
+
+      return {
+        interviewId: i.interviewId,
+        id: i.interviewId,
+        interviewerName: i.interviewerName,
+        dateTime: i.dateTime,
+        duration: i.duration || 45,
+        meetLink: visibleMeetLink,
+        rawMeetLinkAvailable: Boolean(i.meetLink),
+        meetingType: i.meetLink?.includes('meet.google.com')
+          ? 'google_meet'
+          : i.meetLink?.includes('jit.si')
+          ? 'instant_webrtc'
+          : i.meetLink
+          ? 'custom_video'
+          : 'none',
+        meetingProvider: i.meetLink?.includes('meet.google.com')
+          ? 'Google Meet'
+          : i.meetLink?.includes('jit.si')
+          ? 'Instant WebRTC Room'
+          : i.meetLink
+          ? 'Custom Video Room'
+          : 'None',
+        calendarHtmlLink: visibleCalendarLink,
+        googleEventId: i.googleEventId || '',
+        status: i.status,
+        canJoin,
+        opensAt: unlockTime,
+        scores: i.scores,
+        actionPlan: i.actionPlan || null,
+      };
+    });
+
     res.status(200).json({
       success: true,
       studentId: student._id,
@@ -369,7 +477,9 @@ export const getInterviewAnalysis = async (req, res) => {
         total,
         completed,
         scheduled,
+        pending,
         cancelled,
+        rejected,
         averageScores: {
           technical: avgTechnical,
           communication: avgCommunication,
@@ -377,14 +487,7 @@ export const getInterviewAnalysis = async (req, res) => {
           overall: avgOverall,
         },
       },
-      interviews: interviews.map((i) => ({
-        interviewId: i.interviewId,
-        interviewerName: i.interviewerName,
-        dateTime: i.dateTime,
-        meetLink: i.meetLink,
-        status: i.status,
-        scores: i.scores,
-      })),
+      interviews: mappedInterviews,
     });
   } catch (error) {
     res.status(500).json({

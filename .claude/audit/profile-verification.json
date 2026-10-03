@@ -1,0 +1,47 @@
+{
+  "desktop": {
+    "scrollHeight": 1130,
+    "viewportHeight": 900,
+    "folds": 1.3,
+    "cards": 21,
+    "buttons": 20,
+    "sectionsFound": {
+      "profile": true,
+      "resume": true,
+      "verifiedSkills": true,
+      "links": true
+    },
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "tablet": {
+    "scrollHeight": 1408,
+    "viewportHeight": 1024,
+    "folds": 1.4,
+    "cards": 21,
+    "buttons": 20,
+    "sectionsFound": {
+      "profile": true,
+      "resume": true,
+      "verifiedSkills": true,
+      "links": true
+    },
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "mobile": {
+    "scrollHeight": 2153,
+    "viewportHeight": 844,
+    "folds": 2.6,
+    "cards": 21,
+    "buttons": 20,
+    "sectionsFound": {
+      "profile": true,
+      "resume": true,
+      "verifiedSkills": true,
+      "links": true
+    },
+    "consoleErrors": [],
+    "failedRequests": []
+  }
+}
