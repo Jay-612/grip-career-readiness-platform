@@ -139,6 +139,62 @@ const InterviewEvaluationPage = () => {
     }
   };
 
+  // Acceptance and rejection state
+  const [isAcceptingRequest, setIsAcceptingRequest] = useState(false);
+  const [isDecliningRequest, setIsDecliningRequest] = useState(false);
+
+  // Handle Faculty accepting the pending appointment
+  const handleAcceptAppointment = async () => {
+    const interviewId = currentInterview?.id || currentInterview?._id;
+    if (!interviewId) return;
+    setIsAcceptingRequest(true);
+    try {
+      const res = await facultyService.acceptAppointment(interviewId);
+      if (res?.appointment) {
+        const updated = res.appointment;
+        setCurrentInterview((prev) => ({
+          ...prev,
+          status: 'scheduled',
+          meetLink: updated.meetLink,
+          googleEventId: updated.googleEventId,
+          calendarHtmlLink: updated.calendarHtmlLink,
+        }));
+        setAllAppointments((prev) =>
+          prev.map((a) => (a.id === interviewId ? { ...a, status: 'scheduled', meetLink: updated.meetLink } : a))
+        );
+        setMeetToast('Interview request accepted and Google Meet link generated!');
+        setTimeout(() => setMeetToast(null), 4000);
+      }
+    } catch (err) {
+      console.error('Failed to accept appointment:', err);
+      alert(err.response?.data?.message || 'Failed to accept interview request.');
+    } finally {
+      setIsAcceptingRequest(false);
+    }
+  };
+
+  // Handle Faculty declining the pending appointment
+  const handleDeclineAppointment = async () => {
+    const interviewId = currentInterview?.id || currentInterview?._id;
+    if (!interviewId) return;
+    if (!window.confirm('Are you sure you want to decline this mock interview request?')) return;
+    setIsDecliningRequest(true);
+    try {
+      await facultyService.rejectAppointment(interviewId);
+      setCurrentInterview((prev) => ({ ...prev, status: 'rejected' }));
+      setAllAppointments((prev) =>
+        prev.map((a) => (a.id === interviewId ? { ...a, status: 'rejected' } : a))
+      );
+      setMeetToast('Interview request declined.');
+      setTimeout(() => setMeetToast(null), 4000);
+    } catch (err) {
+      console.error('Failed to decline appointment:', err);
+      alert(err.response?.data?.message || 'Failed to decline interview request.');
+    } finally {
+      setIsDecliningRequest(false);
+    }
+  };
+
   // Stopwatch effect
   useEffect(() => {
     let interval = null;
@@ -527,11 +583,13 @@ const InterviewEvaluationPage = () => {
                               ? 'success'
                               : apt.status === 'scheduled'
                               ? 'info'
+                              : apt.status === 'pending'
+                              ? 'warning'
                               : 'neutral'
                           }
                           size="sm"
                         >
-                          {apt.status}
+                          {apt.status === 'pending' ? 'Pending' : apt.status}
                         </Badge>
                       </button>
                     ))}
@@ -541,7 +599,7 @@ const InterviewEvaluationPage = () => {
             )}
           </div>
 
-          {!isReadOnly && (
+          {!isReadOnly && currentInterview?.status === 'scheduled' && (
             <Button
               variant="primary"
               size="sm"
@@ -598,6 +656,60 @@ const InterviewEvaluationPage = () => {
         </div>
       )}
 
+      {/* Pending Request Action Banner */}
+      {currentInterview?.status === 'pending' && (
+        <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fadeIn">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-amber-950 font-heading">
+                  Student Mock Interview Request Awaiting Acceptance
+                </h3>
+                <Badge variant="warning" size="sm">
+                  Pending Review
+                </Badge>
+              </div>
+              <p className="text-xs text-amber-900 leading-relaxed">
+                <strong>{studentName}</strong> requested a 45-minute technical screen on{' '}
+                <strong>{formatDate(currentInterview.dateTime)}</strong> at{' '}
+                <strong>{formatTime(currentInterview.dateTime)}</strong>.
+              </p>
+              <p className="text-[11px] text-amber-700 leading-normal">
+                Accepting this request will immediately generate the official Google Meet room link and confirm the appointment.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0 self-end md:self-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeclineAppointment}
+              isLoading={isDecliningRequest}
+              disabled={isAcceptingRequest}
+              className="text-xs border-amber-300 text-amber-900 hover:bg-amber-100/70"
+            >
+              Decline
+            </Button>
+            <Button
+              variant="success"
+              size="sm"
+              onClick={handleAcceptAppointment}
+              isLoading={isAcceptingRequest}
+              loadingText="Generating Meet..."
+              disabled={isDecliningRequest}
+              leftIcon={<Video className="w-3.5 h-3.5" />}
+              className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+            >
+              Accept & Generate Google Meet
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* ================= 2. CANDIDATE & LIVE SESSION HEADER ================= */}
       <section
         className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-card"
@@ -646,7 +758,14 @@ const InterviewEvaluationPage = () => {
 
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2 text-slate-600 flex-wrap">
-                {currentInterview.meetLink ? (
+                {currentInterview.status === 'pending' ? (
+                  <div className="flex items-center gap-1.5 text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                    <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span className="font-semibold text-[11px]">
+                      Pending Acceptance
+                    </span>
+                  </div>
+                ) : currentInterview.meetLink ? (
                   <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
                     <Video className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span className="font-semibold text-[11px]">
@@ -909,6 +1028,27 @@ const InterviewEvaluationPage = () => {
               Model Rubric (0–10 Scale)
             </Badge>
           </div>
+
+          {currentInterview?.status === 'pending' && (
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>Request Pending:</strong> Please accept this student interview request above to generate the Google Meet room and unlock formal grading.
+                </span>
+              </div>
+              <Button
+                variant="success"
+                size="xs"
+                onClick={handleAcceptAppointment}
+                isLoading={isAcceptingRequest}
+                loadingText="Accepting..."
+                className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+              >
+                Accept Now
+              </Button>
+            </div>
+          )}
 
           {/* CRITERION 1: TECHNICAL SCORE */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-card space-y-4 relative overflow-hidden">

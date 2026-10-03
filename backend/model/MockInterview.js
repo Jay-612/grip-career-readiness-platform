@@ -41,8 +41,8 @@ const mockInterviewSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['scheduled', 'completed', 'cancelled'],
-      default: 'scheduled',
+      enum: ['pending', 'scheduled', 'completed', 'cancelled', 'rejected'],
+      default: 'pending',
     },
   },
   {
