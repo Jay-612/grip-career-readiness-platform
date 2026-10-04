@@ -22,6 +22,8 @@ import departmentRoutes from './routes/departmentRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import actionPlanRoutes from './routes/actionPlanRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import { runEventReminderScan } from './services/eventReminderService.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +52,7 @@ app.use('/api/student', studentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/action-plans', actionPlanRoutes);
 app.use('/api/action-plan', actionPlanRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ─── Health check ─────────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -59,6 +62,13 @@ app.get('/', (req, res) => {
 // ─── Start Server ─────────────────────────────────────────────
 const startServer = async () => {
   await connectDB();
+
+  // Run initial reminder check on startup and schedule periodic interval (every 5 minutes)
+  runEventReminderScan().catch((err) => console.warn('Startup reminder scan warning:', err.message));
+  const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+  setInterval(() => {
+    runEventReminderScan().catch((err) => console.warn('Periodic reminder scan error:', err.message));
+  }, REMINDER_INTERVAL_MS);
   app.listen(PORT, () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 Auth routes:         POST   /api/auth/register`);

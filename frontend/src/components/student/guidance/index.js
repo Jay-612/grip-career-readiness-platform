@@ -5,3 +5,5 @@ export { default as RemedialTaskItem } from './RemedialTaskItem';
 export { default as TaskDetailsDrawer } from './TaskDetailsDrawer';
 export { default as SubmissionModal } from './SubmissionModal';
 export { default as CompletedPlansAccordion } from './CompletedPlansAccordion';
+export { default as AskGuidanceModal } from './AskGuidanceModal';
+export { default as StudentInquiriesSection } from './StudentInquiriesSection';

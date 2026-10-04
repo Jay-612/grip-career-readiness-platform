@@ -22,6 +22,7 @@ const GuidanceInboxPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Filter & Search
+  const [mainSection, setMainSection] = useState('student_questions'); // 'student_questions' | 'remedial_reviews'
   const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'inReview' | 'completed' | 'all'
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -164,12 +165,30 @@ const GuidanceInboxPage = () => {
   };
 
   // ─── 3. Filter & Sort Logic ────────────────────────────────────
+  const isRemedialSubmission = (r) => {
+    const q = (r.question || '').toLowerCase();
+    const t = (r.topic || '').toLowerCase();
+    return (
+      q.includes('remedial') ||
+      q.includes('action plan') ||
+      t.includes('remedial') ||
+      t.includes('action plan') ||
+      q.includes('submission:')
+    );
+  };
+
   const { filteredRequests, counts } = useMemo(() => {
+    // 1. Separate based on mainSection
+    const sectionRequests = requests.filter((r) => {
+      const isRemedial = isRemedialSubmission(r);
+      return mainSection === 'remedial_reviews' ? isRemedial : !isRemedial;
+    });
+
     let pendingCount = 0;
     let inReviewCount = 0;
     let completedCount = 0;
 
-    requests.forEach((r) => {
+    sectionRequests.forEach((r) => {
       const isPending = r.status === 'pending' || !r.replyCount;
       const isApproved =
         r.latestReply?.answerText?.includes('Approved') ||
@@ -184,7 +203,7 @@ const GuidanceInboxPage = () => {
       }
     });
 
-    const filtered = requests.filter((item) => {
+    const filtered = sectionRequests.filter((item) => {
       const isPending = item.status === 'pending' || !item.replyCount;
       const isApproved =
         item.latestReply?.answerText?.includes('Approved') ||
@@ -417,6 +436,40 @@ const GuidanceInboxPage = () => {
     }
   };
 
+  // Resolve Flow
+  const [isResolving, setIsResolving] = useState(false);
+  const handleResolveRequest = async () => {
+    if (!selectedRequestId) return;
+    setIsResolving(true);
+    try {
+      await facultyService.resolveGuidanceRequest(selectedRequestId);
+
+      setSelectedDetail((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: 'resolved',
+        };
+      });
+
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === selectedRequestId
+            ? {
+                ...r,
+                status: 'resolved',
+              }
+            : r
+        )
+      );
+    } catch (err) {
+      console.error('Failed to resolve guidance request:', err);
+      alert(err.response?.data?.message || 'Failed to mark inquiry as resolved.');
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
   return (
     <div className="space-y-4 antialiased" data-purpose="faculty-guidance-inbox">
       {/* 1. PAGE HEADER */}
@@ -428,6 +481,41 @@ const GuidanceInboxPage = () => {
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
       />
+
+      {/* TOP-LEVEL TABS: [Student Questions] [Remedial Reviews] */}
+      <div className="border-b border-slate-200 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setMainSection('student_questions');
+            setSelectedRequestId(null);
+            setSelectedDetail(null);
+          }}
+          className={`pb-3 px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
+            mainSection === 'student_questions'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <span>Student Questions</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMainSection('remedial_reviews');
+            setSelectedRequestId(null);
+            setSelectedDetail(null);
+          }}
+          className={`pb-3 px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
+            mainSection === 'remedial_reviews'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <span>Remedial Reviews</span>
+        </button>
+      </div>
 
       {/* 2. STATUS FILTERS */}
       <GuidanceFilters
@@ -483,8 +571,10 @@ const GuidanceInboxPage = () => {
             onApprove={handleApproveCompletion}
             onRequestRework={handleOpenReworkModal}
             onAddComment={handleAddComment}
+            onResolve={handleResolveRequest}
             isApproving={isApproving}
             isCommenting={isCommenting}
+            isResolving={isResolving}
           />
         </div>
       </div>

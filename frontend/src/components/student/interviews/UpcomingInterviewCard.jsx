@@ -148,10 +148,10 @@ export const UpcomingInterviewCard = ({
             </Button>
             <button
               type="button"
-              onClick={() => onCancel(interviewId)}
+              onClick={() => onCancel(interview)}
               className="text-xs text-rose-300 hover:text-rose-200 transition underline underline-offset-2"
             >
-              Cancel Request
+              Withdraw Request
             </button>
           </div>
         ) : canJoin ? (
@@ -206,11 +206,11 @@ export const UpcomingInterviewCard = ({
               )}
               <button
                 type="button"
-                onClick={() => onCancel(interviewId)}
+                onClick={() => onCancel(interview)}
                 className="text-rose-300 hover:text-rose-200 flex items-center gap-1 transition"
               >
                 <Trash2 className="w-3 h-3" />
-                <span>Cancel Session</span>
+                <span>Cancel Interview</span>
               </button>
             </div>
           </div>
@@ -255,11 +255,11 @@ export const UpcomingInterviewCard = ({
 
             <button
               type="button"
-              onClick={() => onCancel(interviewId)}
+              onClick={() => onCancel(interview)}
               className="text-xs text-rose-300 hover:text-rose-200 flex items-center gap-1 transition pt-0.5"
             >
               <Trash2 className="w-3 h-3" />
-              <span>Cancel Session</span>
+              <span>Cancel Interview</span>
             </button>
           </div>
         )}

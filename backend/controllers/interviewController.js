@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import MockInterview from '../model/MockInterview.js';
 import User from '../model/User.js';
+import Notification from '../model/Notification.js';
 import googleCalendarService from '../services/googleCalendarService.js';
 
 // ─── POST /api/appointments — Request Mock Interview (Status: Pending) ──
@@ -71,6 +72,26 @@ export const scheduleMockInterview = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Interview appointment cannot be scheduled in the past. Please select a future date and time.',
+      });
+    }
+
+    // Slot Conflict Checking: ensure faculty doesn't already have an active appointment in this time window
+    const durationMinutes = Number(duration) || 45;
+    const durationMs = durationMinutes * 60 * 1000;
+    const slotStart = new Date(dateTime.getTime() - 29 * 60 * 1000);
+    const slotEnd = new Date(dateTime.getTime() + durationMs - 1000);
+
+    const conflictingAppointment = await MockInterview.findOne({
+      interviewerId: facultyId,
+      dateTime: { $gte: slotStart, $lt: slotEnd },
+      status: { $nin: ['cancelled', 'rejected'] }, // Excludes cancelled and rejected appointments, immediately releasing the slot!
+    });
+
+    if (conflictingAppointment) {
+      return res.status(409).json({
+        success: false,
+        code: 'SLOT_OCCUPIED',
+        message: 'This faculty member is already booked for this time slot. Please choose another date or time.',
       });
     }
 
@@ -228,6 +249,10 @@ export const getAppointments = async (req, res) => {
         opensAt: unlockTime,
         googleEventId: apt.googleEventId || '',
         calendarHtmlLink: isStudent && !canJoin ? '' : (apt.calendarHtmlLink || ''),
+        cancelledByRole: apt.cancelledByRole || null,
+        cancelledByUser: apt.cancelledByUser || null,
+        cancelReason: apt.cancelReason || '',
+        cancelledAt: apt.cancelledAt || null,
         student: apt.studentId
           ? {
               id: apt.studentId._id,
@@ -353,7 +378,9 @@ export const createOrRefreshMeetLink = async (req, res) => {
 export const cancelAppointment = async (req, res) => {
   try {
     const { id } = req.params;
-    const currentUserId = (req.user.id || req.user.userId || '').toString();
+    const { reason = '' } = req.body || {};
+    const currentUserId = (req.user?.id || req.user?.userId || '').toString();
+    const userRole = (req.user?.role || '').toLowerCase();
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -370,48 +397,193 @@ export const cancelAppointment = async (req, res) => {
       });
     }
 
-    // Only the student, the interviewer, or an admin can cancel
-    const studentIdStr = (appointment.studentId || '').toString();
-    const interviewerIdStr = (appointment.interviewerId || '').toString();
+    // Authorization: Only the student who booked, the assigned faculty, or an admin can cancel
+    const studentIdStr = (appointment.studentId?._id || appointment.studentId || '').toString();
+    const interviewerIdStr = (appointment.interviewerId?._id || appointment.interviewerId || '').toString();
+    const isStudent = studentIdStr === currentUserId;
+    const isInterviewer = interviewerIdStr === currentUserId;
+    const isAdmin = userRole === 'admin';
 
-    if (
-      studentIdStr !== currentUserId &&
-      interviewerIdStr !== currentUserId &&
-      req.user.role !== 'admin'
-    ) {
+    if (!isStudent && !isInterviewer && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. You can only cancel your own appointments.',
       });
     }
 
-    if (appointment.status === 'cancelled') {
-      return res.status(400).json({
+    // Cancellation is allowed for: pending, accepted, scheduled.
+    // NOT allowed for: in_progress, completed, cancelled.
+    const cancellableStatuses = ['pending', 'accepted', 'scheduled'];
+
+    if (!cancellableStatuses.includes(appointment.status)) {
+      if (appointment.status === 'cancelled') {
+        return res.status(409).json({
+          success: false,
+          code: 'ALREADY_CANCELLED',
+          message: 'Appointment has already been cancelled.',
+        });
+      }
+      return res.status(409).json({
         success: false,
-        message: 'Appointment is already cancelled',
+        code: 'NOT_CANCELLABLE',
+        message: `Appointment cannot be cancelled because it is already ${appointment.status}.`,
+      });
+    }
+
+    // Determine cancelling actor and reason
+    const cancelledByRole = isStudent ? 'student' : isInterviewer ? 'faculty' : 'admin';
+    const defaultReason = isStudent && appointment.status === 'pending' ? 'Withdrawn by student' : 'Cancelled by participant';
+    const cleanReason = reason && typeof reason === 'string' && reason.trim() ? reason.trim() : defaultReason;
+    const cancelledAt = new Date();
+
+    // ATOMIC CONDITIONAL UPDATE: ensures thread-safety if two actions occur concurrently
+    const updated = await MockInterview.findOneAndUpdate(
+      {
+        _id: id,
+        status: { $in: cancellableStatuses },
+      },
+      {
+        $set: {
+          status: 'cancelled',
+          cancelledByRole,
+          cancelledByUser: currentUserId,
+          cancelReason: cleanReason,
+          cancelledAt,
+        },
+      },
+      { new: true }
+    )
+      .populate('studentId', 'name email')
+      .populate('interviewerId', 'name email');
+
+    if (!updated) {
+      // Race condition occurred: status changed while processing
+      const freshRecord = await MockInterview.findById(id);
+      return res.status(409).json({
+        success: false,
+        code: 'CONCURRENT_STATUS_CONFLICT',
+        message: `Appointment status conflict: appointment was concurrently updated to "${freshRecord?.status || 'unknown'}".`,
       });
     }
 
     // If Google Calendar event exists, delete it
-    if (appointment.googleEventId) {
-      await googleCalendarService.deleteCalendarEvent(appointment.googleEventId);
+    if (updated.googleEventId) {
+      try {
+        await googleCalendarService.deleteCalendarEvent(updated.googleEventId);
+      } catch (calErr) {
+        console.warn('Calendar event deletion warning:', calErr.message);
+      }
     }
 
-    appointment.status = 'cancelled';
-    await appointment.save();
+    // Send In-App Notification to the other participant
+    try {
+      const dt = updated.dateTime ? new Date(updated.dateTime) : new Date();
+      const dateStr = dt.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const timeStr = dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      if (isStudent) {
+        // Student cancelled -> notify faculty
+        const facultyUserId = updated.interviewerId?._id || updated.interviewerId;
+        const studentName = updated.studentId?.name || req.user?.name || 'A student';
+        if (facultyUserId) {
+          await Notification.create({
+            userId: facultyUserId,
+            type: 'interview_update',
+            title: 'Mock Interview Cancelled',
+            message: `${studentName} cancelled the mock interview scheduled for ${dateStr} at ${timeStr}.`,
+            actionPath: '/faculty/interviews',
+          });
+        }
+      } else {
+        // Faculty (or admin) cancelled -> notify student
+        const studentUserId = updated.studentId?._id || updated.studentId;
+        const facultyName = updated.interviewerId?.name || req.user?.name || 'Faculty';
+        if (studentUserId) {
+          await Notification.create({
+            userId: studentUserId,
+            type: 'interview_update',
+            title: 'Mock Interview Cancelled',
+            message: `${facultyName} cancelled your mock interview scheduled for ${dateStr} at ${timeStr}.`,
+            actionPath: '/student/interviews',
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.warn('Failed to send interview cancellation notification:', notifErr.message);
+    }
 
     return res.status(200).json({
       success: true,
       message: 'Appointment cancelled successfully and removed from calendar',
       appointment: {
-        id: appointment._id,
-        status: appointment.status,
+        id: updated._id,
+        _id: updated._id,
+        status: updated.status,
+        cancelledByRole: updated.cancelledByRole,
+        cancelledByUser: updated.cancelledByUser,
+        cancelReason: updated.cancelReason,
+        cancelledAt: updated.cancelledAt,
       },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: 'Server error while cancelling appointment',
+      error: error.message,
+    });
+  }
+};
+
+// ─── GET /api/appointments/occupied-slots — Get Occupied Slots for a Faculty on a Date ──
+export const getOccupiedSlots = async (req, res) => {
+  try {
+    const { facultyId, date } = req.query;
+
+    if (!facultyId || !date) {
+      return res.status(400).json({
+        success: false,
+        message: 'facultyId and date are required query parameters',
+      });
+    }
+
+    const startOfDay = new Date(`${date}T00:00:00.000Z`);
+    const queryStart = new Date(startOfDay.getTime() - 14 * 60 * 60 * 1000);
+    const queryEnd = new Date(startOfDay.getTime() + 38 * 60 * 60 * 1000);
+
+    // Only non-cancelled, non-rejected appointments occupy slots!
+    const activeAppointments = await MockInterview.find({
+      interviewerId: facultyId,
+      dateTime: { $gte: queryStart, $lte: queryEnd },
+      status: { $nin: ['cancelled', 'rejected'] },
+    }).sort({ dateTime: 1 });
+
+    const slotSet = new Set();
+    activeAppointments.forEach((apt) => {
+      const dt = new Date(apt.dateTime);
+      if (!isNaN(dt.getTime())) {
+        const localHours = String(dt.getHours()).padStart(2, '0');
+        const localMins = String(dt.getMinutes()).padStart(2, '0');
+        slotSet.add(`${localHours}:${localMins}`);
+
+        const utcHours = String(dt.getUTCHours()).padStart(2, '0');
+        const utcMins = String(dt.getUTCMinutes()).padStart(2, '0');
+        slotSet.add(`${utcHours}:${utcMins}`);
+      }
+    });
+
+    const occupiedSlots = Array.from(slotSet);
+
+    return res.status(200).json({
+      success: true,
+      facultyId,
+      date,
+      count: occupiedSlots.length,
+      occupiedSlots,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching occupied slots',
       error: error.message,
     });
   }

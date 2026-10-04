@@ -50,6 +50,15 @@ export const facultyService = {
     return response.data;
   },
 
+  // Cancel scheduled interview appointment
+  // PATCH /api/appointments/:id/cancel
+  cancelAppointment: async (appointmentId, reason = '') => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/cancel`, {
+      reason,
+    });
+    return response.data;
+  },
+
   // Get guidance requests from students (accessible to faculty)
   // GET /api/guidance/requests?page=&limit=
   getGuidanceRequests: async (page = 1, limit = 20) => {
@@ -72,6 +81,13 @@ export const facultyService = {
     const response = await apiClient.post(`/guidance/requests/${id}/reply`, {
       reply: replyText,
     });
+    return response.data;
+  },
+
+  // Mark a student guidance request as resolved
+  // PUT /api/guidance/requests/:id/resolve
+  resolveGuidanceRequest: async (id) => {
+    const response = await apiClient.put(`/guidance/requests/${id}/resolve`);
     return response.data;
   },
 

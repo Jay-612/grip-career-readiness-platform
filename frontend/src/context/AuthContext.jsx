@@ -36,9 +36,6 @@ export const AuthProvider = ({ children }) => {
   const getRoleDashboardPath = (role, userObj) => {
     switch (role?.toLowerCase()) {
       case 'student':
-        if (userObj && !userObj.selectedCareer) {
-          return '/student/career-compass?takeQuiz=true';
-        }
         return '/student/dashboard';
       case 'faculty':
         return '/faculty/dashboard';

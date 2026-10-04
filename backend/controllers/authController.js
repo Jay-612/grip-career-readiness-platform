@@ -59,6 +59,7 @@ export const register = async (req, res) => {
         role: user.role,
         selectedCareer: '',
         hasCompletedQuiz: false,
+        readinessQuizCompletedAt: null,
       },
     });
   } catch (error) {
@@ -150,6 +151,8 @@ export const login = async (req, res) => {
     );
 
     let selectedCareer = '';
+    let hasCompletedQuiz = false;
+    let readinessQuizCompletedAt = null;
     if (user.role === 'student') {
       let studentProfile = await StudentProfile.findOne({ studentId: user._id });
       if (!studentProfile) {
@@ -158,9 +161,16 @@ export const login = async (req, res) => {
           semester: 1,
           selectedCareer: '',
           readinessScore: 0,
+          readinessQuizCompletedAt: null,
         });
       }
       selectedCareer = studentProfile.selectedCareer || '';
+      hasCompletedQuiz = Boolean(
+        studentProfile.readinessQuizCompletedAt ||
+        (studentProfile.careerHistory && studentProfile.careerHistory.length > 0) ||
+        (selectedCareer && selectedCareer.trim().length > 0)
+      );
+      readinessQuizCompletedAt = studentProfile.readinessQuizCompletedAt || (hasCompletedQuiz ? studentProfile.updatedAt : null);
     }
 
     res.status(200).json({
@@ -173,7 +183,8 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
         selectedCareer,
-        hasCompletedQuiz: Boolean(selectedCareer && selectedCareer.trim().length > 0),
+        hasCompletedQuiz,
+        readinessQuizCompletedAt,
       },
     });
   } catch (error) {

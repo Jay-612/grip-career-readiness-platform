@@ -697,7 +697,18 @@ export const getEvents = async (req, res) => {
 
 export const createEvent = async (req, res) => {
   try {
-    const { title, targetSkill, date } = req.body;
+    const {
+      title,
+      targetSkill,
+      date,
+      time,
+      venue,
+      description,
+      eventType,
+      audienceType,
+      targetDepartment,
+      targetSemester,
+    } = req.body;
 
     if (!title || !date) {
       return res.status(400).json({
@@ -706,17 +717,41 @@ export const createEvent = async (req, res) => {
       });
     }
 
+    const cleanAudienceType = ['all_students', 'department', 'semester', 'department_semester'].includes(audienceType)
+      ? audienceType
+      : 'all_students';
+
     const event = await DepartmentEvent.create({
       hodId: req.user.id,
       title: title.trim(),
       targetSkill: targetSkill ? targetSkill.trim() : 'General Technical Readiness',
       date: new Date(date),
+      time: time ? time.trim() : '11:00 AM',
+      venue: venue ? venue.trim() : 'Seminar Hall',
+      description: description ? description.trim() : '',
+      eventType: eventType ? eventType.trim() : 'Workshop',
+      audienceType: cleanAudienceType,
+      targetDepartment: targetDepartment ? targetDepartment.trim() : '',
+      targetSemester: targetSemester ? Number(targetSemester) : null,
+      status: 'scheduled',
+      remindersSent: { '24h': false, '1h': false },
+    });
+
+    const populatedEvent = await DepartmentEvent.findById(event._id).populate(
+      'hodId',
+      'name email role'
+    );
+
+    // Asynchronously dispatch in-app notifications to eligible students
+    const { notifyStudentsOfNewEvent } = await import('../services/eventReminderService.js');
+    notifyStudentsOfNewEvent(populatedEvent).catch((err) => {
+      console.warn('Background notification error on admin event publish:', err.message);
     });
 
     return res.status(201).json({
       success: true,
       message: 'Department skill improvement event scheduled successfully',
-      event,
+      event: populatedEvent,
     });
   } catch (error) {
     return res.status(500).json({

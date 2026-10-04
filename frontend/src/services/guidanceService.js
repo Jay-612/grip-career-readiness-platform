@@ -46,6 +46,27 @@ export const guidanceService = {
     });
     return response.data;
   },
+
+  // Mark guidance request as resolved
+  // PUT /api/guidance/requests/:id/resolve
+  resolveRequest: async (requestId) => {
+    const response = await apiClient.put(`/guidance/requests/${requestId}/resolve`);
+    return response.data;
+  },
+
+  // Get dynamic list of verified Faculty Mentors
+  // GET /api/guidance/mentors/faculty
+  getFacultyMentors: async () => {
+    const response = await apiClient.get('/guidance/mentors/faculty');
+    return response.data?.faculty || [];
+  },
+
+  // Get dynamic list of verified Alumni Mentors
+  // GET /api/guidance/mentors/alumni
+  getAlumniMentors: async () => {
+    const response = await apiClient.get('/guidance/mentors/alumni');
+    return response.data?.alumni || [];
+  },
 };
 
 export default guidanceService;

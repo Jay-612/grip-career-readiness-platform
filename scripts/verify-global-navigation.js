@@ -1,4 +1,4 @@
-import { chromium } from '@playwright/test';
+import { chromium } from 'file:///c:/Users/Lenovo/Desktop/grip-career-readiness-platform/frontend/node_modules/@playwright/test/index.mjs';
 import fs from 'fs';
 import path from 'path';
 

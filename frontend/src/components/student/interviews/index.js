@@ -5,3 +5,4 @@ export { InterviewHistory } from './InterviewHistory';
 export { InterviewHistoryItem } from './InterviewHistoryItem';
 export { BookingModal } from './BookingModal';
 export { EvaluationDetailsDrawer } from './EvaluationDetailsDrawer';
+export { CancelInterviewModal } from './CancelInterviewModal';

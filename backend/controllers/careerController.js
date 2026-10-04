@@ -16,6 +16,7 @@ export const submitCareerQuiz = async (req, res) => {
     }
 
     const allRoadmaps = await CareerRoadmap.find();
+    let bestMatch = null;
 
     if (!allRoadmaps || allRoadmaps.length === 0) {
       // Fallback deduction based on keywords if database roadmaps are not seeded yet
@@ -32,72 +33,64 @@ export const submitCareerQuiz = async (req, res) => {
         fallbackCareer = 'Full-Stack Product Engineering';
       }
 
-      if (autoApply && req.user?.id) {
-        await StudentProfile.findOneAndUpdate(
-          { studentId: req.user.id },
-          {
-            $set: { selectedCareer: fallbackCareer },
-            $push: {
-              careerHistory: {
-                career: fallbackCareer,
-                date: new Date(),
-                source: 'quiz',
-              },
-            },
-          },
-          { new: true, upsert: true }
-        );
-      }
-
-      return res.status(200).json({
-        success: true,
-        suggestedCareer: fallbackCareer,
+      bestMatch = {
+        careerName: fallbackCareer,
         description: 'Recommended trajectory based on your interest diagnostics.',
         requiredSkills: ['Core Engineering', 'Problem Solving'],
-      });
-    }
+      };
+    } else {
+      // Match criteria against roadmaps
+      const userTokens = [...interests, ...strengths].map((s) => String(s).toLowerCase().trim());
+      bestMatch = allRoadmaps[0];
+      let highestScore = -1;
 
-    // Match criteria against roadmaps
-    const userTokens = [...interests, ...strengths].map((s) => String(s).toLowerCase().trim());
+      for (const roadmap of allRoadmaps) {
+        let currentScore = 0;
+        const careerNameTokens = roadmap.careerName.toLowerCase().split(/\s+/);
+        const skillsTokens = (roadmap.requiredSkills || []).map((sk) => sk.toLowerCase());
+        const descriptionText = (roadmap.description || '').toLowerCase();
 
-    let bestMatch = allRoadmaps[0];
-    let highestScore = -1;
-
-    for (const roadmap of allRoadmaps) {
-      let currentScore = 0;
-      const careerNameTokens = roadmap.careerName.toLowerCase().split(/\s+/);
-      const skillsTokens = (roadmap.requiredSkills || []).map((sk) => sk.toLowerCase());
-      const descriptionText = (roadmap.description || '').toLowerCase();
-
-      for (const token of userTokens) {
-        if (!token) continue;
-        if (skillsTokens.some((skill) => skill.includes(token) || token.includes(skill))) {
-          currentScore += 3;
+        for (const token of userTokens) {
+          if (!token) continue;
+          if (skillsTokens.some((skill) => skill.includes(token) || token.includes(skill))) {
+            currentScore += 3;
+          }
+          if (careerNameTokens.some((cnt) => cnt.includes(token) || token.includes(cnt))) {
+            currentScore += 2;
+          }
+          if (descriptionText.includes(token)) {
+            currentScore += 1;
+          }
         }
-        if (careerNameTokens.some((cnt) => cnt.includes(token) || token.includes(cnt))) {
-          currentScore += 2;
-        }
-        if (descriptionText.includes(token)) {
-          currentScore += 1;
+
+        if (currentScore > highestScore) {
+          highestScore = currentScore;
+          bestMatch = roadmap;
         }
       }
-
-      if (currentScore > highestScore) {
-        highestScore = currentScore;
-        bestMatch = roadmap;
-      }
     }
 
-    // If autoApply requested and user is authenticated student, update profile immediately
-    if (autoApply && req.user?.id) {
-      await StudentProfile.findOneAndUpdate(
-        { studentId: req.user.id },
+    // For authenticated student, persist completion state and career suggestion to StudentProfile
+    let updatedProfile = null;
+    const completedAt = new Date();
+    const studentUserId = req.user?.id || req.user?.userId;
+
+    if (studentUserId) {
+      const existingProfile = await StudentProfile.findOne({ studentId: studentUserId });
+      const currentSelected = existingProfile?.selectedCareer || '';
+      const targetCareer = autoApply || !currentSelected ? bestMatch.careerName : currentSelected;
+
+      updatedProfile = await StudentProfile.findOneAndUpdate(
+        { studentId: studentUserId },
         {
-          $set: { selectedCareer: bestMatch.careerName },
+          $set: {
+            selectedCareer: targetCareer,
+            readinessQuizCompletedAt: completedAt,
+          },
           $push: {
             careerHistory: {
               career: bestMatch.careerName,
-              date: new Date(),
+              date: completedAt,
               source: 'quiz',
             },
           },
@@ -108,7 +101,10 @@ export const submitCareerQuiz = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      hasCompletedQuiz: true,
+      readinessQuizCompletedAt: completedAt,
       suggestedCareer: bestMatch.careerName,
+      selectedCareer: updatedProfile?.selectedCareer || bestMatch.careerName,
       description: bestMatch.description,
       requiredSkills: bestMatch.requiredSkills,
     });

@@ -23,6 +23,7 @@ import {
   RemedialPlanTab,
   StudentDetailsDrawer,
 } from '../../components/faculty/interview';
+import CancelInterviewModal from '../../components/student/interviews/CancelInterviewModal';
 
 export const InterviewEvaluationPage = () => {
   const { id: routeInterviewId } = useParams();
@@ -280,8 +281,11 @@ export const InterviewEvaluationPage = () => {
   };
 
   // ─────────────────────────────────────────────────────────────
-  // 3. ACTIONS: ACCEPT APPOINTMENT
+  // 3. ACTIONS: ACCEPT, DECLINE & CANCEL APPOINTMENT
   // ─────────────────────────────────────────────────────────────
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+
   const handleAcceptAppointment = async () => {
     const interviewId = currentInterview?.id || currentInterview?._id;
     if (!interviewId) return;
@@ -312,6 +316,67 @@ export const InterviewEvaluationPage = () => {
       alert(err.response?.data?.message || 'Failed to accept interview request.');
     } finally {
       setIsAcceptingRequest(false);
+    }
+  };
+
+  const handleDeclineAppointment = async () => {
+    const interviewId = currentInterview?.id || currentInterview?._id;
+    if (!interviewId) return;
+    const reason = window.prompt('Please enter a reason for declining this request (optional):');
+    if (reason === null) return;
+
+    try {
+      await facultyService.rejectAppointment(interviewId, reason);
+      setCurrentInterview((prev) => (prev ? { ...prev, status: 'rejected' } : prev));
+      setAllAppointments((prev) =>
+        prev.map((a) =>
+          String(a.id || a._id) === String(interviewId) ? { ...a, status: 'rejected' } : a
+        )
+      );
+      setToastMessage('Interview request declined.');
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err) {
+      console.error('Failed to decline appointment:', err);
+      alert(err.response?.data?.message || 'Failed to decline interview request.');
+    }
+  };
+
+  const handleConfirmCancelAppointment = async (interviewId, reason) => {
+    setIsCancelling(true);
+    try {
+      await facultyService.cancelAppointment(interviewId, reason);
+      setCurrentInterview((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: 'cancelled',
+              cancelReason: reason,
+              cancelledByRole: 'faculty',
+              cancelledAt: new Date().toISOString(),
+            }
+          : prev
+      );
+      setAllAppointments((prev) =>
+        prev.map((a) =>
+          String(a.id || a._id) === String(interviewId)
+            ? {
+                ...a,
+                status: 'cancelled',
+                cancelReason: reason,
+                cancelledByRole: 'faculty',
+                cancelledAt: new Date().toISOString(),
+              }
+            : a
+        )
+      );
+      setToastMessage('Interview session cancelled and slot released.');
+      setTimeout(() => setToastMessage(null), 4000);
+      setIsCancelModalOpen(false);
+    } catch (err) {
+      console.error('Failed to cancel appointment:', err);
+      alert(err.response?.data?.message || 'Failed to cancel appointment.');
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -536,6 +601,8 @@ export const InterviewEvaluationPage = () => {
         onSelectInterview={handleSelectInterview}
         onOpenStudentDetails={() => setIsStudentDrawerOpen(true)}
         onAcceptAppointment={handleAcceptAppointment}
+        onDeclineAppointment={handleDeclineAppointment}
+        onCancelAppointment={() => setIsCancelModalOpen(true)}
         isAccepting={isAcceptingRequest}
       />
 
@@ -646,6 +713,18 @@ export const InterviewEvaluationPage = () => {
         progress={studentProgress}
         readiness={studentReadiness}
         pastInterviews={pastInterviews}
+      />
+
+      {/* ─────────────────────────────────────────────────────────────
+          CANCEL INTERVIEW MODAL
+      ───────────────────────────────────────────────────────────── */}
+      <CancelInterviewModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleConfirmCancelAppointment}
+        interview={currentInterview}
+        isCancelling={isCancelling}
+        isStudent={false}
       />
     </div>
   );

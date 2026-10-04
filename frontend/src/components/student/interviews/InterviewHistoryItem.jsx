@@ -61,6 +61,25 @@ export const InterviewHistoryItem = ({
               </>
             )}
           </div>
+
+          {/* Cancellation metadata if cancelled */}
+          {item.status === 'cancelled' && (
+            <div className="mt-1.5 p-2 rounded-lg bg-rose-50 border border-rose-100 text-[11px] text-rose-800 space-y-0.5">
+              <div className="font-semibold flex items-center gap-1.5">
+                <span>Cancelled by: {item.cancelledByRole ? (item.cancelledByRole.charAt(0).toUpperCase() + item.cancelledByRole.slice(1)) : 'Participant'}</span>
+                {item.cancelledAt && (
+                  <span className="text-[10px] text-rose-600 font-normal">
+                    • {formatDate(item.cancelledAt)} {formatTime(item.cancelledAt)}
+                  </span>
+                )}
+              </div>
+              {item.cancelReason && (
+                <p className="text-[11px] text-rose-700 italic">
+                  "{item.cancelReason}"
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -93,14 +112,14 @@ export const InterviewHistoryItem = ({
           </div>
         ) : isPending ? (
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onCancel(interviewId)}
-              title="Cancel request"
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition"
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => onCancel(item)}
+              className="text-[11px] font-semibold text-rose-600 border-rose-200 hover:bg-rose-50"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+              Withdraw Request
+            </Button>
           </div>
         ) : isScheduled ? (
           joinWindow && joinWindow.canJoin ? (
@@ -116,28 +135,28 @@ export const InterviewHistoryItem = ({
               >
                 Join Meet
               </Button>
-              <button
-                type="button"
-                onClick={() => onCancel(interviewId)}
-                title="Cancel appointment"
-                className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition"
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => onCancel(item)}
+                className="text-[11px] font-semibold text-rose-600 border-rose-200 hover:bg-rose-50"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+                Cancel
+              </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-slate-400 font-medium">
                 Unlocks at {joinWindow?.opensAtStr || 'session start'}
               </span>
-              <button
-                type="button"
-                onClick={() => onCancel(interviewId)}
-                title="Cancel appointment"
-                className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition"
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => onCancel(item)}
+                className="text-[11px] font-semibold text-rose-600 border-rose-200 hover:bg-rose-50"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+                Cancel
+              </Button>
             </div>
           )
         ) : null}

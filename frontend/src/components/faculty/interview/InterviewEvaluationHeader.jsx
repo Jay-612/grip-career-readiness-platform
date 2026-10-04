@@ -9,7 +9,9 @@ import {
   CheckCircle2,
   FileCheck,
   Building,
-  GraduationCap
+  GraduationCap,
+  XCircle,
+  Trash2,
 } from 'lucide-react';
 import Button from '../../common/Button';
 import Badge from '../../common/Badge';
@@ -20,6 +22,8 @@ export const InterviewEvaluationHeader = ({
   onSelectInterview = () => {},
   onOpenStudentDetails = () => {},
   onAcceptAppointment = () => {},
+  onDeclineAppointment = () => {},
+  onCancelAppointment = () => {},
   isAccepting = false,
 }) => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
@@ -181,41 +185,77 @@ export const InterviewEvaluationHeader = ({
             View Student Details
           </Button>
 
-          {/* Join Google Meet button (or Accept if pending) */}
+          {/* Actions depending on interview status */}
           {status === 'pending' ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onAcceptAppointment}
-              isLoading={isAccepting}
-              loadingText="Accepting..."
-              leftIcon={<Video className="w-3.5 h-3.5" />}
-              className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700"
-            >
-              Accept Request
-            </Button>
-          ) : meetLink ? (
-            <a
-              href={meetLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex"
-            >
+            <div className="flex items-center gap-2">
               <Button
                 variant="primary"
                 size="sm"
+                onClick={onAcceptAppointment}
+                isLoading={isAccepting}
+                loadingText="Accepting..."
                 leftIcon={<Video className="w-3.5 h-3.5" />}
-                rightIcon={<ExternalLink className="w-3 h-3" />}
-                className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-200"
+                className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700"
               >
-                Join Google Meet
+                Accept Request
               </Button>
-            </a>
-          ) : (
-            <span className="text-xs text-slate-400 italic px-2 py-1 bg-slate-50 rounded-lg border border-slate-200">
-              No Video Link
-            </span>
-          )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onDeclineAppointment}
+                leftIcon={<XCircle className="w-3.5 h-3.5 text-rose-500" />}
+                className="text-xs font-semibold text-rose-600 border-rose-200 hover:bg-rose-50"
+              >
+                Decline
+              </Button>
+            </div>
+          ) : status === 'scheduled' ? (
+            <div className="flex items-center gap-2">
+              {meetLink ? (
+                <a
+                  href={meetLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex"
+                >
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Video className="w-3.5 h-3.5" />}
+                    rightIcon={<ExternalLink className="w-3 h-3" />}
+                    className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-200"
+                  >
+                    Join Google Meet
+                  </Button>
+                </a>
+              ) : (
+                <span className="text-xs text-slate-400 italic px-2 py-1 bg-slate-50 rounded-lg border border-slate-200">
+                  No Video Link
+                </span>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onCancelAppointment}
+                leftIcon={<Trash2 className="w-3.5 h-3.5 text-rose-500" />}
+                className="text-xs font-semibold text-rose-600 border-rose-200 hover:bg-rose-50"
+              >
+                Cancel Interview
+              </Button>
+            </div>
+          ) : status === 'cancelled' ? (
+            <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-0.5">
+              <div className="font-bold flex items-center gap-1 text-rose-700">
+                <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                <span>Session Cancelled</span>
+              </div>
+              {currentInterview.cancelReason && (
+                <p className="text-[11px] text-rose-600 italic">
+                  "{currentInterview.cancelReason}"
+                </p>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
     </header>

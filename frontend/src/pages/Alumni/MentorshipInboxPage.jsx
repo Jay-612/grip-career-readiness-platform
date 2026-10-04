@@ -298,7 +298,7 @@ export const MentorshipInboxPage = () => {
                 }`}
                 data-testid="tab-pending"
               >
-                <span>Pending</span>
+                <span>Guidance Requests</span>
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                     activeTab === 'pending'
@@ -320,7 +320,7 @@ export const MentorshipInboxPage = () => {
                 }`}
                 data-testid="tab-active"
               >
-                <span>Active</span>
+                <span>Mentorship Requests</span>
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                     activeTab === 'active'

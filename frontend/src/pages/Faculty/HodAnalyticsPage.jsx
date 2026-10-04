@@ -65,7 +65,12 @@ export const HodAnalyticsPage = () => {
   const [eventTargetSkill, setEventTargetSkill] = useState('');
   const [eventTitle, setEventTitle] = useState('');
   const [eventDate, setEventDate] = useState('');
+  const [eventTime, setEventTime] = useState('11:00 AM');
+  const [eventVenue, setEventVenue] = useState('Seminar Hall');
   const [eventDescription, setEventDescription] = useState('');
+  const [audienceType, setAudienceType] = useState('all_students');
+  const [targetDepartment, setTargetDepartment] = useState('Computer Science & Engineering');
+  const [targetSemester, setTargetSemester] = useState(5);
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [eventSuccessMessage, setEventSuccessMessage] = useState(null);
   const [eventErrorMessage, setEventErrorMessage] = useState(null);
@@ -243,7 +248,12 @@ export const HodAnalyticsPage = () => {
         title: eventTitle,
         targetSkill: eventTargetSkill,
         date: eventDate,
+        time: eventTime,
+        venue: eventVenue,
         description: eventDescription,
+        audienceType,
+        targetDepartment: audienceType === 'department' || audienceType === 'department_semester' ? targetDepartment : '',
+        targetSemester: audienceType === 'semester' || audienceType === 'department_semester' ? targetSemester : null,
       });
 
       if (res?.success) {
@@ -472,8 +482,18 @@ export const HodAnalyticsPage = () => {
         setEventTitle={setEventTitle}
         eventDate={eventDate}
         setEventDate={setEventDate}
+        eventTime={eventTime}
+        setEventTime={setEventTime}
+        eventVenue={eventVenue}
+        setEventVenue={setEventVenue}
         eventDescription={eventDescription}
         setEventDescription={setEventDescription}
+        audienceType={audienceType}
+        setAudienceType={setAudienceType}
+        targetDepartment={targetDepartment}
+        setTargetDepartment={setTargetDepartment}
+        targetSemester={targetSemester}
+        setTargetSemester={setTargetSemester}
         onSubmit={handleCreateEvent}
         isSubmitting={isSubmittingEvent}
         successMessage={eventSuccessMessage}

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import goalService from '../../services/goalService';
 import guidanceService from '../../services/guidanceService';
+import eventService from '../../services/eventService';
 import ErrorState from '../../components/common/ErrorState';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
 import {
@@ -15,10 +16,12 @@ import {
   LatestFeedbackCard,
   PlacementPulse,
   QuickNav,
+  UpcomingEventsSection,
 } from '../../components/student/dashboard';
+import CareerCompassQuizModal from '../../components/student/career-compass/CareerCompassQuizModal';
 
 export const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,6 +29,11 @@ export const Dashboard = () => {
   const [actionSuccessToast, setActionSuccessToast] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
+
+  // First-time quiz modal state
+  const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [quizResult, setQuizResult] = useState(null);
+  const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
 
   // Consolidated Lean Dashboard State
   const [dashboardData, setDashboardData] = useState({
@@ -35,6 +43,7 @@ export const Dashboard = () => {
     goals: [],
     appointments: [],
     guidanceRequests: [],
+    events: [],
     leaderboardRank: null,
     leaderboardTotal: null,
   });
@@ -71,6 +80,7 @@ export const Dashboard = () => {
         goalsRes,
         appointmentsRes,
         guidanceRes,
+        eventsRes,
       ] = await Promise.allSettled([
         studentService.getPlacementReadiness(studentId),
         studentService.getMyRank(),
@@ -78,6 +88,7 @@ export const Dashboard = () => {
         studentService.getGoals(studentId),
         studentService.getAppointments(),
         guidanceService.getRequests(1, 5),
+        eventService.getEvents({ upcomingOnly: true }),
       ]);
 
       if (signal?.aborted) return;
@@ -109,9 +120,28 @@ export const Dashboard = () => {
           guidanceRes.status === 'fulfilled' && guidanceRes.value?.requests
             ? guidanceRes.value.requests
             : [],
+        events:
+          eventsRes.status === 'fulfilled' && eventsRes.value?.events
+            ? eventsRes.value.events
+            : [],
         leaderboardRank: myRank,
         leaderboardTotal: totalStudents,
       });
+
+      // FIRST-TIME-ONLY READINESS QUIZ:
+      // Open ONLY if backend data indicates the student has not yet completed the quiz.
+      const hasCompleted =
+        Boolean(currentProfile?.readinessQuizCompletedAt) ||
+        Boolean(currentUser?.hasCompletedQuiz) ||
+        Boolean(currentProfile?.hasCompletedQuiz) ||
+        Boolean(currentProfile?.selectedCareer && currentProfile.selectedCareer.trim().length > 0) ||
+        Boolean(currentProfile?.careerHistory && currentProfile.careerHistory.length > 0);
+
+      if (!hasCompleted) {
+        setQuizModalOpen(true);
+      } else {
+        setQuizModalOpen(false);
+      }
 
       setLastSynced(new Date());
     } catch (err) {
@@ -389,8 +419,81 @@ export const Dashboard = () => {
         targetTrack={targetTrack}
       />
 
-      {/* 5. Lightweight Quick Hub Navigation */}
+      {/* 5. Upcoming Important Events (Compact: Max 2 events, zero overload) */}
+      <UpcomingEventsSection events={dashboardData.events} />
+
+      {/* 6. Lightweight Quick Hub Navigation */}
       <QuickNav />
+
+      {/* 7. First-Time Readiness Diagnostic Quiz Modal */}
+      <CareerCompassQuizModal
+        isOpen={quizModalOpen}
+        onClose={() => {
+          setQuizModalOpen(false);
+          setQuizResult(null);
+        }}
+        onSubmit={async ({ interests, strengths }) => {
+          setIsSubmittingQuiz(true);
+          try {
+            const res = await studentService.submitCareerQuiz({ interests, strengths, autoApply: true });
+            const completedAt = res?.readinessQuizCompletedAt || new Date().toISOString();
+            const targetTrack = res?.suggestedCareer || res?.selectedCareer || 'Distributed Systems & Cloud Backend Engineer';
+
+            setQuizResult({
+              suggestedCareer: targetTrack,
+              description: res?.description || '',
+              requiredSkills: res?.requiredSkills || [],
+            });
+
+            // Update auth user and dashboard profile to reflect completion
+            if (updateUser) {
+              updateUser({
+                hasCompletedQuiz: true,
+                readinessQuizCompletedAt: completedAt,
+                selectedCareer: targetTrack,
+              });
+            }
+
+            setDashboardData((prev) => ({
+              ...prev,
+              profile: prev.profile
+                ? {
+                    ...prev.profile,
+                    readinessQuizCompletedAt: completedAt,
+                    selectedCareer: targetTrack,
+                  }
+                : prev.profile,
+            }));
+
+            setActionSuccessToast('Readiness assessment completed and saved!');
+            if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+            toastTimerRef.current = setTimeout(() => setActionSuccessToast(null), 3000);
+            await fetchDashboardData();
+          } catch (err) {
+            console.error('Quiz submission error:', err);
+            alert('Failed to evaluate career quiz. Please try again.');
+          } finally {
+            setIsSubmittingQuiz(false);
+          }
+        }}
+        isSubmitting={isSubmittingQuiz}
+        quizResult={quizResult}
+        onApplyResult={async (suggestedCareer) => {
+          try {
+            await studentService.updateProfile({ selectedCareer: suggestedCareer });
+            if (updateUser) {
+              updateUser({ selectedCareer: suggestedCareer, hasCompletedQuiz: true });
+            }
+            setQuizModalOpen(false);
+            setQuizResult(null);
+            await fetchDashboardData();
+          } catch (err) {
+            console.error('Failed to apply trajectory:', err);
+            setQuizModalOpen(false);
+            setQuizResult(null);
+          }
+        }}
+      />
     </main>
   );
 };

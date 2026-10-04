@@ -31,6 +31,11 @@ export const EventManagementPage = () => {
     title: '',
     targetSkill: '',
     date: '',
+    time: '11:00 AM',
+    venue: 'Seminar Hall',
+    audienceType: 'all_students',
+    targetDepartment: 'Computer Science & Engineering',
+    targetSemester: 5,
   });
 
   const fetchEvents = async () => {
@@ -61,6 +66,11 @@ export const EventManagementPage = () => {
       title: '',
       targetSkill: '',
       date: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
+      time: '11:00 AM',
+      venue: 'Seminar Hall',
+      audienceType: 'all_students',
+      targetDepartment: 'Computer Science & Engineering',
+      targetSemester: 5,
     });
     setIsModalOpen(true);
   };
@@ -75,6 +85,11 @@ export const EventManagementPage = () => {
         title: formData.title.trim(),
         targetSkill: formData.targetSkill.trim() || 'General Technical Readiness',
         date: formData.date,
+        time: formData.time,
+        venue: formData.venue,
+        audienceType: formData.audienceType,
+        targetDepartment: formData.audienceType === 'department' || formData.audienceType === 'department_semester' ? formData.targetDepartment : '',
+        targetSemester: formData.audienceType === 'semester' || formData.audienceType === 'department_semester' ? formData.targetSemester : null,
       });
 
       showToast(`Event "${formData.title}" scheduled successfully`);
@@ -281,15 +296,95 @@ export const EventManagementPage = () => {
             </p>
           </div>
 
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Event Date *</label>
-            <input
-              type="date"
-              required
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Event Date *</label>
+              <input
+                type="date"
+                required
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Time</label>
+              <input
+                type="text"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                placeholder="11:00 AM"
+                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Venue</label>
+              <input
+                type="text"
+                value={formData.venue}
+                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                placeholder="Seminar Hall"
+                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Progressive Disclosure Audience Targeting */}
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5">
+            <label className="block font-bold text-slate-800">Target Audience *</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { id: 'all_students', label: 'All Students' },
+                { id: 'department', label: 'Department' },
+                { id: 'semester', label: 'Semester' },
+                { id: 'department_semester', label: 'Dept + Sem' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, audienceType: opt.id })}
+                  className={`p-2 rounded-xl border text-[11px] font-semibold text-center transition ${
+                    formData.audienceType === opt.id
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {(formData.audienceType === 'department' || formData.audienceType === 'department_semester') && (
+              <div className="pt-1 space-y-1">
+                <label className="block font-semibold text-slate-700 text-[11px]">Department</label>
+                <select
+                  value={formData.targetDepartment}
+                  onChange={(e) => setFormData({ ...formData, targetDepartment: e.target.value })}
+                  className="w-full p-2 rounded-xl border border-slate-200 bg-white text-xs"
+                >
+                  <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Electronics & Communication">Electronics & Communication</option>
+                </select>
+              </div>
+            )}
+
+            {(formData.audienceType === 'semester' || formData.audienceType === 'department_semester') && (
+              <div className="pt-1 space-y-1">
+                <label className="block font-semibold text-slate-700 text-[11px]">Semester</label>
+                <select
+                  value={formData.targetSemester}
+                  onChange={(e) => setFormData({ ...formData, targetSemester: Number(e.target.value) })}
+                  className="w-full p-2 rounded-xl border border-slate-200 bg-white text-xs"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                    <option key={s} value={s}>
+                      Semester {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">

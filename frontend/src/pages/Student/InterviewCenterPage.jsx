@@ -11,6 +11,7 @@ import {
   InterviewHistory,
   BookingModal,
   EvaluationDetailsDrawer,
+  CancelInterviewModal,
 } from '../../components/student/interviews';
 
 export const InterviewCenterPage = () => {
@@ -48,6 +49,11 @@ export const InterviewCenterPage = () => {
   // Evaluation Details Drawer State
   const [selectedEvaluation, setSelectedEvaluation] = useState(null);
   const [isEvaluationDrawerOpen, setIsEvaluationDrawerOpen] = useState(false);
+
+  // Cancellation Modal State
+  const [selectedForCancel, setSelectedForCancel] = useState(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   // Live countdown ticker & join loading state
   const [, setTick] = useState(0);
@@ -161,23 +167,43 @@ export const InterviewCenterPage = () => {
     }
   };
 
-  // Cancel scheduled interview appointment
-  const handleCancelAppointment = async (interviewId) => {
-    if (
-      !window.confirm(
-        'Are you sure you want to cancel this mock interview session? It will be removed from your Google Calendar.'
-      )
-    ) {
-      return;
+  // Open cancellation modal
+  const handleOpenCancelModal = (interviewOrId) => {
+    if (typeof interviewOrId === 'object' && interviewOrId !== null) {
+      setSelectedForCancel(interviewOrId);
+    } else {
+      const found = interviews.find(
+        (i) => (i.interviewId || i.id || i._id) === interviewOrId
+      );
+      setSelectedForCancel(found || { id: interviewOrId });
     }
+    setIsCancelModalOpen(true);
+  };
+
+  // Confirm cancellation
+  const handleConfirmCancelAppointment = async (interviewId, reason) => {
+    setIsCancelling(true);
     try {
-      await interviewService.cancelAppointment(interviewId);
-      setSuccessToast('Interview appointment cancelled and removed from calendar.');
+      await interviewService.cancelAppointment(interviewId, reason);
+      const isPending = selectedForCancel?.status === 'pending';
+      setSuccessToast(
+        isPending
+          ? 'Interview request withdrawn successfully.'
+          : 'Interview appointment cancelled and time slot released.'
+      );
       setTimeout(() => setSuccessToast(null), 4000);
+      setIsCancelModalOpen(false);
+      setSelectedForCancel(null);
       await fetchAllData();
     } catch (err) {
       console.error('Failed to cancel appointment:', err);
-      alert(err.response?.data?.message || 'Failed to cancel appointment.');
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to cancel appointment. Please try again.';
+      alert(msg);
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -391,7 +417,7 @@ export const InterviewCenterPage = () => {
         interview={nextInterview}
         joinWindow={nextJoinWindow}
         onJoin={handleJoinSession}
-        onCancel={handleCancelAppointment}
+        onCancel={handleOpenCancelModal}
         onOpenBooking={() => handleOpenBooking()}
         isJoining={isJoiningId === (nextInterview?.interviewId || nextInterview?.id)}
         formatDate={formatDate}
@@ -413,7 +439,7 @@ export const InterviewCenterPage = () => {
         getJoinWindow={getJoinWindow}
         onOpenEvaluation={handleOpenEvaluation}
         onJoin={handleJoinSession}
-        onCancel={handleCancelAppointment}
+        onCancel={handleOpenCancelModal}
         onOpenBooking={() => handleOpenBooking()}
         formatDate={formatDate}
         formatTime={formatTime}
@@ -440,6 +466,21 @@ export const InterviewCenterPage = () => {
         onClose={() => setIsEvaluationDrawerOpen(false)}
         evaluation={selectedEvaluation}
         formatDate={formatDate}
+      />
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. CONFIRMATION MODAL: CANCEL / WITHDRAW INTERVIEW
+      ───────────────────────────────────────────────────────────── */}
+      <CancelInterviewModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          setIsCancelModalOpen(false);
+          setSelectedForCancel(null);
+        }}
+        onConfirm={handleConfirmCancelAppointment}
+        interview={selectedForCancel}
+        isCancelling={isCancelling}
+        isStudent={true}
       />
     </div>
   );

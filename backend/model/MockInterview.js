@@ -44,6 +44,25 @@ const mockInterviewSchema = new mongoose.Schema(
       enum: ['pending', 'scheduled', 'completed', 'cancelled', 'rejected'],
       default: 'pending',
     },
+    cancelledByRole: {
+      type: String,
+      enum: ['student', 'faculty', 'admin', null],
+      default: null,
+    },
+    cancelledByUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    cancelReason: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

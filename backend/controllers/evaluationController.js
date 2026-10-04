@@ -77,6 +77,20 @@ export const saveEvaluationScore = async (req, res) => {
       });
     }
 
+    if (interview.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot evaluate a cancelled mock interview appointment.',
+      });
+    }
+
+    if (interview.status !== 'scheduled' && interview.status !== 'in_progress') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot evaluate interview with status "${interview.status}". Must be scheduled or in-progress.`,
+      });
+    }
+
     // Update interview status to completed
     interview.status = 'completed';
     await interview.save();

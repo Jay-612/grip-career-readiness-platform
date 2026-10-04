@@ -25,6 +25,10 @@ export const getProfile = async (req, res) => {
     switch (role) {
       case 'student':
         profile = await StudentProfile.findOne({ studentId: userId });
+        if (profile && !profile.readinessQuizCompletedAt && (profile.selectedCareer || (profile.careerHistory && profile.careerHistory.length > 0))) {
+          profile.readinessQuizCompletedAt = profile.updatedAt || new Date();
+          await profile.save();
+        }
         break;
       case 'faculty':
         profile = await FacultyProfile.findOne({ facultyId: userId });
@@ -46,6 +50,7 @@ export const getProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        hasCompletedQuiz: role === 'student' ? Boolean(profile?.readinessQuizCompletedAt || (profile?.careerHistory && profile.careerHistory.length > 0) || (profile?.selectedCareer && profile.selectedCareer.trim().length > 0)) : true,
       },
       profile,
     });

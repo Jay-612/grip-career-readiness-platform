@@ -3,6 +3,7 @@ import { protect } from '../middleware/authMiddleware.js';
 import {
   scheduleMockInterview,
   getAppointments,
+  getOccupiedSlots,
   cancelAppointment,
   createOrRefreshMeetLink,
   acceptAppointment,
@@ -11,6 +12,9 @@ import {
 } from '../controllers/interviewController.js';
 
 const router = express.Router();
+
+// GET /api/appointments/occupied-slots — Retrieve occupied slots for a faculty member on a given date
+router.get('/occupied-slots', protect, getOccupiedSlots);
 
 // POST /api/appointments — Book/request a mock interview appointment (Status: pending)
 router.post('/', protect, scheduleMockInterview);

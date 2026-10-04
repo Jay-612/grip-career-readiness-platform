@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import actionPlanService from '../../services/actionPlanService';
 import goalService from '../../services/goalService';
 import guidanceService from '../../services/guidanceService';
+import mentorService from '../../services/mentorService';
 import {
   GuidanceHeader,
   ActivePlanSummary,
@@ -10,11 +11,13 @@ import {
   TaskDetailsDrawer,
   SubmissionModal,
   CompletedPlansAccordion,
+  AskGuidanceModal,
+  StudentInquiriesSection,
 } from '../../components/student/guidance';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
-import { CheckCircle2, ShieldAlert, Award } from 'lucide-react';
+import { CheckCircle2, ShieldAlert, Award, MessageSquare } from 'lucide-react';
 
 export const GuidancePage = () => {
   const { user } = useAuth();
@@ -24,12 +27,23 @@ export const GuidancePage = () => {
   const [actionPlans, setActionPlans] = useState([]);
   const [remedialGoals, setRemedialGoals] = useState([]);
   const [guidanceRequests, setGuidanceRequests] = useState([]);
+  const [facultyList, setFacultyList] = useState([]);
+  const [alumniList, setAlumniList] = useState([]);
+
+  // Top Page Tab: 'questions' (My Questions) | 'remedial' (Remedial Plans)
+  const [activeMainTab, setActiveMainTab] = useState('questions');
 
   // UI States
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [successToast, setSuccessToast] = useState(null);
+
+  // Ask Guidance Modal & Thread States
+  const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+  const [isSubmittingGuidance, setIsSubmittingGuidance] = useState(false);
+  const [isReplyingInquiry, setIsReplyingInquiry] = useState(false);
+  const [isResolvingInquiry, setIsResolvingInquiry] = useState(false);
 
   // Active Filter: 'active' | 'completed' | 'all'
   const [activeFilter, setActiveFilter] = useState('active');
@@ -40,7 +54,7 @@ export const GuidancePage = () => {
   const [isSubmittingWork, setIsSubmittingWork] = useState(false);
 
   // ─────────────────────────────────────────────────────────────
-  // 1. DATA LOADING: Action Plans, Remedial Goals, Submissions
+  // 1. DATA LOADING: Action Plans, Remedial Goals, Mentors
   // ─────────────────────────────────────────────────────────────
   const loadGuidanceData = useCallback(async (isRefresh = false) => {
     if (!studentId) return;
@@ -53,11 +67,13 @@ export const GuidancePage = () => {
     setError(null);
 
     try {
-      // Concurrently query action-plans for student and guidance submissions
-      const [plansRes, goalsRes, guidanceRes] = await Promise.allSettled([
+      // Concurrently query action-plans for student, guidance submissions, faculty mentors, and alumni mentors
+      const [plansRes, goalsRes, guidanceRes, facultyRes, alumniRes] = await Promise.allSettled([
         actionPlanService.getMyActionPlans(),
         goalService.getGoals(studentId, 'all'),
         guidanceService.getRequests(1, 50),
+        guidanceService.getFacultyMentors(),
+        guidanceService.getAlumniMentors(),
       ]);
 
       // 1. Action plans
@@ -65,7 +81,6 @@ export const GuidancePage = () => {
         const plans = plansRes.value.actionPlans || [];
         setActionPlans(plans);
 
-        // If remedialGoals was included in action plan response
         if (Array.isArray(plansRes.value.remedialGoals)) {
           setRemedialGoals(plansRes.value.remedialGoals);
         }
@@ -88,6 +103,16 @@ export const GuidancePage = () => {
           ? guidanceRes.value
           : guidanceRes.value.requests || [];
         setGuidanceRequests(requests);
+      }
+
+      // 4. Dynamic Faculty List
+      if (facultyRes.status === 'fulfilled' && Array.isArray(facultyRes.value)) {
+        setFacultyList(facultyRes.value);
+      }
+
+      // 5. Dynamic Alumni List
+      if (alumniRes.status === 'fulfilled' && Array.isArray(alumniRes.value)) {
+        setAlumniList(alumniRes.value);
       }
     } catch (err) {
       console.error('Failed to load remedial guidance data:', err);
@@ -427,6 +452,84 @@ export const GuidancePage = () => {
   };
 
   // ─────────────────────────────────────────────────────────────
+  // 3b. STUDENT FACULTY GUIDANCE INQUIRIES & REPLIES
+  // ─────────────────────────────────────────────────────────────
+  const handleOpenAskModal = () => {
+    setIsAskModalOpen(true);
+  };
+
+  const handleCloseAskModal = () => {
+    setIsAskModalOpen(false);
+  };
+
+  const handleCreateGuidanceInquiry = async ({
+    recipientType = 'faculty',
+    targetFacultyId = null,
+    targetAlumniId = null,
+    facultyName = '',
+    alumniName = '',
+    topic,
+    question,
+  }) => {
+    setIsSubmittingGuidance(true);
+    try {
+      await guidanceService.createRequest({
+        question,
+        targetType: recipientType,
+        recipientType,
+        targetFacultyId: recipientType === 'faculty' ? targetFacultyId : null,
+        targetAlumniId: recipientType === 'alumni' ? targetAlumniId : null,
+        topic,
+      });
+
+      const recipientDisplayName = recipientType === 'faculty' ? facultyName || 'Faculty Member' : alumniName || 'Alumni Mentor';
+      setSuccessToast(`Your guidance question was sent to ${recipientDisplayName}!`);
+      setTimeout(() => setSuccessToast(null), 4000);
+      setIsAskModalOpen(false);
+      setActiveMainTab('questions');
+      await loadGuidanceData(true);
+    } catch (err) {
+      console.error('Failed to submit guidance question:', err);
+      alert(
+        err.response?.data?.message ||
+          'Failed to send guidance question. Please check your network connection.'
+      );
+    } finally {
+      setIsSubmittingGuidance(false);
+    }
+  };
+
+  const handleFollowUpReply = async (requestId, answerText) => {
+    setIsReplyingInquiry(true);
+    try {
+      await guidanceService.replyRequest(requestId, answerText);
+      setSuccessToast('Your follow-up question was posted!');
+      setTimeout(() => setSuccessToast(null), 3000);
+      await loadGuidanceData(true);
+    } catch (err) {
+      console.error('Failed to post follow-up reply:', err);
+      alert(err.response?.data?.message || 'Failed to submit follow-up reply.');
+    } finally {
+      setIsReplyingInquiry(false);
+    }
+  };
+
+  const handleResolveInquiry = async (requestId) => {
+    setIsResolvingInquiry(true);
+    try {
+      await guidanceService.resolveRequest(requestId);
+      setSuccessToast('Guidance inquiry marked as resolved! 🎉');
+      setTimeout(() => setSuccessToast(null), 3000);
+      await loadGuidanceData(true);
+    } catch (err) {
+      console.error('Failed to resolve guidance request:', err);
+      alert(err.response?.data?.message || 'Failed to resolve inquiry.');
+    } finally {
+      setIsResolvingInquiry(false);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────
   // 4. RENDERING: LOADING & ERROR STATES
   // ─────────────────────────────────────────────────────────────
   if (isLoading) {
@@ -472,58 +575,129 @@ export const GuidancePage = () => {
       <GuidanceHeader
         onRefresh={() => loadGuidanceData(true)}
         isRefreshing={isRefreshing}
+        onAskGuidance={handleOpenAskModal}
       />
 
-      {/* 2. ACTIVE ACTION PLAN or EMPTY STATE */}
-      {activePlan ? (
-        <ActivePlanSummary
-          plan={activePlan}
-          completedCount={completedTasksCount}
-          totalCount={allTasksCount}
-          nextDeadline={nextDeadline}
-        />
-      ) : (
-        <div
-          className="p-8 sm:p-10 rounded-2xl bg-white border border-slate-200/90 shadow-card text-center flex flex-col items-center gap-3"
-          data-testid="no-active-plan-state"
+      {/* TOP-LEVEL TABS: [My Questions] [Remedial Plans] */}
+      <div className="border-b border-slate-200 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveMainTab('questions')}
+          className={`pb-3 px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
+            activeMainTab === 'questions'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
         >
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <Award className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-              No active remedial plan.
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-              Any follow-up tasks assigned after your faculty evaluations will appear here.
-            </p>
-          </div>
-        </div>
-      )}
+          <MessageSquare className="w-4 h-4" />
+          <span>My Questions</span>
+          {guidanceRequests.length > 0 && (
+            <span
+              className={`px-1.5 py-0.2 text-[10px] font-bold rounded-full ${
+                activeMainTab === 'questions'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
+            >
+              {guidanceRequests.length}
+            </span>
+          )}
+        </button>
 
-      {/* 3. TASK LIST & SUBMISSION FLOW */}
-      {allTasksCount > 0 && (
-        <div className="space-y-3">
-          <RemedialTaskList
-            activeTasks={unifiedActiveTasks}
-            completedTasks={unifiedCompletedTasks}
-            onViewDetails={handleOpenTaskDetails}
-            onSubmitWork={handleOpenSubmitModal}
-            onUpdateSubmission={handleOpenSubmitModal}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
+        <button
+          type="button"
+          onClick={() => setActiveMainTab('remedial')}
+          className={`pb-3 px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
+            activeMainTab === 'remedial'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          <span>Remedial Plans</span>
+          {allTasksCount > 0 && (
+            <span
+              className={`px-1.5 py-0.2 text-[10px] font-bold rounded-full ${
+                activeMainTab === 'remedial'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
+            >
+              {allTasksCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* TAB 1: MY QUESTIONS (Faculty & Alumni Threads) */}
+      {activeMainTab === 'questions' && (
+        <div className="space-y-4 animate-fadeIn">
+          <StudentInquiriesSection
+            inquiries={guidanceRequests}
+            onReply={handleFollowUpReply}
+            onResolve={handleResolveInquiry}
+            onAskGuidance={handleOpenAskModal}
+            isReplying={isReplyingInquiry}
+            isResolving={isResolvingInquiry}
           />
         </div>
       )}
 
-      {/* 4. COMPLETED / ARCHIVED PLANS (Behind expandable accordion) */}
-      {archivedPlans.length > 0 && (
-        <div className="pt-2">
-          <CompletedPlansAccordion plans={archivedPlans} />
+      {/* TAB 2: REMEDIAL PLANS */}
+      {activeMainTab === 'remedial' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Active Action Plan or Empty State */}
+          {activePlan ? (
+            <ActivePlanSummary
+              plan={activePlan}
+              completedCount={completedTasksCount}
+              totalCount={allTasksCount}
+              nextDeadline={nextDeadline}
+            />
+          ) : (
+            <div
+              className="p-8 sm:p-10 rounded-2xl bg-white border border-slate-200/90 shadow-card text-center flex flex-col items-center gap-3"
+              data-testid="no-active-plan-state"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <Award className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                  No active remedial plan.
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Any follow-up tasks assigned after your faculty evaluations will appear here.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Task List & Submission Flow */}
+          {allTasksCount > 0 && (
+            <div className="space-y-3">
+              <RemedialTaskList
+                activeTasks={unifiedActiveTasks}
+                completedTasks={unifiedCompletedTasks}
+                onViewDetails={handleOpenTaskDetails}
+                onSubmitWork={handleOpenSubmitModal}
+                onUpdateSubmission={handleOpenSubmitModal}
+                activeFilter={activeFilter}
+                onFilterChange={setActiveFilter}
+              />
+            </div>
+          )}
+
+          {/* Completed Plans Accordion */}
+          {archivedPlans.length > 0 && (
+            <div className="pt-2">
+              <CompletedPlansAccordion plans={archivedPlans} />
+            </div>
+          )}
         </div>
       )}
 
-      {/* 5. TASK DETAILS DRAWER */}
+      {/* TASK DETAILS DRAWER */}
       <TaskDetailsDrawer
         isOpen={Boolean(selectedTaskForDetails)}
         onClose={handleCloseTaskDetails}
@@ -532,13 +706,23 @@ export const GuidancePage = () => {
         onUpdateSubmission={handleOpenSubmitModal}
       />
 
-      {/* 6. SUBMISSION MODAL */}
+      {/* SUBMISSION MODAL */}
       <SubmissionModal
         isOpen={Boolean(selectedTaskForSubmission)}
         onClose={handleCloseSubmitModal}
         task={selectedTaskForSubmission}
         onSubmit={handleSaveSubmission}
         isSubmitting={isSubmittingWork}
+      />
+
+      {/* ASK FOR GUIDANCE MODAL (Separate Faculty vs Alumni) */}
+      <AskGuidanceModal
+        isOpen={isAskModalOpen}
+        onClose={handleCloseAskModal}
+        onSubmit={handleCreateGuidanceInquiry}
+        isSubmitting={isSubmittingGuidance}
+        facultyList={facultyList}
+        alumniList={alumniList}
       />
     </div>
   );

@@ -48,8 +48,19 @@ export const interviewService = {
 
   // Cancel an appointment
   // PATCH /api/appointments/:id/cancel
-  cancelAppointment: async (appointmentId) => {
-    const response = await apiClient.patch(`/appointments/${appointmentId}/cancel`);
+  cancelAppointment: async (appointmentId, reason = '') => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/cancel`, {
+      reason,
+    });
+    return response.data;
+  },
+
+  // Query occupied slots for a faculty member on a date
+  // GET /api/appointments/occupied-slots?facultyId=...&date=...
+  getOccupiedSlots: async (facultyId, date) => {
+    const response = await apiClient.get('/appointments/occupied-slots', {
+      params: { facultyId, date },
+    });
     return response.data;
   },
 

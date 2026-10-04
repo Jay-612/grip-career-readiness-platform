@@ -28,8 +28,10 @@ export const GuidanceDetailsDrawer = ({
   onApprove,
   onRequestRework,
   onAddComment,
+  onResolve,
   isApproving = false,
   isCommenting = false,
+  isResolving = false,
 }) => {
   // 1. Error / Unauthorized States
   if (isUnauthorized) {
@@ -191,19 +193,26 @@ export const GuidanceDetailsDrawer = ({
         </div>
       </div>
 
-      {/* ================= B. TASK / PLAN CONTEXT ================= */}
+      {/* ================= B. TASK / TOPIC CONTEXT ================= */}
       <div className="space-y-1.5 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80">
         <div className="flex items-center justify-between text-[11px] text-slate-500">
-          <span className="font-semibold text-slate-700 uppercase tracking-wider">
-            Assigned Remedial Task
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-700 uppercase tracking-wider">
+              Topic / Inquiry Category
+            </span>
+            {detail.topic && (
+              <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-[10px]">
+                {detail.topic}
+              </span>
+            )}
+          </div>
           <span className="flex items-center gap-1 font-medium">
             <Calendar className="w-3 h-3 text-slate-400" />
             Submitted: {formatDate(detail.date || detail.createdAt)}
           </span>
         </div>
         <h3 className="text-xs font-bold text-slate-900">
-          {taskTitle}
+          {detail.topic ? `${detail.topic} — ` : ''}{taskTitle}
         </h3>
       </div>
 
@@ -267,8 +276,10 @@ export const GuidanceDetailsDrawer = ({
         onApprove={onApprove}
         onRequestRework={onRequestRework}
         onAddComment={onAddComment}
+        onResolve={onResolve}
         isApproving={isApproving}
         isCommenting={isCommenting}
+        isResolving={isResolving}
       />
     </div>
   );

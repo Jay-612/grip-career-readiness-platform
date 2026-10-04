@@ -13,6 +13,7 @@ import GoalTrackerPage from './pages/Student/GoalTrackerPage';
 import GuidancePage from './pages/Student/GuidancePage';
 import InterviewCenterPage from './pages/Student/InterviewCenterPage';
 import AlumniInsightsPage from './pages/Student/AlumniInsightsPage';
+import StudentEventDetailPage from './pages/Student/StudentEventDetailPage';
 import FacultyDashboard from './pages/Faculty/Dashboard';
 import InterviewEvaluationPage from './pages/Faculty/InterviewEvaluationPage';
 import GuidanceInboxPage from './pages/Faculty/GuidanceInboxPage';
@@ -188,6 +189,8 @@ const App = () => {
             <Route path="alumni-posts" element={<AlumniInsightsPage />} />
             <Route path="alumni-stories" element={<Navigate to="/student/alumni-posts" replace />} />
             <Route path="experiences" element={<Navigate to="/student/alumni-posts" replace />} />
+            <Route path="events" element={<StudentEventDetailPage />} />
+            <Route path="events/:eventId" element={<StudentEventDetailPage />} />
           </Route>
 
           {/* Faculty Authenticated Layout & Nested Routes */}

@@ -5,3 +5,4 @@ export { default as PriorityTaskList } from './PriorityTaskList';
 export { default as LatestFeedbackCard } from './LatestFeedbackCard';
 export { default as PlacementPulse } from './PlacementPulse';
 export { default as QuickNav } from './QuickNav';
+export { default as UpcomingEventsSection } from './UpcomingEventsSection';

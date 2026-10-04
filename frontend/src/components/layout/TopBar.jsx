@@ -50,6 +50,15 @@ const ROLE_NOTIFICATIONS = {
         path: '/student/goals',
       },
       {
+        id: 'student-guidance-reply',
+        title: 'Faculty Guidance Reply',
+        description: 'A faculty advisor reviewed your question and replied with guidance.',
+        time: 'New reply',
+        icon: MessageSquare,
+        iconColor: 'text-blue-600',
+        path: '/student/guidance',
+      },
+      {
         id: 'student-3',
         title: 'Placement Readiness Updated',
         description: 'Your latest interview evaluation pushed your score to Tier 1 eligibility.',
@@ -59,8 +68,8 @@ const ROLE_NOTIFICATIONS = {
         path: '/student/career-compass',
       },
     ],
-    footerText: 'View All Goals →',
-    footerPath: '/student/goals',
+    footerText: 'View Guidance & Advice →',
+    footerPath: '/student/guidance',
   },
   faculty: {
     items: [
@@ -309,8 +318,32 @@ const TopBar = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [readNotifications, setReadNotifications] = useState([]);
+  const [liveNotifications, setLiveNotifications] = useState([]);
 
   const searchContainerRef = useRef(null);
+
+  // Load real-time in-app notifications (New Event, Event Reminders, etc.)
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLiveNotes = async () => {
+      if (!user) return;
+      try {
+        const { notificationService } = await import('../../services/notificationService');
+        const res = await notificationService.getNotifications(15);
+        if (isMounted && res?.notifications) {
+          setLiveNotifications(res.notifications);
+        }
+      } catch (_) {
+        // Fallback silently to static role items
+      }
+    };
+    fetchLiveNotes();
+    const interval = setInterval(fetchLiveNotes, 30000); // Polling every 30s
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [user]);
 
   const handleSignOut = () => {
     logout();
@@ -318,7 +351,38 @@ const TopBar = ({
   };
 
   const displayRole = (user?.role || 'student').toLowerCase();
-  const roleConfig = ROLE_NOTIFICATIONS[displayRole] || ROLE_NOTIFICATIONS.student;
+  const baseRoleConfig = ROLE_NOTIFICATIONS[displayRole] || ROLE_NOTIFICATIONS.student;
+
+  // Merge dynamic notifications from backend with default role notifications
+  const mergedNotificationItems = useMemo(() => {
+    const formattedLive = liveNotifications.map((n) => {
+      const isReminder = n.type === 'event_reminder';
+      const isNewEvent = n.type === 'new_event';
+      const timeStr = n.createdAt
+        ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : 'Recent';
+
+      return {
+        id: n._id || n.id,
+        isDbNotification: true,
+        isRead: n.read,
+        title: n.title,
+        description: n.message,
+        time: isReminder ? 'Reminder' : isNewEvent ? 'New Event' : timeStr,
+        icon: isReminder ? Clock : isNewEvent ? Calendar : MessageSquare,
+        iconColor: isReminder ? 'text-amber-500' : isNewEvent ? 'text-blue-600' : 'text-emerald-500',
+        path: n.actionPath || (isReminder || isNewEvent ? `/student/events/${n.eventId?._id || n.eventId || ''}` : '/student/dashboard'),
+      };
+    });
+
+    return [...formattedLive, ...baseRoleConfig.items];
+  }, [liveNotifications, baseRoleConfig]);
+
+  const roleConfig = useMemo(() => ({
+    ...baseRoleConfig,
+    items: mergedNotificationItems,
+  }), [baseRoleConfig, mergedNotificationItems]);
+
   const searchSuggestions = ROLE_SEARCH_SUGGESTIONS[displayRole] || ROLE_SEARCH_SUGGESTIONS.student;
 
   const displayName =
@@ -334,20 +398,35 @@ const TopBar = ({
       : 'Verified Student');
   const displayEmail = user?.email || `${displayRole}@campus.edu`;
 
-  // Calculate unread count
-  const unreadCount = roleConfig.items.filter(
-    (item) => !readNotifications.includes(item.id)
-  ).length;
+  // Calculate unread count (live DB notifications check n.isRead, static check readNotifications)
+  const unreadCount = roleConfig.items.filter((item) => {
+    if (item.isDbNotification) {
+      return !item.isRead && !readNotifications.includes(item.id);
+    }
+    return !readNotifications.includes(item.id);
+  }).length;
 
-  const handleMarkAllRead = (e) => {
+  const handleMarkAllRead = async (e) => {
     e.stopPropagation();
     setReadNotifications(roleConfig.items.map((i) => i.id));
+    try {
+      const { notificationService } = await import('../../services/notificationService');
+      await notificationService.markAllAsRead();
+    } catch (_) {}
   };
 
-  const handleNotificationClick = (item) => {
+  const handleNotificationClick = async (item) => {
     setReadNotifications((prev) => [...new Set([...prev, item.id])]);
     setIsNotificationsOpen(false);
-    navigate(item.path);
+    if (item.isDbNotification) {
+      try {
+        const { notificationService } = await import('../../services/notificationService');
+        await notificationService.markAsRead(item.id);
+      } catch (_) {}
+    }
+    if (item.path) {
+      navigate(item.path);
+    }
   };
 
   // Derive section title from current pathname if breadcrumbs are not provided
@@ -371,15 +450,26 @@ const TopBar = ({
       .filter((group) => group.items.length > 0);
   }, [searchQuery, searchSuggestions]);
 
-  // Close search suggestions when clicking outside
+  // Close search suggestions, notifications, and profile menu when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
         setIsSearchFocused(false);
       }
     };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsProfileOpen(false);
+        setIsNotificationsOpen(false);
+        setIsSearchFocused(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   return (

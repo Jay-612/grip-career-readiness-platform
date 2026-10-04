@@ -15,6 +15,12 @@ const studentProfileSchema = new mongoose.Schema(
       min: 1,
       max: 8,
     },
+    department: {
+      type: String,
+      default: 'Computer Science & Engineering',
+      trim: true,
+      index: true,
+    },
     selectedCareer: {
       type: String,
       default: '',
@@ -35,6 +41,10 @@ const studentProfileSchema = new mongoose.Schema(
         source: { type: String, default: 'quiz' },
       },
     ],
+    readinessQuizCompletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
