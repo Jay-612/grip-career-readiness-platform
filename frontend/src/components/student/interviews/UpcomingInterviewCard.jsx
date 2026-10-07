@@ -29,30 +29,18 @@ export const UpcomingInterviewCard = ({
   // If no upcoming session exists, show compact empty state
   if (!interview) {
     return (
-      <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center shrink-0">
-            <Calendar className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-900">
-              No upcoming mock interview.
-            </span>
-            <span className="text-xs text-slate-500">
-              Schedule a session with a faculty evaluator to practice and diagnose your readiness.
-            </span>
-          </div>
+      <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-card flex items-center gap-3.5">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center shrink-0">
+          <Calendar className="w-5 h-5 text-blue-600" />
         </div>
-
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => onOpenBooking()}
-          leftIcon={<Plus className="w-4 h-4" />}
-          className="shrink-0"
-        >
-          Book Mock Interview
-        </Button>
+        <div className="flex flex-col">
+          <span className="text-sm font-bold text-slate-900">
+            No upcoming mock interview scheduled.
+          </span>
+          <span className="text-xs text-slate-500">
+            Schedule a session with a faculty evaluator to practice and diagnose your career readiness.
+          </span>
+        </div>
       </div>
     );
   }
