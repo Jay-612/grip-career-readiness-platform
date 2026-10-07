@@ -36,7 +36,7 @@ export const RemedialTaskList = ({
     return (
       <div className="p-6 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2">
         <p className="text-xs text-slate-500">
-          No remedial tasks currently queued for this student.
+          No action plan tasks currently queued for this student.
         </p>
         <p className="text-[11px] text-slate-400">
           Click <strong>"+ Add Task"</strong> to assign targeted practice items.

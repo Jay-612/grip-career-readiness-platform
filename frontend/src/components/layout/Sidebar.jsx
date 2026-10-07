@@ -12,7 +12,6 @@ import {
   Users,
   Building,
   Calendar,
-  Settings,
   LogOut,
   GraduationCap,
 } from 'lucide-react';
@@ -53,16 +52,19 @@ const Sidebar = ({
       { name: 'Interviews', path: '/faculty/interviews', icon: Video },
       { name: 'Guidance', path: '/faculty/guidance', icon: MessageSquare },
       { name: 'Analytics', path: '/faculty/analytics', icon: BarChart2 },
+      { name: 'Profile', path: '/faculty/profile', icon: User },
     ],
     alumni: [
       { name: 'Dashboard', path: '/alumni/dashboard', icon: LayoutDashboard },
       { name: 'Mentorship', path: '/alumni/mentorship', icon: Users },
       { name: 'Experience', path: '/alumni/experience', icon: BookOpen },
+      { name: 'Profile', path: '/alumni/profile', icon: User },
     ],
     recruiter: [
       { name: 'Dashboard', path: '/recruiter/dashboard', icon: LayoutDashboard },
       { name: 'Company', path: '/recruiter/company', icon: Building },
       { name: 'Feedback', path: '/recruiter/feedback', icon: MessageSquare },
+      { name: 'Profile', path: '/recruiter/profile', icon: User },
     ],
     admin: [
       {
@@ -209,18 +211,6 @@ const Sidebar = ({
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  const target = activeRole === 'student' ? '/student/profile' : activeRole === 'recruiter' ? '/recruiter/company' : `/${activeRole}/dashboard`;
-                  navigate(target);
-                }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                title="Settings"
-                aria-label="Settings"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
               <button
                 type="button"
                 onClick={handleSignOut}

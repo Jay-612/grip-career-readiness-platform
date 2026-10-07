@@ -95,20 +95,24 @@ export const addRecruiterFeedback = async (req, res) => {
   }
 };
 
-// ─── GET /api/feedback — Get Recruiter's submitted feedback history ─
+// ─── GET /api/feedback — Get Feedback history (Recruiter/Admin or Student) ─
 export const getRecruiterFeedback = async (req, res) => {
   try {
-    const recruiterId = req.user?.id || req.user?.userId;
+    const currentUserId = req.user?.id || req.user?.userId;
     const userRole = (req.user?.role || '').toLowerCase();
 
     const query = {};
     if (userRole === 'recruiter') {
-      query.recruiterId = recruiterId;
+      query.recruiterId = currentUserId;
+    } else if (userRole === 'student') {
+      query.studentId = currentUserId;
+    } else if (req.query.studentId) {
+      query.studentId = req.query.studentId;
     }
 
     const feedbacks = await RecruiterFeedback.find(query)
       .populate('studentId', 'name email')
-      .populate('recruiterId', 'name email')
+      .populate('recruiterId', 'name email company')
       .sort({ date: -1 });
 
     return res.status(200).json({

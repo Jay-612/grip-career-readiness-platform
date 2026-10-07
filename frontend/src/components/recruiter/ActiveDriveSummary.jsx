@@ -45,8 +45,8 @@ export const ActiveDriveSummary = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
           <span className="text-[11px] font-medium text-slate-400 block">Eligible Depts</span>
-          <span className="font-semibold text-slate-800 block truncate" title={departments.join(', ')}>
-            CSE &amp; IT
+          <span className="font-semibold text-slate-800 block truncate" title={Array.isArray(departments) ? departments.join(', ') : departments}>
+            {Array.isArray(departments) && departments.length > 0 ? departments.join(', ') : 'All Departments'}
           </span>
         </div>
 

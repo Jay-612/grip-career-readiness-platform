@@ -196,10 +196,12 @@ export const getGuidanceRequests = async (req, res) => {
         filter.status = req.query.status;
       }
     } else if (userRole === 'faculty') {
-      // Faculty member sees requests sent specifically to THEM or general 'all'
+      // Faculty member sees requests sent specifically to THEM, to general faculty, or broadcast 'all'
       filter.$or = [
         { targetType: 'faculty', targetFacultyId: currentUserId },
+        { targetType: 'faculty', targetFacultyId: null },
         { targetType: 'all' },
+        { targetType: { $exists: false } },
       ];
       if (req.query.status && req.query.status !== 'all') {
         filter.status = req.query.status;
@@ -232,7 +234,7 @@ export const getGuidanceRequests = async (req, res) => {
     const requestIds = requests.map((r) => r._id);
     const replies = await GuidanceReply.find({ requestId: { $in: requestIds } })
       .populate('mentorId', 'name email role')
-      .sort({ _id: -1 });
+      .sort({ createdAt: 1, _id: 1 });
 
     const replyMap = new Map();
     replies.forEach((rep) => {
@@ -260,6 +262,31 @@ export const getGuidanceRequests = async (req, res) => {
           : r.targetAlumniId?.name || 'Alumni Mentor';
         const recipientRole = isFaculty ? 'faculty' : 'alumni';
 
+        const mappedReplies = reps.map((rep) => {
+          const isStudentReply =
+            (rep.mentorId?._id || rep.mentorId)?.toString() ===
+            (r.studentId?._id || r.studentId)?.toString();
+
+          return {
+            id: rep._id,
+            _id: rep._id,
+            requestId: rep.requestId,
+            mentorId: rep.mentorId?._id || rep.mentorId,
+            mentorName: isStudentReply
+              ? r.studentId?.name || 'Student Candidate'
+              : rep.mentorId?.name || recipientName,
+            mentorEmail: rep.mentorId?.email || '',
+            mentorRole: isStudentReply
+              ? 'student'
+              : rep.mentorId?.role || recipientRole,
+            answerText: rep.answerText,
+            date: rep.createdAt,
+            createdAt: rep.createdAt,
+          };
+        });
+
+        const latest = mappedReplies.length > 0 ? mappedReplies[mappedReplies.length - 1] : null;
+
         return {
           id: r._id,
           _id: r._id,
@@ -282,14 +309,8 @@ export const getGuidanceRequests = async (req, res) => {
           createdAt: r.createdAt || r.date,
           replyCount: reps.length,
           status: isResolved ? 'resolved' : reps.length > 0 ? 'replied' : 'pending',
-          latestReply: reps[0]
-            ? {
-                id: reps[0]._id,
-                _id: reps[0]._id,
-                mentorName: reps[0].mentorId?.name || recipientName,
-                answerText: reps[0].answerText,
-              }
-            : null,
+          replies: mappedReplies,
+          latestReply: latest,
         };
       }),
     });
@@ -346,9 +367,9 @@ export const getGuidanceRequestById = async (req, res) => {
     // Role-based visibility check for Faculty & Alumni
     if (userRole === 'faculty') {
       const isTargetedFaculty =
-        request.targetFacultyId &&
+        !request.targetFacultyId ||
         (request.targetFacultyId._id || request.targetFacultyId).toString() === currentUserId;
-      const isLegacyOrAll = !request.targetType || request.targetType === 'all';
+      const isLegacyOrAll = !request.targetType || request.targetType === 'all' || request.targetType === 'faculty';
 
       if (!isTargetedFaculty && !isLegacyOrAll) {
         return res.status(403).json({
@@ -495,9 +516,9 @@ export const replyGuidanceRequest = async (req, res) => {
       canReply = true;
     } else if (userRole === 'faculty') {
       const isTargetedFaculty =
-        request.targetFacultyId &&
+        !request.targetFacultyId ||
         (request.targetFacultyId._id || request.targetFacultyId).toString() === (mentorId || '').toString();
-      const isLegacyOrAll = !request.targetType || request.targetType === 'all';
+      const isLegacyOrAll = !request.targetType || request.targetType === 'all' || request.targetType === 'faculty';
       canReply = isTargetedFaculty || isLegacyOrAll;
     } else if (userRole === 'alumni') {
       const isTargetedAlumni =
@@ -853,8 +874,8 @@ export const resolveGuidanceRequest = async (req, res) => {
     const canResolve =
       userRole === 'admin' ||
       (userRole === 'student' && studentOwnerId === currentUserId) ||
-      (userRole === 'faculty' && targetFacultyId === currentUserId) ||
-      (userRole === 'alumni' && targetAlumniId === currentUserId);
+      (userRole === 'faculty' && (!targetFacultyId || targetFacultyId === currentUserId || request.targetType === 'faculty' || request.targetType === 'all')) ||
+      (userRole === 'alumni' && (!targetAlumniId || targetAlumniId === currentUserId || request.targetType === 'alumni' || request.targetType === 'all'));
 
     if (!canResolve) {
       return res.status(403).json({

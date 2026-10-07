@@ -14,6 +14,12 @@ export const facultyService = {
     return response.data;
   },
 
+  // PUT /api/users/profile
+  updateProfile: async (profileData) => {
+    const response = await apiClient.put('/users/profile', profileData);
+    return response.data;
+  },
+
   // Get scheduled interview appointments for current faculty member
   // GET /api/appointments
   getAppointments: async () => {
@@ -80,6 +86,7 @@ export const facultyService = {
   replyGuidanceRequest: async (id, replyText) => {
     const response = await apiClient.post(`/guidance/requests/${id}/reply`, {
       reply: replyText,
+      answerText: replyText,
     });
     return response.data;
   },

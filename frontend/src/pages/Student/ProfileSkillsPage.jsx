@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
 import ErrorState from '../../components/common/ErrorState';
-import { CheckCircle2, X } from 'lucide-react';
+import { CheckCircle2, X, Star } from 'lucide-react';
 import {
   getStoredProfileExtra,
   saveStoredProfileExtra,
@@ -39,6 +39,7 @@ export const ProfileSkillsPage = () => {
     skills: [],
     roadmap: null,
     dashboard: null,
+    recruiterFeedback: [],
   });
 
   // Client-side enriched fields (Bio, Resume, Links, Custom Skills)
@@ -77,17 +78,25 @@ export const ProfileSkillsPage = () => {
       const selectedCareer = currentProfile?.selectedCareer || '';
 
       // 2. Fetch parallel data from live endpoints
-      const [readinessRes, companyMatchRes, roadmapRes, dashboardRes] = await Promise.allSettled([
+      const [readinessRes, companyMatchRes, roadmapRes, dashboardRes, recruiterFeedbackRes] = await Promise.allSettled([
         studentService.getPlacementReadiness(resolvedStudentId),
         selectedCareer ? studentService.getCompanyMatch(resolvedStudentId) : Promise.resolve(null),
         selectedCareer ? studentService.getCareerRoadmap(selectedCareer) : Promise.resolve(null),
         studentService.getProgressDashboard(resolvedStudentId),
+        studentService.getRecruiterFeedback(),
       ]);
 
       const readiness = readinessRes.status === 'fulfilled' ? readinessRes.value : null;
       const companyMatch = companyMatchRes.status === 'fulfilled' ? companyMatchRes.value : null;
       const roadmap = roadmapRes.status === 'fulfilled' ? roadmapRes.value : null;
       const dashboard = dashboardRes.status === 'fulfilled' ? dashboardRes.value : null;
+      const recruiterFeedback =
+        recruiterFeedbackRes.status === 'fulfilled' &&
+        (Array.isArray(recruiterFeedbackRes.value?.feedback)
+          ? recruiterFeedbackRes.value.feedback
+          : Array.isArray(recruiterFeedbackRes.value)
+          ? recruiterFeedbackRes.value
+          : []) || [];
 
       // Extract skills list mapped from student's career roadmap
       const skills = companyMatch?.studentSkills || [
@@ -108,10 +117,11 @@ export const ProfileSkillsPage = () => {
         skills,
         roadmap,
         dashboard,
+        recruiterFeedback,
       });
 
       // Load client-side persistent profile extras
-      const stored = getStoredProfileExtra(resolvedStudentId);
+      const stored = getStoredProfileExtra(resolvedStudentId, currentUser?.name);
       setProfileExtra(stored);
     } catch (err) {
       console.error('Failed to load profile data:', err);
@@ -183,7 +193,7 @@ export const ProfileSkillsPage = () => {
           portfolio: formData.portfolio?.trim(),
           leetcode: formData.leetcode?.trim(),
         },
-      });
+      }, formData.name);
 
       if (updatedExtra) {
         setProfileExtra(updatedExtra);
@@ -208,15 +218,16 @@ export const ProfileSkillsPage = () => {
   // ─────────────────────────────────────────────────────────────
   const handleSaveResume = (newResumeData) => {
     const studentId = profileData.user?.id || profileData.user?._id || user?.id || user?._id;
+    const studentName = profileData.user?.name || user?.name || '';
     const updatedExtra = saveStoredProfileExtra(studentId, {
       resume: newResumeData,
-    });
+    }, studentName);
 
     if (updatedExtra) {
       setProfileExtra(updatedExtra);
     }
 
-    setSaveSuccessMessage(`Resume "${newResumeData.fileName}" uploaded and ATS verified!`);
+    setSaveSuccessMessage(`Resume "${newResumeData.fileName}" uploaded successfully!`);
     setIsUploadResumeModalOpen(false);
     setTimeout(() => setSaveSuccessMessage(null), 4000);
   };
@@ -344,6 +355,78 @@ export const ProfileSkillsPage = () => {
       />
 
       {/* ─────────────────────────────────────────────────────────────
+          SECTION 5: INDUSTRY RECRUITER REVIEWS & EVALUATIONS
+          Official evaluations provided by corporate recruiters
+      ───────────────────────────────────────────────────────────── */}
+      <section className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-card space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
+              <Star className="w-4 h-4 fill-purple-500 text-purple-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 font-heading">
+                Industry Recruiter Reviews
+              </h2>
+              <p className="text-xs text-slate-500">
+                Official evaluations and ratings provided by verified corporate recruiters
+              </p>
+            </div>
+          </div>
+          {profileData.recruiterFeedback?.length > 0 && (
+            <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">
+              {profileData.recruiterFeedback.length} {profileData.recruiterFeedback.length === 1 ? 'Review' : 'Reviews'}
+            </span>
+          )}
+        </div>
+
+        {profileData.recruiterFeedback && profileData.recruiterFeedback.length > 0 ? (
+          <div className="space-y-3">
+            {profileData.recruiterFeedback.map((item, idx) => {
+              const rec = item.recruiterId || {};
+              return (
+                <div
+                  key={item._id || item.id || idx}
+                  className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900 text-sm">
+                        {rec.name || 'Corporate Recruiter'}
+                      </span>
+                      {rec.company && (
+                        <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100 font-semibold text-[11px]">
+                          {rec.company}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ⭐ {item.rating} / 10
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Recent'}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed italic bg-white p-3 rounded-lg border border-slate-200/60">
+                    "{item.comments || 'No remarks provided.'}"
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-5 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 text-center space-y-1">
+            <p className="text-xs font-semibold text-slate-700">No Recruiter Reviews Recorded Yet</p>
+            <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+              When recruiters evaluate your candidacy during interview drives, their feedback and ratings will be recorded here.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
           MODALS & PROGRESSIVE DISCLOSURE
       ───────────────────────────────────────────────────────────── */}
       {/* 1. Deep Verification Details Modal (Only shown when opened) */}
@@ -382,6 +465,11 @@ export const ProfileSkillsPage = () => {
         resume={profileExtra.resume}
         user={profileData.user}
         profile={profileData.profile}
+        skills={combinedSkills}
+        onUploadClick={() => {
+          setIsResumePreviewOpen(false);
+          setIsUploadResumeModalOpen(true);
+        }}
       />
 
       {/* 5. Add Skill Modal */}

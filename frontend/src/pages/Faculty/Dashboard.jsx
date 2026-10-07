@@ -9,7 +9,6 @@ import {
   FacultyDashboardHeader,
   TodayInterviewList,
   PendingRequestList,
-  AttentionStudentList,
   FacultyMetricSummary,
   FacultyQuickLinks,
   RequestDetailsModal,
@@ -34,6 +33,7 @@ export const FacultyDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [acceptingId, setAcceptingId] = useState(null);
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   // ─── Data Fetching ─────────────────────────────────────────────────
   const fetchDashboardData = useCallback(async () => {
@@ -89,10 +89,15 @@ export const FacultyDashboard = () => {
   const departmentName = facultyProfile?.profile?.department || 'Computer Science & Engineering';
   const isHOD = Boolean(facultyProfile?.profile?.isHOD);
 
-  // Today's / active interviews
+  // Today's / active interviews (only pending/scheduled/in-progress; exclude completed)
   const todayInterviews = useMemo(() => {
     return appointments
-      .filter((a) => a.status === 'scheduled' || a.status === 'in-progress' || a.status === 'completed')
+      .filter(
+        (a) =>
+          (a.status === 'scheduled' || a.status === 'in-progress' || a.status === 'pending') &&
+          a.status !== 'completed' &&
+          a.status !== 'cancelled'
+      )
       .sort((a, b) => {
         const timeA = a.dateTime ? new Date(a.dateTime).getTime() : 0;
         const timeB = b.dateTime ? new Date(b.dateTime).getTime() : 0;
@@ -100,7 +105,7 @@ export const FacultyDashboard = () => {
       });
   }, [appointments]);
 
-  // Pending interview requests & guidance requests
+  // Pending interview requests & unanswered guidance requests
   const pendingRequests = useMemo(() => {
     const requests = [];
 
@@ -119,8 +124,13 @@ export const FacultyDashboard = () => {
       });
     });
 
-    // Unanswered guidance requests
-    guidanceRequests.forEach((req) => {
+    // Unanswered guidance requests (only pending status)
+    const pendingGuidance = guidanceRequests.filter(
+      (req) =>
+        req.status === 'pending' ||
+        (req.status !== 'resolved' && req.status !== 'replied' && (req.replyCount || 0) === 0)
+    );
+    pendingGuidance.forEach((req) => {
       requests.push({
         id: req.id || req._id,
         type: 'guidance',
@@ -135,58 +145,6 @@ export const FacultyDashboard = () => {
 
     return requests;
   }, [appointments, guidanceRequests]);
-
-  // Students Needing Attention (3-5 items)
-  const attentionStudents = useMemo(() => {
-    const list = [];
-
-    // 1. Completed interview awaiting rubric evaluation
-    const uncompletedEvaluations = appointments.filter((a) => a.status === 'completed');
-    if (uncompletedEvaluations.length > 0) {
-      const topEval = uncompletedEvaluations[0];
-      list.push({
-        id: `eval-${topEval.id || topEval._id}`,
-        studentName: topEval.student?.name || 'Completed Candidate',
-        studentEmail: topEval.student?.email,
-        reason: 'Mock interview completed — awaiting 10-point skill rubric scoring',
-        badge: 'Score Overdue',
-        severity: 'danger',
-        actionLink: `/faculty/interviews/${topEval.id || topEval._id}`,
-      });
-    }
-
-    // 2. Cohort students with readiness score < 65%
-    const atRiskCohort = cohortStudents.filter(
-      (s) => typeof s.readinessScore === 'number' && s.readinessScore < 65
-    );
-    atRiskCohort.slice(0, 3).forEach((student) => {
-      list.push({
-        id: `atrisk-${student.studentId || student._id}`,
-        studentName: student.studentName || student.name || 'Cohort Student',
-        studentEmail: student.email,
-        reason: `Placement readiness score (${student.readinessScore}%) is below the 65% target benchmark`,
-        badge: 'Low Readiness',
-        severity: 'danger',
-        actionLink: '/faculty/guidance',
-      });
-    });
-
-    // 3. Pending guidance request requiring reply
-    if (guidanceRequests.length > 0 && list.length < 4) {
-      const topGuidance = guidanceRequests[0];
-      list.push({
-        id: `guidance-attn-${topGuidance.id}`,
-        studentName: topGuidance.studentName || 'Mentee Candidate',
-        studentEmail: topGuidance.studentEmail,
-        reason: `Mentorship inquiry awaiting faculty response: "${(topGuidance.question || '').slice(0, 50)}..."`,
-        badge: 'Inquiry Pending',
-        severity: 'warning',
-        actionLink: `/faculty/guidance/${topGuidance.id}`,
-      });
-    }
-
-    return list;
-  }, [appointments, cohortStudents, guidanceRequests]);
 
   // Cohort average calculation
   const avgCohortScore = useMemo(() => {
@@ -203,9 +161,14 @@ export const FacultyDashboard = () => {
     return appointments.filter((a) => a.status === 'completed').length;
   }, [appointments]);
 
-  // Pending evaluations count
+  // Pending evaluations count (scheduled/in-progress appointments past their scheduled time)
   const pendingEvalsCount = useMemo(() => {
-    return appointments.filter((a) => a.status === 'completed').length;
+    return appointments.filter(
+      (a) =>
+        (a.status === 'scheduled' || a.status === 'in-progress' || a.status === 'in_progress') &&
+        a.dateTime &&
+        new Date(a.dateTime) <= new Date()
+    ).length;
   }, [appointments]);
 
   // ─── Action Handlers ───────────────────────────────────────────────
@@ -233,14 +196,36 @@ export const FacultyDashboard = () => {
           setDashboardToast('Interview request accepted! Google Meet room generated.');
         }
       } else {
-        setDashboardToast('Guidance request accepted! Opening conversation thread.');
-        navigate(`/faculty/guidance/${request.id}`);
+        // Guidance inquiry: open details modal with reply input ready
+        handleOpenDetails(request);
       }
     } catch (err) {
       console.error('Accept request failed:', err);
       alert(err.response?.data?.message || 'Failed to accept request.');
     } finally {
       setAcceptingId(null);
+      setTimeout(() => setDashboardToast(null), 4000);
+    }
+  };
+
+  const handleReplyGuidanceRequest = async (request, replyText) => {
+    if (!request?.id || !replyText?.trim()) return;
+    setIsSubmittingReply(true);
+
+    try {
+      await facultyService.replyGuidanceRequest(request.id, replyText.trim());
+      // Optimistically remove from pending guidance requests
+      setGuidanceRequests((prev) =>
+        prev.filter((g) => String(g.id || g._id) !== String(request.id))
+      );
+      setDashboardToast('Guidance response sent to student successfully!');
+      setIsDetailsModalOpen(false);
+      setSelectedRequest(null);
+    } catch (err) {
+      console.error('Failed to submit guidance response:', err);
+      alert(err.response?.data?.message || 'Failed to send guidance response.');
+    } finally {
+      setIsSubmittingReply(false);
       setTimeout(() => setDashboardToast(null), 4000);
     }
   };
@@ -254,8 +239,13 @@ export const FacultyDashboard = () => {
         setAppointments((prev) => prev.filter((a) => String(a.id || a._id) !== String(request.id)));
         setDashboardToast('Interview appointment request declined.');
       } else {
+        try {
+          await facultyService.resolveGuidanceRequest(request.id);
+        } catch {
+          // ignore if already resolved
+        }
         setGuidanceRequests((prev) => prev.filter((g) => String(g.id || g._id) !== String(request.id)));
-        setDashboardToast('Guidance inquiry dismissed.');
+        setDashboardToast('Guidance inquiry resolved and dismissed.');
       }
     } catch (err) {
       console.error('Decline request failed:', err);
@@ -276,10 +266,7 @@ export const FacultyDashboard = () => {
       <div className="space-y-6 antialiased py-4 max-w-7xl mx-auto">
         <Skeleton className="h-28 w-full rounded-2xl" />
         <Skeleton className="h-48 w-full rounded-2xl" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Skeleton className="h-56 rounded-2xl" />
-          <Skeleton className="h-56 rounded-2xl" />
-        </div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
         <Skeleton className="h-24 w-full rounded-2xl" />
       </div>
     );
@@ -328,9 +315,8 @@ export const FacultyDashboard = () => {
       {/* ─── 2. TODAY'S INTERVIEWS (HIGHEST PRIORITY) ────────────────── */}
       <TodayInterviewList interviews={todayInterviews} />
 
-      {/* ─── 3 & 4. TWO-COLUMN OPERATIONAL AREA ──────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Section 3: Pending Requests */}
+      {/* ─── 3. PENDING REQUESTS OPERATIONAL AREA ─────────────────────── */}
+      <div className="w-full">
         <PendingRequestList
           requests={pendingRequests}
           onAccept={handleAcceptRequest}
@@ -338,12 +324,9 @@ export const FacultyDashboard = () => {
           onViewDetails={handleOpenDetails}
           acceptingId={acceptingId}
         />
-
-        {/* Section 4: Students Needing Attention */}
-        <AttentionStudentList students={attentionStudents} />
       </div>
 
-      {/* ─── 5. COMPACT SUMMARY METRICS (MAX 4) ──────────────────────── */}
+      {/* ─── 4. COMPACT SUMMARY METRICS (MAX 4) ──────────────────────── */}
       <FacultyMetricSummary
         interviewsConducted={completedCount}
         pendingEvaluations={pendingEvalsCount}
@@ -351,7 +334,7 @@ export const FacultyDashboard = () => {
         averageScore={avgCohortScore}
       />
 
-      {/* ─── 6. QUICK NAVIGATION ─────────────────────────────────────── */}
+      {/* ─── 5. QUICK NAVIGATION ─────────────────────────────────────── */}
       <FacultyQuickLinks />
 
       {/* ─── REQUEST DETAILS MODAL ───────────────────────────────────── */}
@@ -364,7 +347,9 @@ export const FacultyDashboard = () => {
         request={selectedRequest}
         onAccept={handleAcceptRequest}
         onDecline={handleDeclineRequest}
+        onReplyGuidance={handleReplyGuidanceRequest}
         isAccepting={acceptingId === selectedRequest?.id}
+        isSubmittingReply={isSubmittingReply}
       />
     </div>
   );

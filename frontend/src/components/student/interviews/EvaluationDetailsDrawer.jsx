@@ -157,34 +157,34 @@ export const EvaluationDetailsDrawer = ({
           </div>
         )}
 
-        {/* Remedial Action Plan & Improvement Tasks */}
-        {hasRemedial ? (
-          <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200/90 text-xs space-y-3">
+        {/* Action Plan & Improvement Goals */}
+        {recommendedTasks.length > 0 || weakSkills.length > 0 ? (
+          <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200/90 text-xs space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 font-bold text-amber-950">
-                <Target className="w-4 h-4 text-amber-700" />
-                <span>Identified Improvement Areas</span>
+              <div className="flex items-center gap-1.5 font-bold text-blue-950">
+                <Target className="w-4 h-4 text-blue-700" />
+                <span>Action Plan & Recommended Goals</span>
               </div>
               <Link
                 to="/student/goals"
                 onClick={onClose}
                 className="text-[11px] font-semibold text-blue-700 hover:text-blue-800 flex items-center gap-1"
               >
-                <span>Manage in Goal Tracker</span>
+                <span>View in Goal Tracker</span>
                 <ExternalLink className="w-3 h-3" />
               </Link>
             </div>
 
             {weakSkills.length > 0 && (
               <div className="space-y-1">
-                <span className="text-[11px] font-semibold text-amber-900 block">
-                  Skills needing reinforcement (&lt; 7/10):
+                <span className="text-[11px] font-semibold text-blue-900 block">
+                  Focus Competencies:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {weakSkills.map((skill, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300 font-medium text-[10px]"
+                      className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-900 border border-blue-300 font-medium text-[10px]"
                     >
                       {skill}
                     </span>
@@ -196,16 +196,16 @@ export const EvaluationDetailsDrawer = ({
             {recommendedTasks.length > 0 && (
               <div className="space-y-1.5 pt-1">
                 <span className="text-[11px] font-semibold text-slate-800 block">
-                  Recommended Action Items:
+                  Assigned Action Items (Added to Goal Tracker):
                 </span>
                 {recommendedTasks.map((task, idx) => (
                   <div
                     key={idx}
-                    className="p-2.5 rounded-lg bg-white border border-amber-200 flex items-start justify-between gap-2"
+                    className="p-2.5 rounded-lg bg-white border border-blue-200 flex items-start justify-between gap-2"
                   >
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <span className="font-semibold text-slate-900 text-[11px]">
-                        {task.title || task.goalTitle || task.task}
+                        {(task.title || task.goalTitle || task.task || '').replace(/^\[Action Plan: Mock Remedial\]\s*/i, '')}
                       </span>
                       {task.description && (
                         <span className="text-[10px] text-slate-500 line-clamp-2">
@@ -222,7 +222,7 @@ export const EvaluationDetailsDrawer = ({
           <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span className="text-[11px]">
-              All domains scored 7/10 or above. Qualified placement performance; no remedial goals required.
+              Strong performance across all interview domains.
             </span>
           </div>
         )}

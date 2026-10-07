@@ -40,7 +40,7 @@ export const RemedialPlanTab = ({
       return;
     }
     if (tasks.length === 0) {
-      setValidationError('Please add at least one remedial task to assign.');
+      setValidationError('Please add at least one task to assign.');
       return;
     }
     setValidationError('');
@@ -56,7 +56,7 @@ export const RemedialPlanTab = ({
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               <h4 className="text-xs sm:text-sm font-bold text-emerald-950">
-                Remedial Action Plan Successfully Dispatched
+                Action Plan Successfully Dispatched
               </h4>
             </div>
             <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -65,8 +65,8 @@ export const RemedialPlanTab = ({
           </div>
           <p className="text-xs text-emerald-800 leading-relaxed">
             {dispatchedGoals.length > 0
-              ? `Assigned ${dispatchedGoals.length} remedial weekly goal(s) to the student's Goal Tracker.`
-              : `Evaluation confirmed with no remedial deficit required.`}
+              ? `Assigned ${dispatchedGoals.length} weekly goal(s) to the student's Goal Tracker.`
+              : `Evaluation confirmed with no action plan deficit required.`}
           </p>
         </div>
       )}
@@ -75,10 +75,10 @@ export const RemedialPlanTab = ({
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-card space-y-4">
         <div>
           <h2 className="text-base font-bold text-slate-900 tracking-tight">
-            Remedial Plan Details
+            Action Plan Details
           </h2>
           <p className="text-xs text-slate-500">
-            Define actionable learning goals and practice tasks for the student candidate.
+            Define actionable learning goals and practice tasks for the student candidate. All tasks will be added to the student's Goal Tracker.
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export const RemedialPlanTab = ({
                 onChangePlanTitle(e.target.value);
                 setValidationError('');
               }}
-              placeholder="e.g. Remedial Sprint: Technical Core & STAR Articulation"
+              placeholder="e.g. Action Plan: Technical Core & STAR Articulation"
               className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-slate-900 font-medium"
             />
           </div>
@@ -116,20 +116,20 @@ export const RemedialPlanTab = ({
               disabled={isReadOnly}
               value={planSummary}
               onChange={(e) => onChangePlanSummary(e.target.value)}
-              placeholder="Provide context on why this remedial plan was created and the expected outcome before placement drives..."
+              placeholder="Provide context on this action plan and the expected outcomes for the student..."
               className="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-slate-900"
             />
           </div>
         </div>
       </div>
 
-      {/* Remedial Tasks Section */}
+      {/* Action Plan Tasks Section */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-card space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-blue-600" />
             <h3 className="text-sm font-bold text-slate-900 tracking-tight">
-              Remedial Tasks ({tasks.length})
+              Action Plan Tasks ({tasks.length})
             </h3>
           </div>
 
@@ -140,7 +140,7 @@ export const RemedialPlanTab = ({
                   type="button"
                   onClick={onResetToSuggestions}
                   className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-1 transition"
-                  title="Reset to algorithmic deficit suggestions based on scores"
+                  title="Reset to recommended tasks based on scores"
                 >
                   <RotateCcw className="w-3 h-3 text-slate-400" />
                   <span>Reset Suggestions</span>
@@ -168,11 +168,11 @@ export const RemedialPlanTab = ({
           isReadOnly={isReadOnly}
         />
 
-        {/* Assign Remedial Plan CTA */}
+        {/* Assign Action Plan CTA */}
         {!isReadOnly && (
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
             <p className="text-[11px] text-slate-500">
-              Assigned tasks will appear directly in the student's Goal Tracker with the '🎯 Faculty Action Plan' badge.
+              Assigned tasks will appear directly in the student's Goal Tracker.
             </p>
 
             <Button
@@ -181,11 +181,11 @@ export const RemedialPlanTab = ({
               size="md"
               onClick={handleAssignClick}
               isLoading={isAssigning}
-              loadingText="Assigning Plan..."
+              loadingText="Assigning Goals..."
               leftIcon={<Target className="w-4 h-4" />}
               className="text-xs font-semibold shrink-0"
             >
-              Assign Remedial Plan
+              Assign Goals to Student Tracker
             </Button>
           </div>
         )}

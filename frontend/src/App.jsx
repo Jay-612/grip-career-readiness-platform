@@ -15,13 +15,16 @@ import InterviewCenterPage from './pages/Student/InterviewCenterPage';
 import AlumniInsightsPage from './pages/Student/AlumniInsightsPage';
 import StudentEventDetailPage from './pages/Student/StudentEventDetailPage';
 import FacultyDashboard from './pages/Faculty/Dashboard';
+import FacultyProfilePage from './pages/Faculty/FacultyProfilePage';
 import InterviewEvaluationPage from './pages/Faculty/InterviewEvaluationPage';
 import GuidanceInboxPage from './pages/Faculty/GuidanceInboxPage';
 import HodAnalyticsPage from './pages/Faculty/HodAnalyticsPage';
 import AlumniDashboard from './pages/Alumni/AlumniDashboard';
+import AlumniProfilePage from './pages/Alumni/AlumniProfilePage';
 import ExperiencePublisherPage from './pages/Alumni/ExperiencePublisherPage';
 import MentorshipInboxPage from './pages/Alumni/MentorshipInboxPage';
 import RecruiterDashboard from './pages/Recruiter/RecruiterDashboard';
+import RecruiterProfilePage from './pages/Recruiter/RecruiterProfilePage';
 import CompanyProfilePage from './pages/Recruiter/CompanyProfilePage';
 import StudentFeedbackPortalPage from './pages/Recruiter/StudentFeedbackPortalPage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
@@ -204,6 +207,7 @@ const App = () => {
           >
             <Route index element={<Navigate to="/faculty/dashboard" replace />} />
             <Route path="dashboard" element={<FacultyDashboard />} />
+            <Route path="profile" element={<FacultyProfilePage />} />
             <Route path="interviews" element={<InterviewEvaluationPage />} />
             <Route path="interviews/:id" element={<InterviewEvaluationPage />} />
             <Route path="evaluations" element={<Navigate to="/faculty/interviews" replace />} />
@@ -227,6 +231,7 @@ const App = () => {
           >
             <Route index element={<Navigate to="/alumni/dashboard" replace />} />
             <Route path="dashboard" element={<AlumniDashboard />} />
+            <Route path="profile" element={<AlumniProfilePage />} />
             <Route path="experience" element={<ExperiencePublisherPage />} />
             <Route path="experience-publisher" element={<Navigate to="/alumni/experience" replace />} />
             <Route path="mentorship" element={<MentorshipInboxPage />} />
@@ -245,6 +250,7 @@ const App = () => {
           >
             <Route index element={<Navigate to="/recruiter/dashboard" replace />} />
             <Route path="dashboard" element={<RecruiterDashboard />} />
+            <Route path="profile" element={<RecruiterProfilePage />} />
             <Route path="company" element={<CompanyProfilePage />} />
             <Route path="company-profile" element={<Navigate to="/recruiter/company" replace />} />
             <Route path="feedback" element={<StudentFeedbackPortalPage />} />

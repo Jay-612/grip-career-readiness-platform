@@ -107,10 +107,12 @@ export const PendingRequestList = ({
                       size="sm"
                       onClick={() => onAccept && onAccept(req)}
                       disabled={isAccepting}
-                      leftIcon={<Check className="w-3.5 h-3.5" />}
-                      className="text-xs py-1 px-2.5 h-auto bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                      leftIcon={isInterview ? <Check className="w-3.5 h-3.5" /> : <MessageSquare className="w-3.5 h-3.5" />}
+                      className={`text-xs py-1 px-2.5 h-auto text-white cursor-pointer ${
+                        isInterview ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
                     >
-                      {isAccepting ? 'Accepting...' : 'Accept'}
+                      {isAccepting ? 'Accepting...' : isInterview ? 'Accept' : 'Accept & Reply'}
                     </Button>
 
                     <Button

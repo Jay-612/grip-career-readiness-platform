@@ -8,7 +8,7 @@ export const GuidanceHeader = ({ onRefresh, isRefreshing = false, onAskGuidance 
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2.5">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-heading">
-            Faculty Guidance & Action Plans
+            Faculty Guidance & Mentorship
           </h1>
           <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60">
             <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
@@ -16,7 +16,7 @@ export const GuidanceHeader = ({ onRefresh, isRefreshing = false, onAskGuidance 
           </span>
         </div>
         <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-2xl">
-          Ask questions to your department faculty advisors and track your remedial roadmap.
+          Ask questions to your department faculty advisors and alumni mentors to receive guidance.
         </p>
       </div>
 

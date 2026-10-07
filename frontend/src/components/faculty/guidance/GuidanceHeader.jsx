@@ -18,11 +18,11 @@ export const GuidanceHeader = ({
               Guidance Inbox
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold text-xs border border-blue-200/80">
-              Remedial & Guidance Queue
+              Student Inquiries
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Review student remedial submissions and verify task completion.
+            Review student mentorship questions and provide feedback.
           </p>
         </div>
 

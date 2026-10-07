@@ -9,17 +9,49 @@ const facultyProfileSchema = new mongoose.Schema({
   },
   employeeId: {
     type: String,
-    required: true,
+    default: '',
   },
   department: {
     type: String,
-    required: true,
+    default: 'Computer Science & Engineering',
   },
   isHOD: {
     type: Boolean,
     default: false,
   },
-});
+  designation: {
+    type: String,
+    default: 'Assistant Professor',
+  },
+  phone: {
+    type: String,
+    default: '',
+  },
+  cabinNumber: {
+    type: String,
+    default: '',
+  },
+  officeHours: {
+    type: String,
+    default: '',
+  },
+  bio: {
+    type: String,
+    default: '',
+  },
+  specialization: {
+    type: [String],
+    default: [],
+  },
+  education: {
+    type: String,
+    default: '',
+  },
+  researchInterests: {
+    type: [String],
+    default: [],
+  },
+}, { timestamps: true });
 
 const FacultyProfile = mongoose.model(
   'FacultyProfile',

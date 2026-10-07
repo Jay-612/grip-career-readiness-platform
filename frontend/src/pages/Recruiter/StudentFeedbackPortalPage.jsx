@@ -22,6 +22,8 @@ import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import { Skeleton } from '../../components/common/Skeleton';
 
+const SHORTLIST_STORAGE_KEY = 'grip_recruiter_shortlist';
+
 export const StudentFeedbackPortalPage = () => {
   const { studentId: routeStudentId } = useParams();
   const { user } = useAuth();
@@ -52,9 +54,22 @@ export const StudentFeedbackPortalPage = () => {
         recruiterService.getFeedbackHistory(),
       ]);
 
+      // Load shortlisted IDs from localStorage
+      let savedShortlist = new Set();
+      try {
+        const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY);
+        if (raw) savedShortlist = new Set(JSON.parse(raw));
+      } catch (e) {
+        console.error('Failed to parse shortlist in feedback portal:', e);
+      }
+
       let cList = [];
       if (candidatesRes.status === 'fulfilled' && candidatesRes.value) {
-        cList = Array.isArray(candidatesRes.value) ? candidatesRes.value : [];
+        const fullList = Array.isArray(candidatesRes.value) ? candidatesRes.value : [];
+        // Restrict evaluation pool strictly to shortlisted candidates
+        cList = fullList.filter((c) =>
+          savedShortlist.has(String(c.studentId || c.id || c._id))
+        );
         setCandidates(cList);
       }
 
@@ -62,25 +77,29 @@ export const StudentFeedbackPortalPage = () => {
         setFeedbackHistory(Array.isArray(feedbackRes.value) ? feedbackRes.value : []);
       }
 
-      // If route has studentId, open modal automatically for that student
+      // If route has studentId, open modal ONLY if candidate is shortlisted
       if (routeStudentId) {
-        const found = cList.find(
-          (c) => String(c.studentId || c.id || c._id) === String(routeStudentId)
-        );
-        if (found) {
-          setTargetCandidate(found);
-          setIsModalOpen(true);
+        if (!savedShortlist.has(String(routeStudentId))) {
+          setError('Evaluation is restricted to shortlisted candidates only. The specified student is not shortlisted.');
         } else {
-          // Fetch student user details
-          recruiterService.getUserById(routeStudentId).then((res) => {
-            const u = res?.user || {};
-            setTargetCandidate({
-              studentId: routeStudentId,
-              studentName: u.name || 'Candidate',
-              email: u.email || '',
-            });
+          const found = cList.find(
+            (c) => String(c.studentId || c.id || c._id) === String(routeStudentId)
+          );
+          if (found) {
+            setTargetCandidate(found);
             setIsModalOpen(true);
-          }).catch((e) => console.warn('Could not find candidate by route id:', e));
+          } else {
+            // Fetch student user details
+            recruiterService.getUserById(routeStudentId).then((res) => {
+              const u = res?.user || {};
+              setTargetCandidate({
+                studentId: routeStudentId,
+                studentName: u.name || 'Candidate',
+                email: u.email || '',
+              });
+              setIsModalOpen(true);
+            }).catch((e) => console.warn('Could not find candidate by route id:', e));
+          }
         }
       }
     } catch (err) {
@@ -98,6 +117,17 @@ export const StudentFeedbackPortalPage = () => {
   const handleSubmitFeedback = async (studentId, comments, rating) => {
     setIsSubmitting(true);
     try {
+      // Validate candidate is shortlisted
+      let savedShortlist = new Set();
+      try {
+        const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY);
+        if (raw) savedShortlist = new Set(JSON.parse(raw));
+      } catch {}
+
+      if (!savedShortlist.has(String(studentId))) {
+        throw new Error('Evaluation is restricted to shortlisted candidates only.');
+      }
+
       const res = await recruiterService.submitFeedback(studentId, comments, rating);
       const studentObj = candidates.find(
         (c) => String(c.studentId || c.id || c._id) === String(studentId)
@@ -123,13 +153,32 @@ export const StudentFeedbackPortalPage = () => {
       setTimeout(() => setToastMessage(null), 4000);
     } catch (err) {
       console.error('Failed to submit feedback:', err);
-      throw new Error(err?.response?.data?.message || 'Failed to record candidate feedback.');
+      throw new Error(err?.response?.data?.message || err?.message || 'Failed to record candidate feedback.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const openSubmitModal = (cand = null) => {
+    let savedShortlist = new Set();
+    try {
+      const raw = localStorage.getItem(SHORTLIST_STORAGE_KEY);
+      if (raw) savedShortlist = new Set(JSON.parse(raw));
+    } catch {}
+
+    if (cand) {
+      const sid = String(cand.studentId || cand.id || cand._id || '');
+      if (!savedShortlist.has(sid)) {
+        setToastMessage('Evaluation is restricted to shortlisted candidates only.');
+        setTimeout(() => setToastMessage(null), 3000);
+        return;
+      }
+    } else if (candidates.length === 0) {
+      setToastMessage('No shortlisted candidates available to evaluate.');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
+
     setTargetCandidate(cand);
     setIsModalOpen(true);
   };
@@ -243,40 +292,50 @@ export const StudentFeedbackPortalPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          {filteredCandidates.map((c) => {
-            const sid = c.studentId || c.id || c._id;
-            const readiness = Number(c.readinessScore) || 0;
+        {filteredCandidates.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-xs bg-slate-50/70 rounded-xl border border-dashed border-slate-200">
+            <Users className="w-6 h-6 text-slate-400 mx-auto mb-1 stroke-[1.5]" />
+            <p className="font-semibold text-slate-700">No Shortlisted Candidates Available</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Only shortlisted candidates can be evaluated. Please shortlist candidates from the Recruiter Dashboard first.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            {filteredCandidates.map((c) => {
+              const sid = c.studentId || c.id || c._id;
+              const readiness = Number(c.readinessScore) || 0;
 
-            return (
-              <div
-                key={sid}
-                className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 transition-colors flex items-center justify-between gap-2"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-slate-900 truncate">
-                      {c.studentName || 'Student'}
-                    </span>
-                    <Badge variant="success" size="xs">
-                      {readiness}%
-                    </Badge>
-                  </div>
-                  <span className="text-[11px] text-slate-500 truncate block">
-                    {c.selectedCareer || 'Cloud & Distributed Systems'}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => openSubmitModal(c)}
-                  className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-semibold hover:bg-indigo-100 text-[11px] shrink-0"
+              return (
+                <div
+                  key={sid}
+                  className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 transition-colors flex items-center justify-between gap-2"
                 >
-                  Review
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-slate-900 truncate">
+                        {c.studentName || 'Student'}
+                      </span>
+                      <Badge variant="success" size="xs">
+                        {readiness}%
+                      </Badge>
+                    </div>
+                    <span className="text-[11px] text-slate-500 truncate block">
+                      {c.selectedCareer || 'Cloud & Distributed Systems'}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => openSubmitModal(c)}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-semibold hover:bg-indigo-100 text-[11px] shrink-0"
+                  >
+                    Review
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* 3. Past Feedback History */}

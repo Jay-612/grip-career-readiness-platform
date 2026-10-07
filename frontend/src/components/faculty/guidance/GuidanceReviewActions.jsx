@@ -4,6 +4,7 @@ import Button from '../../common/Button';
 
 export const GuidanceReviewActions = ({
   status = 'pending',
+  mainSection = 'student_questions',
   onApprove,
   onRequestRework,
   onAddComment,
@@ -16,6 +17,7 @@ export const GuidanceReviewActions = ({
   const [commentText, setCommentText] = useState('');
   const isCompleted = status === 'replied' || status === 'resolved';
   const isResolved = status === 'resolved';
+  const isStudentQuestions = mainSection === 'student_questions';
 
   const handleSendComment = (e) => {
     if (e) e.preventDefault();
@@ -42,32 +44,6 @@ export const GuidanceReviewActions = ({
             {showCommentInput ? 'Close Reply Box' : 'Reply / Advice'}
           </Button>
 
-          {/* Approve Completion */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onApprove}
-            isLoading={isApproving}
-            disabled={isApproving}
-            className="text-emerald-700 border-emerald-300 hover:bg-emerald-50"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
-            {isCompleted ? 'Verify Again' : 'Approve Completion'}
-          </Button>
-
-          {/* Request Rework */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onRequestRework}
-            className="text-amber-800 border-amber-300 hover:bg-amber-50"
-          >
-            <RotateCcw className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
-            Request Rework
-          </Button>
-
           {/* Resolve Inquiry */}
           {onResolve && !isResolved && (
             <Button
@@ -91,13 +67,17 @@ export const GuidanceReviewActions = ({
       {showCommentInput && (
         <form onSubmit={handleSendComment} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 animate-fadeIn">
           <label className="block text-[11px] font-semibold text-slate-700">
-            Faculty Mentorship Note
+            {isStudentQuestions ? 'Faculty Response & Advice' : 'Faculty Mentorship Note'}
           </label>
           <textarea
-            rows={2}
+            rows={3}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Type feedback or recommendations for this student..."
+            placeholder={
+              isStudentQuestions
+                ? 'Type your guidance, advice, or recommended next steps for this student...'
+                : 'Type review notes or feedback for this student submission...'
+            }
             className="w-full p-2.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600 transition"
             autoFocus
           />
@@ -121,7 +101,7 @@ export const GuidanceReviewActions = ({
               isLoading={isCommenting}
             >
               <Send className="w-3 h-3 mr-1" />
-              Post Note
+              {isStudentQuestions ? 'Send Reply / Advice' : 'Post Note'}
             </Button>
           </div>
         </form>

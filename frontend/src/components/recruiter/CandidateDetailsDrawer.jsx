@@ -6,10 +6,10 @@ import recruiterService from '../../services/recruiterService';
 export const CandidateDetailsDrawer = ({
   candidate = null,
   isOpen = false,
-  onClose = () => {},
+  onClose = () => { },
   isShortlisted = false,
-  onToggleShortlist = () => {},
-  onOpenFeedback = () => {},
+  onToggleShortlist = () => { },
+  onOpenFeedback = () => { },
 }) => {
   const [matchData, setMatchData] = useState(null);
   const [isLoadingMatch, setIsLoadingMatch] = useState(false);
@@ -70,11 +70,11 @@ export const CandidateDetailsDrawer = ({
             <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0">
               {candidate.studentName
                 ? candidate.studentName
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .slice(0, 2)
-                    .toUpperCase()
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
                 : 'ST'}
             </div>
             <div>
@@ -110,9 +110,8 @@ export const CandidateDetailsDrawer = ({
 
             <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  isReady ? 'bg-emerald-500' : isModerate ? 'bg-indigo-500' : 'bg-amber-500'
-                }`}
+                className={`h-full rounded-full transition-all duration-500 ${isReady ? 'bg-emerald-500' : isModerate ? 'bg-indigo-500' : 'bg-amber-500'
+                  }`}
                 style={{ width: `${Math.min(100, Math.max(5, readiness))}%` }}
               />
             </div>
@@ -196,9 +195,8 @@ export const CandidateDetailsDrawer = ({
                     </div>
                     <div className="text-right">
                       <span
-                        className={`font-bold font-mono text-xs ${
-                          match.isEligible ? 'text-emerald-700' : 'text-amber-700'
-                        }`}
+                        className={`font-bold font-mono text-xs ${match.isEligible ? 'text-emerald-700' : 'text-amber-700'
+                          }`}
                       >
                         {match.matchPercentage}%
                       </span>
@@ -217,11 +215,10 @@ export const CandidateDetailsDrawer = ({
         <div className="p-4 border-t border-slate-200 bg-slate-50/60 flex items-center justify-between gap-3">
           <button
             onClick={() => onToggleShortlist(candidate)}
-            className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${
-              isShortlisted
+            className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${isShortlisted
                 ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
                 : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
+              }`}
           >
             {isShortlisted ? (
               <>
@@ -238,10 +235,17 @@ export const CandidateDetailsDrawer = ({
 
           <button
             onClick={() => {
+              if (!isShortlisted) return;
               onClose();
               onOpenFeedback(candidate);
             }}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 transition-colors"
+            disabled={!isShortlisted}
+            title={isShortlisted ? 'Submit evaluation feedback' : 'Shortlist candidate first to submit evaluation'}
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+              isShortlisted
+                ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+            }`}
           >
             <Send className="w-3.5 h-3.5" />
             <span>Submit Feedback</span>

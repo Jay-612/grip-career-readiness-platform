@@ -76,7 +76,7 @@ export const InterviewEvaluationPage = () => {
   const [toastMessage, setToastMessage] = useState(null);
 
   // Remedial Plan Meta
-  const [planTitle, setPlanTitle] = useState('Remedial Action Plan: Mock Interview Follow-up');
+  const [planTitle, setPlanTitle] = useState('Action Plan: Mock Interview Follow-up');
   const [planSummary, setPlanSummary] = useState('');
   const [actionPlanTasks, setActionPlanTasks] = useState([]);
   const [hasManuallyEditedTasks, setHasManuallyEditedTasks] = useState(false);
@@ -134,8 +134,8 @@ export const InterviewEvaluationPage = () => {
       setIsTimerRunning(false);
       setTimerSeconds(0);
 
-      // If the target interview is already completed, set read-only
-      if (target?.status === 'completed') {
+      // If the target interview is already completed or cancelled, set read-only
+      if (target?.status === 'completed' || target?.status === 'cancelled') {
         setIsReadOnly(true);
       } else {
         setIsReadOnly(false);
@@ -370,6 +370,7 @@ export const InterviewEvaluationPage = () => {
         )
       );
       setToastMessage('Interview session cancelled and slot released.');
+      setIsReadOnly(true);
       setTimeout(() => setToastMessage(null), 4000);
       setIsCancelModalOpen(false);
     } catch (err) {
@@ -405,7 +406,10 @@ export const InterviewEvaluationPage = () => {
 
   const handleSubmitEvaluation = async () => {
     setSubmitError(null);
-    if (isReadOnly) return;
+    if (isReadOnly || currentInterview?.status === 'cancelled') {
+      setSubmitError('This mock interview is cancelled or already finalized. Evaluation cannot be submitted.');
+      return;
+    }
     if (!currentInterview?.id && !currentInterview?._id) {
       setSubmitError('No active interview session is selected.');
       return;
@@ -474,6 +478,10 @@ export const InterviewEvaluationPage = () => {
   // 5. ACTIONS: ASSIGN REMEDIAL PLAN (FROM TAB 2)
   // ─────────────────────────────────────────────────────────────
   const handleAssignRemedialPlan = async () => {
+    if (isReadOnly || currentInterview?.status === 'cancelled') {
+      setSubmitError('This mock interview is cancelled. Action plans cannot be assigned.');
+      return;
+    }
     setIsAssigningPlan(true);
     try {
       // Re-trigger submitEvaluation or update action plan
@@ -584,12 +592,26 @@ export const InterviewEvaluationPage = () => {
           </span>
         </div>
 
-        {isReadOnly && (
+        {currentInterview?.status === 'cancelled' ? (
+          <Badge variant="error" size="sm" dot>
+            Session Cancelled
+          </Badge>
+        ) : isReadOnly ? (
           <Badge variant="success" size="sm" dot>
             Evaluation Completed
           </Badge>
-        )}
+        ) : null}
       </div>
+
+      {/* Cancelled Warning Banner */}
+      {currentInterview?.status === 'cancelled' && (
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm font-semibold flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <span>
+            This mock interview was cancelled {currentInterview.cancelReason ? `(Reason: "${currentInterview.cancelReason}")` : '(Slot released)'}. Faculty evaluation scoring and action plans are disabled.
+          </span>
+        </div>
+      )}
 
       {/* ─────────────────────────────────────────────────────────────
           1. LIVE INTERVIEW HEADER
@@ -633,7 +655,7 @@ export const InterviewEvaluationPage = () => {
           }`}
         >
           <Target className="w-4 h-4" />
-          <span>Remedial Plan</span>
+          <span>Action Plan & Goals</span>
           {actionPlanTasks.length > 0 && (
             <span
               className={`px-1.5 py-0.2 text-[10px] font-bold rounded-full ${

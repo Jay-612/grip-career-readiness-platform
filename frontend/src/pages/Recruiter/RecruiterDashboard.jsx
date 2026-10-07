@@ -164,8 +164,15 @@ export const RecruiterDashboard = () => {
     setIsDrawerOpen(true);
   };
 
-  // Open Feedback Modal
+  // Open Feedback Modal (guarded to shortlisted candidates)
   const handleOpenFeedback = (cand) => {
+    if (!cand) return;
+    const sid = String(cand.studentId || cand.id || cand._id || '');
+    if (!shortlistedIds.has(sid)) {
+      setToastMessage('Candidate evaluation is only permitted for shortlisted candidates. Please add to shortlist first.');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
     setFeedbackCandidate(cand);
     setIsFeedbackOpen(true);
   };
@@ -194,6 +201,11 @@ export const RecruiterDashboard = () => {
   const recruiterName = profileData?.user?.name || user?.name || 'Recruiter';
   const minScore = companyDetails?.minimumMatchScore || 70;
   const reqSkills = companyDetails?.requiredSkills || ['Kafka', 'Docker', 'Kubernetes', 'Redis', 'System Design'];
+  const activeRole = companyDetails?.targetRole || 'Distributed Systems & Cloud Platform Engineer';
+  const eligibleDepts = companyDetails?.eligibleDepartments && companyDetails.eligibleDepartments.length > 0
+    ? companyDetails.eligibleDepartments
+    : ['Computer Science & Engineering', 'Information Technology'];
+  const cgpaCriteria = companyDetails?.cgpaCutoff ? `${companyDetails.cgpaCutoff}+ CGPA` : '7.5+ CGPA';
 
   const careerOptions = useMemo(() => {
     const set = new Set();
@@ -304,7 +316,7 @@ export const RecruiterDashboard = () => {
         companyName={companyName}
         designation={designation}
         recruiterName={recruiterName}
-        activeRole="Cloud Platform & Distributed Systems"
+        activeRole={activeRole}
         isVerified={Boolean(companyName)}
         shortlistCount={shortlistedIds.size}
         onOpenShortlist={() => setIsShortlistOpen(true)}
@@ -312,9 +324,9 @@ export const RecruiterDashboard = () => {
 
       {/* 2. Active Drive / Hiring Summary */}
       <ActiveDriveSummary
-        role="Distributed Systems & Cloud Platform Engineer"
-        departments={['Computer Science & Engineering', 'Information Technology']}
-        cgpaCriteria="7.5+ CGPA"
+        role={activeRole}
+        departments={eligibleDepts}
+        cgpaCriteria={cgpaCriteria}
         minimumMatchScore={minScore}
         requiredSkills={reqSkills}
         applicationCount={candidates.length}
@@ -459,7 +471,7 @@ export const RecruiterDashboard = () => {
           setFeedbackCandidate(null);
         }}
         candidate={feedbackCandidate}
-        candidatesList={candidates}
+        candidatesList={shortlistedList}
         onSubmit={handleSubmitFeedback}
         isSubmitting={isSubmittingFeedback}
       />

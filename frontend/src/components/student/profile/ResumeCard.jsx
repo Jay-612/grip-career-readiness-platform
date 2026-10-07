@@ -16,14 +16,12 @@ export const ResumeCard = ({
   onViewResume = () => {},
   onUploadResume = () => {},
 }) => {
-  const fileName = resume.fileName || 'Student_Verified_Resume.pdf';
+  const fileName = resume.fileName || 'Student_Resume.pdf';
   const uploadedAt = resume.uploadedAt || 'Recently updated';
   const fileSize = resume.fileSize || '240 KB';
-  const atsScore = resume.atsScore || 88;
-  const status = resume.status || 'Verified by Placement Cell';
 
   return (
-    <section className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-card" aria-label="Resume & ATS Readiness">
+    <section className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-card" aria-label="Student Resume">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Left: File icon & metadata */}
         <div className="flex items-start sm:items-center gap-3.5 min-w-0">
@@ -36,9 +34,6 @@ export const ResumeCard = ({
               <span className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate max-w-xs sm:max-w-md">
                 {fileName}
               </span>
-              <Badge variant="success" size="xs" dot>
-                {status}
-              </Badge>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
@@ -47,11 +42,6 @@ export const ResumeCard = ({
               <div className="flex items-center gap-1 text-[11px]">
                 <Clock className="w-3 h-3 text-slate-400" />
                 <span>Uploaded {uploadedAt}</span>
-              </div>
-              <span className="text-slate-300">•</span>
-              <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                <Sparkles className="w-3 h-3 text-emerald-600" />
-                <span>ATS Match: {atsScore}%</span>
               </div>
             </div>
           </div>

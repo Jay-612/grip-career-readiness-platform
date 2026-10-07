@@ -33,22 +33,32 @@ export const UploadResumeModal = ({
     }
 
     setIsProcessing(true);
-    setTimeout(() => {
+    const reader = new FileReader();
+
+    reader.onload = (uploadEvent) => {
+      const dataUrl = uploadEvent.target?.result || '';
       onSaveResume({
         fileName: selectedFile.name,
         fileSize: `${(selectedFile.size / 1024).toFixed(0)} KB`,
+        fileType: selectedFile.type,
+        fileUrl: dataUrl,
         uploadedAt: new Date().toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
         }),
-        atsScore: 91,
-        status: 'Verified by Placement Cell',
       });
       setIsProcessing(false);
       setSelectedFile(null);
       onClose();
-    }, 600);
+    };
+
+    reader.onerror = () => {
+      setError('Failed to read file. Please try again.');
+      setIsProcessing(false);
+    };
+
+    reader.readAsDataURL(selectedFile);
   };
 
   return (
@@ -56,7 +66,7 @@ export const UploadResumeModal = ({
       isOpen={isOpen}
       onClose={() => !isProcessing && onClose()}
       title="Upload / Replace Resume"
-      description="Upload your latest PDF resume for automated ATS parsing and placement verification."
+      description="Upload your latest PDF or Word document to view and attach it to your student profile."
       size="md"
     >
       <form onSubmit={handleUploadSubmit} className="space-y-4 pt-1">
@@ -102,10 +112,10 @@ export const UploadResumeModal = ({
 
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
           <span className="font-semibold text-slate-800 text-[11px] block">
-            Automated Placement Cell Verification
+            Resume Document Storage
           </span>
           <p className="text-[11px] leading-relaxed text-slate-500">
-            Resumes are indexed with standard ATS parsers to extract verified skills, project keywords, and graduation eligibility criteria for campus recruiters.
+            Uploaded resumes can be viewed inline, downloaded, or shared during campus placement evaluations.
           </p>
         </div>
 
@@ -125,7 +135,7 @@ export const UploadResumeModal = ({
             variant="primary"
             size="sm"
             isLoading={isProcessing}
-            loadingText="Uploading &amp; Parsing..."
+            loadingText="Uploading..."
             disabled={!selectedFile}
             leftIcon={<Upload className="w-3.5 h-3.5" />}
           >

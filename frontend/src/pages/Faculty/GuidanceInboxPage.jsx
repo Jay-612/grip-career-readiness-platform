@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import facultyService from '../../services/facultyService';
 import {
@@ -7,7 +8,6 @@ import {
   GuidanceFilters,
   GuidanceRequestList,
   GuidanceDetailsDrawer,
-  ReworkModal,
 } from '../../components/faculty/guidance';
 
 const GuidanceInboxPage = () => {
@@ -22,7 +22,6 @@ const GuidanceInboxPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Filter & Search
-  const [mainSection, setMainSection] = useState('student_questions'); // 'student_questions' | 'remedial_reviews'
   const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'inReview' | 'completed' | 'all'
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -37,10 +36,9 @@ const GuidanceInboxPage = () => {
   const [studentReadiness, setStudentReadiness] = useState(null);
 
   // Action states
-  const [isApproving, setIsApproving] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
   const [isCommenting, setIsCommenting] = useState(false);
-  const [isReworkModalOpen, setIsReworkModalOpen] = useState(false);
-  const [isSubmittingRework, setIsSubmittingRework] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
 
   // Responsive mobile drawer state
   const [showMobileDetail, setShowMobileDetail] = useState(false);
@@ -104,50 +102,31 @@ const GuidanceInboxPage = () => {
         const list = Array.isArray(res) ? res : res?.requests || [];
         setRequests(list);
 
-        const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-
-        // Check if route has an explicit request ID
-        if (routeRequestId) {
-          const matched = list.find((r) => r.id === routeRequestId);
-          if (matched) {
-            setSelectedRequestId(matched.id);
-            fetchSelectedDetail(matched.id);
+        const targetId = preserveSelectedId || routeRequestId;
+        if (targetId) {
+          const exists = list.some((r) => String(r.id || r._id) === String(targetId));
+          if (exists) {
+            setSelectedRequestId(targetId);
+            fetchSelectedDetail(targetId);
             setShowMobileDetail(true);
           } else {
-            // The route request ID is not present in accessible list!
-            // Do NOT auto-fetch to avoid 403
-            setSelectedRequestId(null);
-            setSelectedDetail(null);
-            setIsUnauthorizedRoute(true);
-            setShowMobileDetail(true);
+            setSelectedRequestId(targetId);
+            fetchSelectedDetail(targetId);
           }
-        } else if (preserveSelectedId) {
-          const matched = list.find((r) => r.id === preserveSelectedId);
-          if (matched) {
-            setSelectedRequestId(matched.id);
-            fetchSelectedDetail(matched.id);
-          } else if (isDesktop && list.length > 0) {
-            const firstPending = list.find((r) => r.status === 'pending') || list[0];
-            setSelectedRequestId(firstPending.id);
-            fetchSelectedDetail(firstPending.id);
-          }
-        } else if (isDesktop && list.length > 0) {
-          // On Desktop: auto-select first pending item if none selected
-          const firstPending = list.find((r) => r.status === 'pending') || list[0];
-          setSelectedRequestId(firstPending.id);
-          fetchSelectedDetail(firstPending.id);
-        } else {
-          setSelectedRequestId(null);
-          setSelectedDetail(null);
+        } else if (list.length > 0 && window.innerWidth >= 1024) {
+          const firstId = list[0].id || list[0]._id;
+          setSelectedRequestId(firstId);
+          fetchSelectedDetail(firstId);
         }
       } catch (err) {
-        console.error('Failed to load guidance requests:', err);
+        console.error('Error fetching guidance requests:', err);
         setListError(
           err.response?.data?.message ||
-            'Failed to load guidance inbox inquiries. Please check your network connection.'
+            'Unable to load student guidance requests. Please verify your connection.'
         );
       } finally {
         setIsLoadingList(false);
+        setIsRefreshing(false);
       }
     },
     [routeRequestId, fetchSelectedDetail]
@@ -157,62 +136,38 @@ const GuidanceInboxPage = () => {
     fetchRequests();
   }, [fetchRequests]);
 
-  // Handle manual refresh button
-  const handleRefresh = async () => {
+  const handleRefresh = () => {
     setIsRefreshing(true);
-    await fetchRequests(selectedRequestId);
-    setIsRefreshing(false);
+    fetchRequests(selectedRequestId);
   };
 
-  // ─── 3. Filter & Sort Logic ────────────────────────────────────
-  const isRemedialSubmission = (r) => {
-    const q = (r.question || '').toLowerCase();
-    const t = (r.topic || '').toLowerCase();
-    return (
-      q.includes('remedial') ||
-      q.includes('action plan') ||
-      t.includes('remedial') ||
-      t.includes('action plan') ||
-      q.includes('submission:')
-    );
-  };
-
+  // ─── 3. Filtering & Sorting ────────────────────────────────────
   const { filteredRequests, counts } = useMemo(() => {
-    // 1. Separate based on mainSection
-    const sectionRequests = requests.filter((r) => {
-      const isRemedial = isRemedialSubmission(r);
-      return mainSection === 'remedial_reviews' ? isRemedial : !isRemedial;
-    });
-
     let pendingCount = 0;
     let inReviewCount = 0;
     let completedCount = 0;
 
-    sectionRequests.forEach((r) => {
+    requests.forEach((r) => {
       const isPending = r.status === 'pending' || !r.replyCount;
-      const isApproved =
-        r.latestReply?.answerText?.includes('Approved') ||
-        (r.replies && r.replies.some((rep) => rep.answerText?.includes('Approved')));
+      const isCompleted = r.status === 'resolved' || r.status === 'replied';
 
       if (isPending) {
         pendingCount++;
-      } else if (isApproved || r.status === 'replied') {
+      } else if (isCompleted) {
         completedCount++;
       } else {
         inReviewCount++;
       }
     });
 
-    const filtered = sectionRequests.filter((item) => {
+    const filtered = requests.filter((item) => {
       const isPending = item.status === 'pending' || !item.replyCount;
-      const isApproved =
-        item.latestReply?.answerText?.includes('Approved') ||
-        (item.replies && item.replies.some((rep) => rep.answerText?.includes('Approved')));
+      const isCompleted = item.status === 'resolved' || item.status === 'replied';
 
       // Tab filtering
       if (activeTab === 'pending' && !isPending) return false;
-      if (activeTab === 'inReview' && (isPending || isApproved)) return false;
-      if (activeTab === 'completed' && !isApproved && item.status !== 'replied') return false;
+      if (activeTab === 'inReview' && (isPending || isCompleted)) return false;
+      if (activeTab === 'completed' && !isCompleted) return false;
 
       // Search query filtering
       if (searchQuery.trim()) {
@@ -244,10 +199,8 @@ const GuidanceInboxPage = () => {
       const dateB = new Date(b.date || b.createdAt || 0).getTime();
 
       if (aPending && bPending) {
-        // Oldest waiting first
         return dateA - dateB;
       }
-      // Most recently updated first
       return dateB - dateA;
     });
 
@@ -262,7 +215,7 @@ const GuidanceInboxPage = () => {
     };
   }, [requests, activeTab, searchQuery]);
 
-  // ─── 4. Handlers: Selection, Review Actions ────────────────────
+  // ─── 4. Handlers: Selection & Replies ──────────────────────────
   const handleSelectRequest = (id) => {
     setSelectedRequestId(id);
     setIsUnauthorizedRoute(false);
@@ -279,33 +232,29 @@ const GuidanceInboxPage = () => {
     navigate('/faculty/guidance', { replace: true });
   };
 
-  // Approve Flow
-  const handleApproveCompletion = async () => {
-    if (!selectedRequestId) return;
-    setIsApproving(true);
+  // Add Comment Flow (Reply / Advice to student question)
+  const handleAddComment = async (commentText) => {
+    if (!selectedRequestId || !commentText.trim()) return;
+    setIsCommenting(true);
     try {
-      const approvalMessage =
-        '✓ Task Completion Approved: Student evidence and remedial solution verified. Full readiness credit granted.';
-      await facultyService.replyGuidanceRequest(selectedRequestId, approvalMessage);
+      const res = await facultyService.replyGuidanceRequest(selectedRequestId, commentText.trim());
+      const replyData = res?.reply || {
+        id: `local-${Date.now()}`,
+        mentorId: user?.id,
+        mentorName: user?.name || 'Faculty Advisor',
+        answerText: commentText.trim(),
+        date: new Date().toISOString(),
+      };
 
-      // Optimistically update selectedDetail
       setSelectedDetail((prev) => {
         if (!prev) return prev;
-        const newReply = {
-          id: `local-${Date.now()}`,
-          mentorId: user?.id,
-          mentorName: user?.name || 'Faculty Advisor',
-          answerText: approvalMessage,
-          date: new Date().toISOString(),
-        };
         return {
           ...prev,
           status: 'replied',
-          replies: [...(prev.replies || []), newReply],
+          replies: [...(prev.replies || []), replyData],
         };
       });
 
-      // Update item in requests list
       setRequests((prev) =>
         prev.map((r) =>
           r.id === selectedRequestId
@@ -313,123 +262,19 @@ const GuidanceInboxPage = () => {
                 ...r,
                 status: 'replied',
                 replyCount: (r.replyCount || 0) + 1,
-                latestReply: {
-                  mentorName: user?.name || 'Faculty Advisor',
-                  answerText: approvalMessage,
-                },
-              }
-            : r
-        )
-      );
-    } catch (err) {
-      console.error('Failed to approve completion:', err);
-      alert(
-        err.response?.data?.message ||
-          'Failed to approve task completion. Please try again.'
-      );
-    } finally {
-      setIsApproving(false);
-    }
-  };
-
-  // Request Rework Flow
-  const handleOpenReworkModal = () => {
-    setIsReworkModalOpen(true);
-  };
-
-  const handleSubmitRework = async (reason) => {
-    if (!selectedRequestId || !reason.trim()) return;
-    setIsSubmittingRework(true);
-    try {
-      const reworkMessage = `⚠️ Rework Requested: ${reason.trim()}`;
-      await facultyService.replyGuidanceRequest(selectedRequestId, reworkMessage);
-
-      // Optimistically append reply
-      setSelectedDetail((prev) => {
-        if (!prev) return prev;
-        const newReply = {
-          id: `local-${Date.now()}`,
-          mentorId: user?.id,
-          mentorName: user?.name || 'Faculty Advisor',
-          answerText: reworkMessage,
-          date: new Date().toISOString(),
-        };
-        return {
-          ...prev,
-          status: 'in-review',
-          replies: [...(prev.replies || []), newReply],
-        };
-      });
-
-      // Update requests list
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.id === selectedRequestId
-            ? {
-                ...r,
-                status: 'in-review',
-                replyCount: (r.replyCount || 0) + 1,
-                latestReply: {
-                  mentorName: user?.name || 'Faculty Advisor',
-                  answerText: reworkMessage,
-                },
+                latestReply: replyData,
               }
             : r
         )
       );
 
-      setIsReworkModalOpen(false);
+      setToastMessage('Guidance advice posted successfully and delivered to student!');
+      setTimeout(() => setToastMessage(null), 4000);
+      fetchSelectedDetail(selectedRequestId);
     } catch (err) {
-      console.error('Failed to request rework:', err);
+      console.error('Failed to post advice:', err);
       alert(
-        err.response?.data?.message ||
-          'Failed to submit rework request. Please try again.'
-      );
-    } finally {
-      setIsSubmittingRework(false);
-    }
-  };
-
-  // Add Comment Flow
-  const handleAddComment = async (commentText) => {
-    if (!selectedRequestId || !commentText.trim()) return;
-    setIsCommenting(true);
-    try {
-      await facultyService.replyGuidanceRequest(selectedRequestId, commentText.trim());
-
-      setSelectedDetail((prev) => {
-        if (!prev) return prev;
-        const newReply = {
-          id: `local-${Date.now()}`,
-          mentorId: user?.id,
-          mentorName: user?.name || 'Faculty Advisor',
-          answerText: commentText.trim(),
-          date: new Date().toISOString(),
-        };
-        return {
-          ...prev,
-          replies: [...(prev.replies || []), newReply],
-        };
-      });
-
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.id === selectedRequestId
-            ? {
-                ...r,
-                replyCount: (r.replyCount || 0) + 1,
-                latestReply: {
-                  mentorName: user?.name || 'Faculty Advisor',
-                  answerText: commentText.trim(),
-                },
-              }
-            : r
-        )
-      );
-    } catch (err) {
-      console.error('Failed to post comment:', err);
-      alert(
-        err.response?.data?.message || 'Failed to post note. Please try again.'
+        err.response?.data?.message || 'Failed to post guidance response. Please try again.'
       );
     } finally {
       setIsCommenting(false);
@@ -437,7 +282,6 @@ const GuidanceInboxPage = () => {
   };
 
   // Resolve Flow
-  const [isResolving, setIsResolving] = useState(false);
   const handleResolveRequest = async () => {
     if (!selectedRequestId) return;
     setIsResolving(true);
@@ -462,6 +306,8 @@ const GuidanceInboxPage = () => {
             : r
         )
       );
+      setToastMessage('Guidance thread resolved!');
+      setTimeout(() => setToastMessage(null), 4000);
     } catch (err) {
       console.error('Failed to resolve guidance request:', err);
       alert(err.response?.data?.message || 'Failed to mark inquiry as resolved.');
@@ -472,6 +318,20 @@ const GuidanceInboxPage = () => {
 
   return (
     <div className="space-y-4 antialiased" data-purpose="faculty-guidance-inbox">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs animate-fadeIn"
+        >
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* 1. PAGE HEADER */}
       <GuidanceHeader
         totalCount={counts.all}
@@ -481,41 +341,6 @@ const GuidanceInboxPage = () => {
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
       />
-
-      {/* TOP-LEVEL TABS: [Student Questions] [Remedial Reviews] */}
-      <div className="border-b border-slate-200 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            setMainSection('student_questions');
-            setSelectedRequestId(null);
-            setSelectedDetail(null);
-          }}
-          className={`pb-3 px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
-            mainSection === 'student_questions'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <span>Student Questions</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setMainSection('remedial_reviews');
-            setSelectedRequestId(null);
-            setSelectedDetail(null);
-          }}
-          className={`pb-3 px-4 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
-            mainSection === 'remedial_reviews'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <span>Remedial Reviews</span>
-        </button>
-      </div>
 
       {/* 2. STATUS FILTERS */}
       <GuidanceFilters
@@ -537,7 +362,7 @@ const GuidanceInboxPage = () => {
         >
           <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
             <span className="font-semibold text-slate-700">
-              {filteredRequests.length} {filteredRequests.length === 1 ? 'Submission' : 'Submissions'}
+              {filteredRequests.length} {filteredRequests.length === 1 ? 'Inquiry' : 'Inquiries'}
             </span>
             <span className="text-[11px] text-slate-400">
               Sorted by: Priority & Time
@@ -568,26 +393,13 @@ const GuidanceInboxPage = () => {
             isUnauthorized={isUnauthorizedRoute}
             studentReadiness={studentReadiness}
             onCloseMobile={handleCloseMobile}
-            onApprove={handleApproveCompletion}
-            onRequestRework={handleOpenReworkModal}
             onAddComment={handleAddComment}
             onResolve={handleResolveRequest}
-            isApproving={isApproving}
             isCommenting={isCommenting}
             isResolving={isResolving}
           />
         </div>
       </div>
-
-      {/* REWORK MODAL */}
-      <ReworkModal
-        isOpen={isReworkModalOpen}
-        onClose={() => setIsReworkModalOpen(false)}
-        onSubmit={handleSubmitRework}
-        isSubmitting={isSubmittingRework}
-        studentName={selectedDetail?.studentName || 'Student'}
-        taskTitle={selectedDetail?.question?.slice(0, 40) || 'Task'}
-      />
     </div>
   );
 };

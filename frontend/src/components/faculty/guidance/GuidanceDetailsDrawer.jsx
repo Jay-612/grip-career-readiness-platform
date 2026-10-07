@@ -24,6 +24,7 @@ export const GuidanceDetailsDrawer = ({
   error = null,
   isUnauthorized = false,
   studentReadiness = null,
+  mainSection = 'student_questions',
   onCloseMobile,
   onApprove,
   onRequestRework,
@@ -108,9 +109,9 @@ export const GuidanceDetailsDrawer = ({
         <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center">
           <FileText className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-bold text-slate-900">No Submission Selected</h3>
+        <h3 className="text-base font-bold text-slate-900">No Inquiry Selected</h3>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          Choose a student remedial submission from the inbox to review their proof evidence, check code, and verify completion.
+          Choose a student question from the inbox to review their inquiry and provide mentorship guidance.
         </p>
       </div>
     );
@@ -220,7 +221,7 @@ export const GuidanceDetailsDrawer = ({
       <div className="space-y-2">
         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
           <FileText className="w-3.5 h-3.5 text-blue-600" />
-          <span>Student Submission & Proof Evidence</span>
+          <span>Student Inquiry & Question</span>
         </h4>
 
         <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
@@ -239,7 +240,7 @@ export const GuidanceDetailsDrawer = ({
           <div className="space-y-2.5">
             {detail.replies.map((reply, idx) => {
               const isRework = reply.answerText?.includes('Rework Requested');
-              const isApproved = reply.answerText?.includes('Approved');
+              const isApproved = reply.answerText?.includes('Approved') || reply.answerText?.includes('Verified');
               return (
                 <div
                   key={reply.id || idx}
@@ -273,6 +274,7 @@ export const GuidanceDetailsDrawer = ({
       {/* ================= E. REVIEW ACTIONS ================= */}
       <GuidanceReviewActions
         status={detail.status}
+        mainSection={mainSection}
         onApprove={onApprove}
         onRequestRework={onRequestRework}
         onAddComment={onAddComment}

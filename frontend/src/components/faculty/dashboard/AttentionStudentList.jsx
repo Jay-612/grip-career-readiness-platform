@@ -6,7 +6,7 @@ import Badge from '../../common/Badge';
 import Button from '../../common/Button';
 import EmptyState from '../../common/EmptyState';
 
-export const AttentionStudentList = ({ students = [] }) => {
+export const AttentionStudentList = ({ students = [], onReview }) => {
   return (
     <section
       className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 space-y-4 flex flex-col justify-between"
@@ -57,8 +57,13 @@ export const AttentionStudentList = ({ students = [] }) => {
               return (
                 <div
                   key={student.id || student.studentId}
-                  className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group hover:bg-slate-50/70 rounded-xl px-2 -mx-2 transition-colors"
+                  className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group hover:bg-slate-50/70 rounded-xl px-2 -mx-2 transition-colors cursor-pointer"
                   data-purpose="attention-student-item"
+                  onClick={() => {
+                    if (onReview) {
+                      onReview(student);
+                    }
+                  }}
                 >
                   {/* Left: Avatar & Details */}
                   <div className="flex items-start gap-2.5 min-w-0 flex-1">
@@ -84,17 +89,29 @@ export const AttentionStudentList = ({ students = [] }) => {
                   </div>
 
                   {/* Right: Quick Action [Review] */}
-                  <div className="shrink-0 self-start sm:self-center">
-                    <Link to={link}>
+                  <div className="shrink-0 self-start sm:self-center" onClick={(e) => e.stopPropagation()}>
+                    {onReview ? (
                       <Button
                         variant="outline"
                         size="sm"
                         rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
+                        onClick={() => onReview(student)}
                         className="text-xs py-1 px-3 h-auto group-hover:border-blue-300 group-hover:text-blue-600 cursor-pointer"
                       >
                         Review
                       </Button>
-                    </Link>
+                    ) : (
+                      <Link to={link}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
+                          className="text-xs py-1 px-3 h-auto group-hover:border-blue-300 group-hover:text-blue-600 cursor-pointer"
+                        >
+                          Review
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

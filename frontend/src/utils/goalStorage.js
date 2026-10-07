@@ -51,13 +51,10 @@ export const deleteGoalEnrichment = (goalId) => {
  * Infer default category if not explicitly specified
  */
 export const inferCategory = (goal) => {
-  if (goal.category && goal.category !== 'general') {
+  if (goal.category && goal.category !== 'general' && goal.category !== 'remedial') {
     return goal.category;
   }
   const title = (goal.title || '').toLowerCase();
-  if (goal.isRemedial || title.includes('remedial') || title.includes('action plan')) {
-    return 'Remedial';
-  }
   if (
     title.includes('react') ||
     title.includes('node') ||
@@ -90,7 +87,7 @@ export const inferCategory = (goal) => {
  */
 export const inferPriority = (goal, diffDays) => {
   if (goal.priority) return goal.priority;
-  if (diffDays < 0 || diffDays <= 2 || goal.isRemedial) {
+  if (diffDays < 0 || diffDays <= 2) {
     return 'High';
   }
   if (diffDays <= 7) {

@@ -110,9 +110,9 @@ export const PriorityTaskList = ({
                       <Badge variant={deadline.variant} size="xs">
                         {deadline.label}
                       </Badge>
-                      {isRemedial && (
-                        <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-amber-100 text-amber-900 border border-amber-300">
-                          Remedial Plan
+                      {(task.source === 'faculty' || task.source === 'action_plan') && (
+                        <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-blue-100 text-blue-900 border border-blue-300">
+                          Faculty Goal
                         </span>
                       )}
                     </div>

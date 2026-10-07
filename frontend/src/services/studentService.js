@@ -97,6 +97,12 @@ export const studentService = {
     const response = await apiClient.get(`/alumni/posts/${id}`);
     return response.data;
   },
+
+  // Get recruiter evaluations & review feedback for authenticated student
+  getRecruiterFeedback: async () => {
+    const response = await apiClient.get('/feedback');
+    return response.data?.feedbacks || [];
+  },
 };
 
 export const studentApi = studentService;

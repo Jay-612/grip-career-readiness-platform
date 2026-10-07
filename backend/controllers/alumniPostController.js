@@ -187,7 +187,7 @@ export const getPostById = async (req, res) => {
 export const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = (req.user?.id || req.user?._id || req.user?.userId || '').toString();
     const { title, content, tags } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -207,7 +207,8 @@ export const updatePost = async (req, res) => {
     }
 
     // Only the author can update
-    if (post.alumniId.toString() !== userId) {
+    const authorId = (post.alumniId?._id || post.alumniId || '').toString();
+    if (authorId !== userId) {
       return res.status(403).json({
         success: false,
         message: 'You can only update your own posts',
@@ -243,8 +244,8 @@ export const updatePost = async (req, res) => {
 export const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
-    const userRole = req.user.role;
+    const userId = (req.user?.id || req.user?._id || req.user?.userId || '').toString();
+    const userRole = (req.user?.role || '').toLowerCase();
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -263,7 +264,8 @@ export const deletePost = async (req, res) => {
     }
 
     // Only the author or an admin can delete
-    if (post.alumniId.toString() !== userId && userRole !== 'admin') {
+    const authorId = (post.alumniId?._id || post.alumniId || '').toString();
+    if (authorId !== userId && userRole !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'You can only delete your own posts',

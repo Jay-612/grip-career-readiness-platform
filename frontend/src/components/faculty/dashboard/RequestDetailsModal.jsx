@@ -1,5 +1,6 @@
-import React from 'react';
-import { Clock, Check, X, Calendar, MessageSquare, Video, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Clock, Check, X, Calendar, MessageSquare, Video, User, Send, ExternalLink } from 'lucide-react';
 import Modal from '../../common/Modal';
 import Button from '../../common/Button';
 import Avatar from '../../common/Avatar';
@@ -11,8 +12,19 @@ export const RequestDetailsModal = ({
   request,
   onAccept,
   onDecline,
+  onReplyGuidance,
   isAccepting = false,
+  isSubmittingReply = false,
 }) => {
+  const navigate = useNavigate();
+  const [replyText, setReplyText] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setReplyText('');
+    }
+  }, [isOpen, request?.id]);
+
   if (!isOpen || !request) return null;
 
   const studentName = request.studentName || request.student?.name || 'Student Candidate';
@@ -22,6 +34,13 @@ export const RequestDetailsModal = ({
   const dateText = request.date || request.dateTime || 'Scheduled Slot';
   const contextText = request.context || request.question || request.targetRole || 'No additional notes provided.';
 
+  const handleSendGuidance = () => {
+    if (!replyText.trim()) return;
+    if (onReplyGuidance) {
+      onReplyGuidance(request, replyText.trim());
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -29,7 +48,7 @@ export const RequestDetailsModal = ({
       title={
         <div className="flex items-center gap-2 text-slate-900">
           <Clock className="w-5 h-5 text-blue-600" />
-          <span>Request Details</span>
+          <span>{isInterview ? 'Interview Request Details' : 'Student Guidance Inquiry'}</span>
         </div>
       }
       maxWidth="max-w-md"
@@ -60,11 +79,43 @@ export const RequestDetailsModal = ({
 
         {/* Request Message / Context */}
         <div className="space-y-1.5">
-          <div className="text-xs font-semibold text-slate-700">Request Message / Objective</div>
-          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed font-normal">
+          <div className="text-xs font-semibold text-slate-700">
+            {isInterview ? 'Request Objective' : "Student's Guidance Question"}
+          </div>
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed font-normal">
             "{contextText}"
           </div>
         </div>
+
+        {/* Guidance Response Input (if guidance inquiry) */}
+        {!isInterview && (
+          <div className="space-y-1.5 pt-1">
+            <label className="text-xs font-semibold text-slate-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                <span>Your Guidance Response</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  navigate(`/faculty/guidance/${request.id}`);
+                }}
+                className="text-[11px] text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer font-normal"
+              >
+                <span>Open Full Thread</span>
+                <ExternalLink className="w-3 h-3" />
+              </button>
+            </label>
+            <textarea
+              rows={4}
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Type your guidance advice, roadmap, or answer for this student..."
+              className="w-full text-xs p-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all resize-none bg-white text-slate-900"
+            />
+          </div>
+        )}
 
         {/* Modal Actions */}
         <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
@@ -73,7 +124,7 @@ export const RequestDetailsModal = ({
             variant="outline"
             size="sm"
             onClick={onClose}
-            className="text-xs"
+            className="text-xs cursor-pointer"
           >
             Close
           </Button>
@@ -87,13 +138,13 @@ export const RequestDetailsModal = ({
                 onDecline(request);
                 onClose();
               }}
-              className="text-xs text-rose-600 hover:bg-rose-50 hover:border-rose-200"
+              className="text-xs text-rose-600 hover:bg-rose-50 hover:border-rose-200 cursor-pointer"
             >
-              Decline
+              {isInterview ? 'Decline' : 'Dismiss'}
             </Button>
           )}
 
-          {onAccept && (
+          {isInterview && onAccept && (
             <Button
               type="button"
               variant="primary"
@@ -103,9 +154,23 @@ export const RequestDetailsModal = ({
                 onAccept(request);
                 onClose();
               }}
-              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
             >
               {isAccepting ? 'Accepting...' : 'Accept & Confirm'}
+            </Button>
+          )}
+
+          {!isInterview && onReplyGuidance && (
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              disabled={isSubmittingReply || !replyText.trim()}
+              onClick={handleSendGuidance}
+              leftIcon={<Send className="w-3.5 h-3.5" />}
+              className="text-xs bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            >
+              {isSubmittingReply ? 'Sending...' : 'Send Guidance Response'}
             </Button>
           )}
         </div>

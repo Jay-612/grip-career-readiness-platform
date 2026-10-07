@@ -19,7 +19,7 @@ export const ADVICE_TEMPLATES = {
     taskTitle: 'Master Core Data Structures & Dynamic Programming',
     description:
       'Complete 10 LeetCode Medium problems on dynamic programming, graph traversals, and trees. Review Big-O space/time complexity and modular microservice boundaries.',
-    goalTitle: '[Action Plan: Mock Remedial] Master Core Data Structures & Dynamic Programming',
+    goalTitle: 'Master Core Data Structures & Dynamic Programming',
     domain: 'technical',
     category: 'technical',
     priority: 'high',
@@ -32,7 +32,7 @@ export const ADVICE_TEMPLATES = {
     taskTitle: 'Practice STAR Framework Articulation & Project Delivery',
     description:
       'Structure past project experiences into the STAR format (Situation, Task, Action, Result). Practice 5 mock behavioral responses articulating measurable technical impact.',
-    goalTitle: '[Action Plan: Mock Remedial] Practice STAR Framework Articulation & Project Delivery',
+    goalTitle: 'Practice STAR Framework Articulation & Project Delivery',
     domain: 'communication',
     category: 'communication',
     priority: 'high',
@@ -45,7 +45,7 @@ export const ADVICE_TEMPLATES = {
     taskTitle: 'Timed Mock Pressure Simulations & Composure Practice',
     description:
       'Conduct 2 timed mock interview dry-runs. Practice think-aloud debugging, deliberate pauses before responding, and receptive critique handling.',
-    goalTitle: '[Action Plan: Mock Remedial] Timed Mock Pressure Simulations & Composure Practice',
+    goalTitle: 'Timed Mock Pressure Simulations & Composure Practice',
     domain: 'confidence',
     category: 'confidence',
     priority: 'high',
@@ -150,19 +150,24 @@ export const previewActionPlan = ({ scores = {}, notes = {}, tasks = [] } = {}) 
 
   const resolvedTasks =
     Array.isArray(tasks) && tasks.length > 0
-      ? tasks.map((t) => ({
-          title: t.title || t.task || 'Action Plan Task',
-          category: t.category || t.domain || 'technical',
-          estimatedHours: Number(t.estimatedHours) || 5,
-          targetDate: t.targetDate || t.dueDate || new Date(Date.now() + 7 * 86400000),
-          task: t.task || t.description || t.title,
-          domain: t.domain || t.category || 'technical',
-          priority: t.priority || 'high',
-          goalTitle: t.goalTitle || (t.title?.startsWith('[Action Plan: Mock Remedial]') ? t.title : `[Action Plan: Mock Remedial] ${t.title || 'Task'}`),
-        }))
+      ? tasks.map((t) => {
+          const cleanTitle = (t.title || t.task || 'Action Plan Task')
+            .replace(/^\[Action Plan: Mock Remedial\]\s*/i, '')
+            .trim();
+          return {
+            title: cleanTitle,
+            category: t.category || t.domain || 'technical',
+            estimatedHours: Number(t.estimatedHours) || 5,
+            targetDate: t.targetDate || t.dueDate || new Date(Date.now() + 7 * 86400000),
+            task: t.task || t.description || cleanTitle,
+            domain: t.domain || t.category || 'technical',
+            priority: t.priority || 'high',
+            goalTitle: cleanTitle,
+          };
+        })
       : analysis.recommendedTasks;
 
-  const needsRemedial = resolvedTasks.length > 0;
+  const hasTasks = resolvedTasks.length > 0;
 
   return {
     ...analysis,
@@ -170,10 +175,10 @@ export const previewActionPlan = ({ scores = {}, notes = {}, tasks = [] } = {}) 
     recommendedTasks: resolvedTasks,
     facultyFeedback,
     evaluatorNotes: facultyFeedback,
-    status: needsRemedial ? 'assigned' : 'completed',
-    summaryMessage: needsRemedial
-      ? `Action Plan required: ${resolvedTasks.length} remedial task(s) scheduled for dispatch.`
-      : `Benchmark cleared: All domain scores meet or exceed ${REMEDIAL_THRESHOLD}/10. Student is placement-ready.`,
+    status: hasTasks ? 'assigned' : 'completed',
+    summaryMessage: hasTasks
+      ? `Action Plan ready: ${resolvedTasks.length} goal task(s) scheduled for student Goal Tracker.`
+      : `All domain scores meet or exceed ${REMEDIAL_THRESHOLD}/10. Student is placement-ready.`,
   };
 };
 
@@ -220,12 +225,9 @@ export const createAndAssignActionPlan = async ({
   let tasksToAssign = [];
   if (Array.isArray(tasks) && tasks.length > 0) {
     tasksToAssign = tasks.map((t) => {
-      const cleanTitle = (t.title || t.task || 'Remedial Task').trim();
-      const goalTitle =
-        t.goalTitle ||
-        (cleanTitle.startsWith('[Action Plan: Mock Remedial]')
-          ? cleanTitle
-          : `[Action Plan: Mock Remedial] ${cleanTitle}`);
+      const cleanTitle = (t.title || t.task || 'Action Plan Task')
+        .replace(/^\[Action Plan: Mock Remedial\]\s*/i, '')
+        .trim();
 
       const targetDate = t.targetDate
         ? new Date(t.targetDate)
@@ -233,17 +235,22 @@ export const createAndAssignActionPlan = async ({
         ? new Date(t.dueDate)
         : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
+      const rawCategory = (t.category || t.domain || 'technical').toLowerCase();
+      const validCategory = ['technical', 'communication', 'confidence', 'project', 'academic'].includes(rawCategory)
+        ? rawCategory
+        : 'technical';
+
       return {
         title: cleanTitle,
-        category: (t.category || t.domain || 'technical').toLowerCase(),
+        category: validCategory,
         estimatedHours: Number(t.estimatedHours) || 5,
         targetDate,
         assignedGoalId: null,
         task: t.task || t.description || cleanTitle,
-        domain: t.domain || t.category || 'technical',
+        domain: validCategory,
         priority: t.priority || 'high',
         dueDate: targetDate,
-        goalTitle,
+        goalTitle: cleanTitle,
       };
     });
   } else {
@@ -299,7 +306,9 @@ export const createAndAssignActionPlan = async ({
 
     for (let i = 0; i < actionPlan.tasks.length; i++) {
       const task = actionPlan.tasks[i];
-      const goalTitle = task.goalTitle || `[Action Plan: Mock Remedial] ${task.title}`;
+      const goalTitle = (task.goalTitle || task.title || 'Faculty Goal')
+        .replace(/^\[Action Plan: Mock Remedial\]\s*/i, '')
+        .trim();
 
       // Check if goal was already created for this action plan & task
       let goal = null;
@@ -308,16 +317,18 @@ export const createAndAssignActionPlan = async ({
       }
 
       if (!goal) {
+        const goalCategory = ['technical', 'communication', 'confidence', 'project', 'academic'].includes(task.category)
+          ? task.category
+          : 'technical';
+
         goal = await WeeklyGoal.create({
           studentId,
           title: goalTitle,
           status: 'pending',
           dueDate: task.targetDate || task.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          category: ['technical', 'communication', 'confidence', 'remedial'].includes(task.category)
-            ? task.category
-            : 'remedial',
-          isRemedial: true,
-          source: 'action_plan',
+          category: goalCategory,
+          isRemedial: false,
+          source: 'faculty',
           assignedBy: evaluatorId || null,
           interviewId: interviewId || null,
           actionPlanId: actionPlan._id,

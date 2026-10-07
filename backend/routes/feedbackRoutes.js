@@ -4,11 +4,11 @@ import { addRecruiterFeedback, getRecruiterFeedback } from '../controllers/feedb
 
 const router = express.Router();
 
-// GET /api/feedback — Recruiter or Admin retrieves submitted feedback history
+// GET /api/feedback — Recruiter, Admin, Placement Cell, or Student retrieves feedback history
 router.get(
   '/',
   protect,
-  authorize('recruiter', 'admin', 'placement cell', 'placement'),
+  authorize('student', 'recruiter', 'admin', 'placement cell', 'placement'),
   getRecruiterFeedback
 );
 

@@ -13,6 +13,8 @@ import {
   X,
   ArrowLeft,
   Users,
+  MapPin,
+  Globe,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import recruiterService from '../../services/recruiterService';
@@ -45,7 +47,7 @@ export const CompanyProfilePage = () => {
       const pData = await recruiterService.getProfile();
       setProfileData(pData);
 
-      const compName = pData?.profile?.companyName || 'TechCorp';
+      const compName = pData?.profile?.companyName || user?.companyName || 'TechCorp';
       try {
         const cData = await recruiterService.getCompanyByName(compName);
         if (cData) setCompanyData(cData);
@@ -76,16 +78,30 @@ export const CompanyProfilePage = () => {
       await recruiterService.updateProfile(userPayload);
 
       if (updateUser && userPayload.name) {
-        updateUser({ name: userPayload.name });
+        updateUser({ name: userPayload.name, companyName: userPayload.companyName });
       }
 
       // 2. Register/update company criteria
       const companyPayload = {
         companyName: formUpdates.companyName.trim(),
-        requiredSkills: formUpdates.requiredSkills,
+        oldCompanyName: formUpdates.oldCompanyName || profileData?.profile?.companyName || '',
+        description: formUpdates.description || '',
+        industry: formUpdates.industry || '',
+        location: formUpdates.location || '',
+        website: formUpdates.website || '',
+        targetRole: formUpdates.targetRole.trim(),
+        openPositions: Number(formUpdates.openPositions) || 1,
+        cgpaCutoff: formUpdates.cgpaCutoff || '7.5+ CGPA',
+        eligibleDepartments: formUpdates.eligibleDepartments || [],
+        eligibleBatch: formUpdates.eligibleBatch || '2026 Batch',
+        requiredSkills: formUpdates.requiredSkills || [],
+        preferredSkills: formUpdates.preferredSkills || [],
         minimumMatchScore: Number(formUpdates.minimumMatchScore) || 70,
+        isVerified: true,
       };
-      await recruiterService.addCompany(companyPayload);
+
+      const res = await recruiterService.addCompany(companyPayload);
+      const updatedComp = res?.company || companyPayload;
 
       // Refresh local state
       setProfileData((prev) => ({
@@ -93,9 +109,9 @@ export const CompanyProfilePage = () => {
         user: { ...prev?.user, name: userPayload.name },
         profile: { ...prev?.profile, ...userPayload },
       }));
-      setCompanyData(companyPayload);
+      setCompanyData(updatedComp);
 
-      setToastMessage('Company profile and hiring criteria updated successfully!');
+      setToastMessage('Company profile and campus hiring drive updated successfully!');
       setIsEditModalOpen(false);
       setTimeout(() => setToastMessage(null), 4000);
     } catch (err) {
@@ -107,12 +123,28 @@ export const CompanyProfilePage = () => {
   };
 
   const recruiterProfile = profileData?.profile || {};
-  const companyName = recruiterProfile.companyName || companyData?.companyName || 'TechCorp';
+  const companyName = companyData?.companyName || recruiterProfile.companyName || 'TechCorp';
   const designation = recruiterProfile.designation || 'Lead University Talent Partner';
-  const recruiterName = profileData?.user?.name || user?.name || 'Alex Rivera';
-  const recruiterEmail = profileData?.user?.email || user?.email || 'alex.rivera@techcorp.com';
-  const minScore = companyData?.minimumMatchScore || 70;
-  const reqSkills = companyData?.requiredSkills || ['Kafka', 'Docker', 'Kubernetes', 'Redis', 'Microservices', 'System Design'];
+  const recruiterName = profileData?.user?.name || user?.name || 'Campus Recruiter';
+  const recruiterEmail = profileData?.user?.email || user?.email || 'recruiter@company.com';
+  const targetRole = companyData?.targetRole || 'Distributed Systems & Cloud Platform Engineer';
+  const openPositions = companyData?.openPositions !== undefined ? companyData.openPositions : 15;
+  const driveDescription = companyData?.description || 'Full-time Graduate / Tier-1 Campus Placement';
+  const cgpaCutoff = companyData?.cgpaCutoff || '7.5 / 10.0';
+  const eligibleDepartments = Array.isArray(companyData?.eligibleDepartments) && companyData.eligibleDepartments.length > 0
+    ? companyData.eligibleDepartments
+    : ['Computer Science & Engineering', 'Information Technology'];
+  const eligibleBatch = companyData?.eligibleBatch || '2026 Batch';
+  const minScore = companyData?.minimumMatchScore !== undefined ? companyData.minimumMatchScore : 70;
+  const reqSkills = Array.isArray(companyData?.requiredSkills) && companyData.requiredSkills.length > 0
+    ? companyData.requiredSkills
+    : ['Kafka', 'Docker', 'Kubernetes', 'Redis', 'Microservices', 'System Design'];
+  const prefSkills = Array.isArray(companyData?.preferredSkills) && companyData.preferredSkills.length > 0
+    ? companyData.preferredSkills
+    : ['Go', 'AWS Lambda', 'GraphQL', 'Linux Kernel'];
+  const industry = companyData?.industry || 'Technology & Cloud Infrastructure';
+  const location = companyData?.location || 'Bengaluru, India';
+  const website = companyData?.website || '';
 
   if (isLoading) {
     return (
@@ -137,10 +169,10 @@ export const CompanyProfilePage = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-12">
+    <div className="space-y-6 max-w-4xl mx-auto pb-12 antialiased" data-purpose="recruiter-company-page">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl border border-slate-800 animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl border border-slate-800 animate-fadeIn">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span className="text-xs font-semibold">{toastMessage}</span>
           <button
@@ -156,10 +188,18 @@ export const CompanyProfilePage = () => {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/recruiter/dashboard')}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Candidate Workspace</span>
+        </button>
+
+        <button
+          onClick={() => setIsEditModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-xs cursor-pointer"
+        >
+          <Edit3 className="w-3.5 h-3.5" />
+          <span>Edit Company &amp; Drive</span>
         </button>
       </div>
 
@@ -173,7 +213,7 @@ export const CompanyProfilePage = () => {
         onEdit={() => setIsEditModalOpen(true)}
       />
 
-      {/* 2. Active Hiring Role / Drive Overview */}
+      {/* 2. Active Hiring Role / Drive Overview (DYNAMIC) */}
       <section className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
@@ -198,10 +238,10 @@ export const CompanyProfilePage = () => {
               Primary Role Title
             </span>
             <span className="font-bold text-slate-900 block text-sm">
-              Distributed Systems &amp; Cloud Platform Engineer
+              {targetRole}
             </span>
             <span className="text-[11px] text-slate-500 block">
-              Full-time Graduate / Tier-1 Campus Placement
+              {driveDescription}
             </span>
           </div>
 
@@ -209,17 +249,46 @@ export const CompanyProfilePage = () => {
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Target Openings
             </span>
-            <span className="font-bold text-slate-900 block text-sm font-mono">
-              15 Positions
+            <span className="font-bold text-slate-900 block text-sm font-mono text-indigo-600">
+              {openPositions} Positions
             </span>
             <span className="text-[11px] text-slate-500 block">
-              Allocated for 2026 Graduating Class
+              Allocated for {eligibleBatch}
             </span>
           </div>
         </div>
+
+        {/* Corporate Metadata: Location, Industry, Website */}
+        {(industry || location || website) && (
+          <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-4 text-xs text-slate-600">
+            {industry && (
+              <span className="flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                <span>Sector: <strong>{industry}</strong></span>
+              </span>
+            )}
+            {location && (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                <span>Location: <strong>{location}</strong></span>
+              </span>
+            )}
+            {website && (
+              <a
+                href={website.startsWith('http') ? website : `https://${website}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 text-indigo-600 hover:underline font-medium"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{website}</span>
+              </a>
+            )}
+          </div>
+        )}
       </section>
 
-      {/* 3. Eligibility Criteria */}
+      {/* 3. Eligibility Criteria (DYNAMIC) */}
       <section className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
         <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
           <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
@@ -236,24 +305,26 @@ export const CompanyProfilePage = () => {
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Minimum CGPA
             </span>
-            <span className="font-bold text-slate-900 block">7.5 / 10.0</span>
-            <span className="text-[10px] text-slate-400 block">No active backlogs</span>
+            <span className="font-bold text-slate-900 block">{cgpaCutoff}</span>
+            <span className="text-[10px] text-slate-400 block">Academic eligibility</span>
           </div>
 
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Departments
             </span>
-            <span className="font-bold text-slate-900 block truncate">CSE &amp; IT</span>
-            <span className="text-[10px] text-slate-400 block">B.Tech / B.E.</span>
+            <span className="font-bold text-slate-900 block truncate" title={eligibleDepartments.join(', ')}>
+              {eligibleDepartments.join(' & ')}
+            </span>
+            <span className="text-[10px] text-slate-400 block">Eligible streams</span>
           </div>
 
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Eligible Batches
             </span>
-            <span className="font-bold text-slate-900 block">2026 Batch</span>
-            <span className="text-[10px] text-slate-400 block">Semester 6 &amp; 7</span>
+            <span className="font-bold text-slate-900 block">{eligibleBatch}</span>
+            <span className="text-[10px] text-slate-400 block">Target graduating class</span>
           </div>
 
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-0.5">
@@ -266,7 +337,7 @@ export const CompanyProfilePage = () => {
         </div>
       </section>
 
-      {/* 4. Skill Requirements */}
+      {/* 4. Skill Requirements (DYNAMIC) */}
       <section className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
@@ -281,7 +352,7 @@ export const CompanyProfilePage = () => {
 
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1"
+            className="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer"
           >
             <Edit3 className="w-3.5 h-3.5" />
             <span>Update Skills</span>
@@ -291,7 +362,7 @@ export const CompanyProfilePage = () => {
         <div className="space-y-3">
           <div>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-              Mandatory Skills
+              Mandatory Skills ({reqSkills.length})
             </span>
             <div className="flex flex-wrap gap-1.5">
               {reqSkills.map((skill) => (
@@ -305,21 +376,23 @@ export const CompanyProfilePage = () => {
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-              Preferred Electives
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {['Go', 'AWS Lambda', 'GraphQL', 'Linux Kernel'].map((skill) => (
-                <span
-                  key={skill}
-                  className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium"
-                >
-                  {skill}
-                </span>
-              ))}
+          {prefSkills.length > 0 && (
+            <div className="pt-2 border-t border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                Preferred Electives ({prefSkills.length})
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {prefSkills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -331,8 +404,18 @@ export const CompanyProfilePage = () => {
           companyName,
           designation,
           name: recruiterName,
+          industry,
+          location,
+          website,
+          targetRole,
+          openPositions,
+          description: driveDescription,
+          cgpaCutoff,
+          eligibleDepartments,
+          eligibleBatch,
           minimumMatchScore: minScore,
           requiredSkills: reqSkills,
+          preferredSkills: prefSkills,
         }}
         onSave={handleSaveCompany}
         isSaving={isSaving}

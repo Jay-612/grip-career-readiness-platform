@@ -69,7 +69,7 @@ export const RemedialTaskModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={taskToEdit ? 'Edit Remedial Task' : 'Add Remedial Task'}
+      title={taskToEdit ? 'Edit Action Plan Task' : 'Add Action Plan Task'}
       maxWidth="max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
@@ -106,7 +106,7 @@ export const RemedialTaskModal = ({
               <option value="technical">Technical</option>
               <option value="communication">Communication</option>
               <option value="confidence">Problem Solving / Poise</option>
-              <option value="remedial">Remedial Sprint</option>
+              <option value="project">Project / Portfolio</option>
             </select>
           </div>
 
