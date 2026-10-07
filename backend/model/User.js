@@ -25,6 +25,16 @@ const userSchema = new mongoose.Schema(
       default: 'student',
       index: true, // Key index for role filtering (leaderboards, faculty roster, student lookup)
     },
+    company: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    companyName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
   },
   {
     timestamps: true,

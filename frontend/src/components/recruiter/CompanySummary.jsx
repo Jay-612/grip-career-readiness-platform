@@ -45,13 +45,15 @@ export const CompanySummary = ({
           </div>
         </div>
 
-        <button
-          onClick={onEdit}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors self-start sm:self-center"
-        >
-          <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-          <span>Edit Company &amp; Drive</span>
-        </button>
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-xs cursor-pointer self-start sm:self-center"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit Company &amp; Drive</span>
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">

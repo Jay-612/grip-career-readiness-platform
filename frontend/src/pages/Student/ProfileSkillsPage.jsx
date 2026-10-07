@@ -322,7 +322,6 @@ export const ProfileSkillsPage = () => {
         user={profileData.user}
         profile={profileData.profile}
         bio={profileExtra.bio}
-        onEdit={() => setIsEditModalOpen(true)}
       />
 
       {/* ─────────────────────────────────────────────────────────────

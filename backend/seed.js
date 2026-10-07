@@ -36,17 +36,21 @@ const DEFAULT_PASSWORD = 'Grip@123';
 /**
  * Reusable helper to upsert a User document idempotently.
  */
-async function seedUser({ name, email, role, hashedPassword }) {
+async function seedUser({ name, email, role, hashedPassword, company, companyName }) {
   const normalizedEmail = email.toLowerCase().trim();
+  const setObj = {
+    name,
+    email: normalizedEmail,
+    role,
+    password: hashedPassword,
+  };
+  if (company !== undefined) setObj.company = company;
+  if (companyName !== undefined) setObj.companyName = companyName;
+
   const user = await User.findOneAndUpdate(
     { email: normalizedEmail },
     {
-      $set: {
-        name,
-        email: normalizedEmail,
-        role,
-        password: hashedPassword,
-      },
+      $set: setObj,
     },
     {
       returnDocument: 'after',
@@ -122,8 +126,17 @@ async function runSeed() {
           $set: {
             studentId: user._id,
             semester: item.semester,
+            department: 'Computer Science & Engineering',
             selectedCareer: item.selectedCareer,
             readinessScore: item.readinessScore,
+            careerHistory: [
+              {
+                career: item.selectedCareer,
+                date: subDays(30),
+                source: 'initial',
+              },
+            ],
+            readinessQuizCompletedAt: subDays(30),
           },
         },
         {
@@ -145,22 +158,46 @@ async function runSeed() {
         name: 'Ankit P Vaishanav',
         email: 'ankit@gmail.com',
         employeeId: 'FAC001',
-        department: 'Computer Engineering',
+        department: 'Computer Science & Engineering',
         isHOD: false,
+        designation: 'Associate Professor & Systems Lead',
+        phone: '+91 94280 11223',
+        cabinNumber: 'Lab Block 3, Room 304',
+        officeHours: 'Mon & Wed, 2:00 PM - 4:30 PM',
+        bio: 'Passionate educator focusing on distributed systems, Linux kernel architecture, and backend microservices design.',
+        specialization: ['Distributed Systems', 'Backend Architecture', 'Database Engineering'],
+        education: 'Ph.D. in Computer Science & Engineering',
+        researchInterests: ['High-Performance Distributed Databases', 'Cache Invalidation Strategies', 'Cloud Microservices'],
       },
       {
         name: 'Hariom A Pandya',
         email: 'hariom@gmail.com',
         employeeId: 'FAC002',
-        department: 'Computer Engineering',
+        department: 'Computer Science & Engineering',
         isHOD: false,
+        designation: 'Assistant Professor',
+        phone: '+91 94280 22334',
+        cabinNumber: 'Academic Block 2, Room 210',
+        officeHours: 'Tue & Thu, 11:00 AM - 1:00 PM',
+        bio: 'Dedicated faculty mentor specializing in Data Structures, Algorithms, and Software Engineering methodologies.',
+        specialization: ['Algorithms & Complexity', 'Software Engineering', 'System Modeling'],
+        education: 'M.Tech in Software Engineering',
+        researchInterests: ['Algorithm Optimization', 'Formal Verification', 'Software Design Patterns'],
       },
       {
         name: 'Apurav A Mehta',
         email: 'apurav@gmail.com',
         employeeId: 'FAC003',
-        department: 'Computer Engineering',
+        department: 'Computer Science & Engineering',
         isHOD: false,
+        designation: 'Assistant Professor',
+        phone: '+91 94280 33445',
+        cabinNumber: 'Academic Block 2, Room 215',
+        officeHours: 'Wed & Fri, 3:00 PM - 5:00 PM',
+        bio: 'Specialist in full-stack web architectures, reactive programming paradigms, and modern frontend ecosystems.',
+        specialization: ['Full Stack Web Architecture', 'UI/UX Engineering', 'API Design'],
+        education: 'M.Tech in Computer Engineering',
+        researchInterests: ['Modern Reactive Frameworks', 'Web Performance Optimization', 'Distributed Client Caching'],
       },
     ];
 
@@ -181,6 +218,14 @@ async function runSeed() {
             employeeId: item.employeeId,
             department: item.department,
             isHOD: item.isHOD,
+            designation: item.designation,
+            phone: item.phone,
+            cabinNumber: item.cabinNumber,
+            officeHours: item.officeHours,
+            bio: item.bio,
+            specialization: item.specialization,
+            education: item.education,
+            researchInterests: item.researchInterests,
           },
         },
         {
@@ -201,8 +246,16 @@ async function runSeed() {
       name: 'CKB',
       email: 'ckb@gmail.com',
       employeeId: 'HOD001',
-      department: 'Computer Engineering',
+      department: 'Computer Science & Engineering',
       isHOD: true,
+      designation: 'Professor & Head of Department',
+      phone: '+91 94280 99999',
+      cabinNumber: 'Admin Block, HOD Cabin 101',
+      officeHours: 'Mon to Fri, 10:00 AM - 12:00 PM',
+      bio: 'Head of Computer Science & Engineering department, championing industry-aligned curriculum and placement readiness.',
+      specialization: ['Computer Systems & Networks', 'Higher Education Leadership', 'Curriculum Innovation'],
+      education: 'Ph.D. in Computer Science',
+      researchInterests: ['Next-Gen Computer Networks', 'Pedagogy in Technical Education', 'Industry-Academia Collaboration'],
     };
 
     const hodUser = await seedUser({
@@ -220,6 +273,14 @@ async function runSeed() {
           employeeId: hodItem.employeeId,
           department: hodItem.department,
           isHOD: hodItem.isHOD,
+          designation: hodItem.designation,
+          phone: hodItem.phone,
+          cabinNumber: hodItem.cabinNumber,
+          officeHours: hodItem.officeHours,
+          bio: hodItem.bio,
+          specialization: hodItem.specialization,
+          education: hodItem.education,
+          researchInterests: hodItem.researchInterests,
         },
       },
       {
@@ -240,7 +301,16 @@ async function runSeed() {
         email: 'murtaza@gmail.com',
         graduationYear: 2022,
         currentCompany: 'Amazon',
-        jobRole: 'Software Development Engineer',
+        jobRole: 'Software Development Engineer II',
+        department: 'Computer Science & Engineering',
+        location: 'Seattle / Hyderabad',
+        phone: '+91 91234 56789',
+        bio: 'SDE II at Amazon working on large-scale distributed logistics and AWS cloud integrations. Happy to help with SDE interviews and system design.',
+        linkedinUrl: 'https://linkedin.com/in/murtazamister',
+        githubUrl: 'https://github.com/murtazamister',
+        skills: ['AWS', 'Distributed Systems', 'Java', 'DynamoDB', 'System Design'],
+        mentorshipTopics: ['Amazon SDE Interview Prep', 'System Design Basics', 'Resume Structuring'],
+        isAvailableForMentorship: true,
       },
       {
         name: 'Om Soni',
@@ -248,6 +318,15 @@ async function runSeed() {
         graduationYear: 2023,
         currentCompany: 'Microsoft',
         jobRole: 'Backend Engineer',
+        department: 'Computer Science & Engineering',
+        location: 'Bengaluru, India',
+        phone: '+91 91234 56790',
+        bio: 'Backend Engineer at Microsoft building Azure cloud microservices. Eager to guide students on DSA problem solving and low-level design.',
+        linkedinUrl: 'https://linkedin.com/in/omsoni',
+        githubUrl: 'https://github.com/omsoni',
+        skills: ['C++', 'Azure', 'Microservices', 'Kubernetes', 'DSA'],
+        mentorshipTopics: ['Microsoft On-Campus Drives', 'Competitive Programming & DSA', 'Object-Oriented Design'],
+        isAvailableForMentorship: true,
       },
       {
         name: 'Manav Mistry',
@@ -255,6 +334,15 @@ async function runSeed() {
         graduationYear: 2023,
         currentCompany: 'Atlassian',
         jobRole: 'Full Stack Engineer',
+        department: 'Computer Science & Engineering',
+        location: 'Bengaluru, India',
+        phone: '+91 91234 56791',
+        bio: 'Full Stack Engineer at Atlassian working on Jira cloud collaboration tools. Open for mock interviews and portfolio reviews.',
+        linkedinUrl: 'https://linkedin.com/in/manavmistry',
+        githubUrl: 'https://github.com/manavmistry',
+        skills: ['React', 'TypeScript', 'Node.js', 'GraphQL', 'Docker'],
+        mentorshipTopics: ['Full Stack Development', 'Frontend Architecture', 'Behavioral STAR Rounds'],
+        isAvailableForMentorship: true,
       },
     ];
 
@@ -275,6 +363,15 @@ async function runSeed() {
             graduationYear: item.graduationYear,
             currentCompany: item.currentCompany,
             jobRole: item.jobRole,
+            department: item.department,
+            location: item.location,
+            phone: item.phone,
+            bio: item.bio,
+            linkedinUrl: item.linkedinUrl,
+            githubUrl: item.githubUrl,
+            skills: item.skills,
+            mentorshipTopics: item.mentorshipTopics,
+            isAvailableForMentorship: item.isAvailableForMentorship,
           },
         },
         {
@@ -296,13 +393,29 @@ async function runSeed() {
         name: 'Elon Musk',
         email: 'elon@gmail.com',
         companyName: 'Tesla',
-        designation: 'Recruiter',
+        designation: 'Director of University Talent Acquisition',
+        phone: '+91 98765 43210',
+        location: 'Bengaluru, India',
+        bio: 'Leading campus recruitment drives for distributed systems, autonomous platform engineering, and embedded software.',
+        websiteUrl: 'https://tesla.com/careers',
+        linkedinUrl: 'https://linkedin.com/in/elon-musk-recruiting',
+        hiringDomains: ['Autonomous Systems', 'Cloud Infrastructure', 'Embedded Software', 'Distributed Systems'],
+        hiringRoles: ['Distributed Systems & Cloud Platform Engineer', 'Firmware Engineer', 'Autonomous Platform SDE'],
+        experienceYears: 12,
       },
       {
         name: 'Mukesh Ambani',
         email: 'mukesh@gmail.com',
         companyName: 'Reliance Industries',
-        designation: 'Recruiter',
+        designation: 'Head of Campus Talent & University Relations',
+        phone: '+91 98220 12345',
+        location: 'Mumbai, India',
+        bio: 'Focusing on high-potential engineering graduates for Jio 5G platforms, cloud retail backends, and digital ecosystems.',
+        websiteUrl: 'https://ril.com/careers',
+        linkedinUrl: 'https://linkedin.com/in/mukesh-ambani-talent',
+        hiringDomains: ['Telecommunications & 5G', 'Digital Platforms', 'Enterprise Cloud', 'Retail Tech'],
+        hiringRoles: ['Full Stack Cloud Engineer', 'Cloud Infrastructure Associate', 'Software Development Engineer'],
+        experienceYears: 15,
       },
     ];
 
@@ -313,6 +426,8 @@ async function runSeed() {
         email: item.email,
         role: 'recruiter',
         hashedPassword,
+        company: item.companyName,
+        companyName: item.companyName,
       });
 
       await RecruiterProfile.findOneAndUpdate(
@@ -322,6 +437,14 @@ async function runSeed() {
             recruiterId: user._id,
             companyName: item.companyName,
             designation: item.designation,
+            phone: item.phone,
+            location: item.location,
+            bio: item.bio,
+            websiteUrl: item.websiteUrl,
+            linkedinUrl: item.linkedinUrl,
+            hiringDomains: item.hiringDomains,
+            hiringRoles: item.hiringRoles,
+            experienceYears: item.experienceYears,
           },
         },
         {
@@ -334,6 +457,31 @@ async function runSeed() {
 
       console.log(`[recruiter] ${user.name} (${user.email})`);
       recruiterMap.set(item.email, user);
+    }
+
+    // 6. Administrators
+    console.log('\nSeeding Administrators...');
+    const adminData = [
+      {
+        name: 'Campus Administrator',
+        email: 'admin@campus.edu',
+      },
+      {
+        name: 'Institutional Admin',
+        email: 'admin@gmail.com',
+      },
+    ];
+
+    const adminMap = new Map();
+    for (const item of adminData) {
+      const user = await seedUser({
+        name: item.name,
+        email: item.email,
+        role: 'admin',
+        hashedPassword,
+      });
+      console.log(`[admin] ${user.name} (${user.email})`);
+      adminMap.set(item.email, user);
     }
 
     // ─────────────────────────────────────────────
@@ -473,18 +621,24 @@ async function runSeed() {
         title: 'Complete Redis caching module',
         status: 'in-progress',
         dueDate: addDays(5),
+        category: 'technical',
+        source: 'self',
       },
       {
         studentId: jayUser._id,
         title: 'Practice 10 DSA graph problems',
         status: 'pending',
         dueDate: addDays(7),
+        category: 'technical',
+        source: 'self',
       },
       {
         studentId: jayUser._id,
         title: 'Complete Node.js API assignment',
         status: 'completed',
         dueDate: subDays(2),
+        category: 'academic',
+        source: 'self',
       },
       // TANISH
       {
@@ -492,18 +646,24 @@ async function runSeed() {
         title: 'Complete system design notes',
         status: 'in-progress',
         dueDate: addDays(4),
+        category: 'technical',
+        source: 'self',
       },
       {
         studentId: tanishUser._id,
         title: 'Revise operating system concepts',
         status: 'pending',
         dueDate: addDays(6),
+        category: 'academic',
+        source: 'self',
       },
       {
         studentId: tanishUser._id,
         title: 'Finish database mini project',
         status: 'completed',
         dueDate: subDays(1),
+        category: 'project',
+        source: 'self',
       },
       // PREET
       {
@@ -511,18 +671,24 @@ async function runSeed() {
         title: 'Build React dashboard module',
         status: 'in-progress',
         dueDate: addDays(3),
+        category: 'project',
+        source: 'self',
       },
       {
         studentId: preetUser._id,
         title: 'Practice JavaScript interview questions',
         status: 'pending',
         dueDate: addDays(8),
+        category: 'technical',
+        source: 'self',
       },
       {
         studentId: preetUser._id,
         title: 'Complete Git and GitHub exercises',
         status: 'completed',
         dueDate: subDays(3),
+        category: 'technical',
+        source: 'self',
       },
     ];
 
@@ -536,6 +702,9 @@ async function runSeed() {
             title: item.title,
             status: item.status,
             dueDate: item.dueDate,
+            category: item.category || 'general',
+            source: item.source || 'self',
+            isRemedial: false,
           },
         },
         {
@@ -875,33 +1044,45 @@ async function runSeed() {
     const actionPlansData = [
       {
         studentId: jayUser._id,
+        interviewId: null,
         weakSkill: 'System Design',
+        weakSkills: ['System Design', 'Microservices Architecture'],
         recommendedTask:
           'Complete two system design case studies and revise caching/load balancing.',
         facultyFeedback:
           'Strong API skills, focus on horizontal scaling, Redis caching, and rate limiting patterns.',
         evaluatorId: ankitFaculty._id,
         status: 'assigned',
+        domainScores: { technical: 7, communication: 8, confidence: 7 },
+        taskCategory: 'technical',
       },
       {
         studentId: tanishUser._id,
+        interviewId: tanishCompletedInterview ? tanishCompletedInterview._id : null,
         weakSkill: 'Database Optimization',
+        weakSkills: ['Database Optimization', 'Query Tuning', 'Indexing Tradeoffs'],
         recommendedTask:
           'Practice indexing, query optimization and transaction concepts.',
         facultyFeedback:
           'Revise indexing trade-offs, explain plans, and ACID transaction guarantees.',
         evaluatorId: hariomFaculty._id,
         status: 'assigned',
+        domainScores: { technical: 6, communication: 7, confidence: 8 },
+        taskCategory: 'technical',
       },
       {
         studentId: preetUser._id,
+        interviewId: null,
         weakSkill: 'JavaScript',
+        weakSkills: ['JavaScript', 'Async Programming', 'Event Loop'],
         recommendedTask:
           'Practice closures, promises, async/await and event loop questions.',
         facultyFeedback:
           'Solid React styling, practice event-loop microtasks and closure mechanics.',
         evaluatorId: apuravFaculty._id,
         status: 'assigned',
+        domainScores: { technical: 6, communication: 8, confidence: 7 },
+        taskCategory: 'technical',
       },
     ];
 
@@ -916,36 +1097,79 @@ async function runSeed() {
       if (!plan) {
         plan = new ActionPlan({
           studentId: item.studentId,
+          interviewId: item.interviewId || null,
+          evaluatorId: item.evaluatorId,
+          domainScores: item.domainScores,
           weakSkill: item.weakSkill,
-          weakSkills: [item.weakSkill],
+          weakSkills: item.weakSkills,
           recommendedTask: item.recommendedTask,
           facultyFeedback: item.facultyFeedback,
           evaluatorNotes: item.facultyFeedback,
-          evaluatorId: item.evaluatorId,
           status: item.status,
           tasks: [
             {
               title: item.recommendedTask,
-              category: 'technical',
+              category: item.taskCategory || 'technical',
               estimatedHours: 5,
               targetDate: addDays(7),
               task: item.recommendedTask,
-              domain: 'technical',
+              domain: item.taskCategory || 'technical',
               priority: 'high',
             },
           ],
         });
         await plan.save();
       } else {
+        plan.interviewId = item.interviewId || plan.interviewId || null;
+        plan.evaluatorId = item.evaluatorId;
+        plan.domainScores = item.domainScores;
+        plan.weakSkills = item.weakSkills;
         plan.recommendedTask = item.recommendedTask;
         plan.facultyFeedback = item.facultyFeedback;
         plan.evaluatorNotes = item.facultyFeedback;
-        plan.evaluatorId = item.evaluatorId;
         plan.status = item.status;
         await plan.save();
       }
+
+      // Upsert a matching WeeklyGoal for the assigned action plan task
+      const assignedGoal = await WeeklyGoal.findOneAndUpdate(
+        {
+          studentId: item.studentId,
+          title: item.recommendedTask,
+        },
+        {
+          $set: {
+            studentId: item.studentId,
+            title: item.recommendedTask,
+            status: 'pending',
+            dueDate: addDays(7),
+            category: item.taskCategory || 'technical',
+            source: 'faculty',
+            isRemedial: false,
+            assignedBy: item.evaluatorId,
+            interviewId: item.interviewId || null,
+            actionPlanId: plan._id,
+          },
+        },
+        {
+          returnDocument: 'after',
+          upsert: true,
+          runValidators: true,
+          setDefaultsOnInsert: true,
+        }
+      );
+
+      // Link assignedGoalId in plan tasks
+      if (plan.tasks && plan.tasks.length > 0) {
+        plan.tasks[0].assignedGoalId = assignedGoal._id;
+      }
+      if (plan.recommendedTasks && plan.recommendedTasks.length > 0) {
+        plan.recommendedTasks[0].assignedGoalId = assignedGoal._id;
+      }
+      await plan.save();
+
       seededActionPlans.push(plan);
-      console.log(`[action-plan] Student ${item.studentId} -> Weak Skill: ${item.weakSkill}`);
+      console.log(`[action-plan] Student ${item.studentId} -> Weak Skill: ${item.weakSkill} (Goal: ${assignedGoal._id})`);
     }
 
     // ─────────────────────────────────────────────
@@ -955,28 +1179,104 @@ async function runSeed() {
     const companiesData = [
       {
         companyName: 'Tesla',
+        description:
+          'Pioneering electric vehicles, clean energy ecosystems, and autonomous vehicle artificial intelligence platforms.',
+        industry: 'Automotive & Clean Energy Tech',
+        location: 'Palo Alto, CA / Austin, TX / Bengaluru, India',
+        website: 'https://tesla.com',
+        targetRole: 'Autopilot & Distributed Platforms Engineer',
+        openPositions: 12,
+        cgpaCutoff: '8.0+ CGPA',
+        eligibleDepartments: [
+          'Computer Science & Engineering',
+          'Information Technology',
+          'Electronics & Communication',
+        ],
+        eligibleBatch: '2026 Batch',
         requiredSkills: [
           'JavaScript',
           'Node.js',
           'System Design',
           'Databases',
+          'Python',
+          'C++',
+        ],
+        preferredSkills: [
+          'Distributed Systems',
+          'Redis',
+          'Docker',
+          'Kubernetes',
+          'WebSockets',
         ],
         minimumMatchScore: 70,
+        isVerified: true,
       },
       {
         companyName: 'Reliance Industries',
-        requiredSkills: ['JavaScript', 'React', 'Node.js', 'MongoDB'],
+        description:
+          'India’s largest conglomerate spearheading nationwide digital transformation, Jio 5G platforms, and cloud ecosystems.',
+        industry: 'Conglomerate & Telecommunications',
+        location: 'Mumbai, Maharashtra, India',
+        website: 'https://ril.com',
+        targetRole: 'Full Stack Cloud Platform Engineer',
+        openPositions: 25,
+        cgpaCutoff: '7.5+ CGPA',
+        eligibleDepartments: [
+          'Computer Science & Engineering',
+          'Information Technology',
+          'Electrical Engineering',
+        ],
+        eligibleBatch: '2026 Batch',
+        requiredSkills: [
+          'JavaScript',
+          'React',
+          'Node.js',
+          'MongoDB',
+          'Express',
+          'REST APIs',
+        ],
+        preferredSkills: [
+          'Microservices',
+          'Docker',
+          'AWS',
+          'Next.js',
+          'TailwindCSS',
+        ],
         minimumMatchScore: 65,
+        isVerified: true,
       },
       {
         companyName: 'Microsoft',
+        description:
+          'Empowering every person and organization on the planet to achieve more through cloud computing, AI, and developer tools.',
+        industry: 'Enterprise Software & Cloud Platforms',
+        location: 'Redmond, WA / Hyderabad & Bengaluru, India',
+        website: 'https://microsoft.com',
+        targetRole: 'Azure Cloud & Distributed Systems Engineer',
+        openPositions: 20,
+        cgpaCutoff: '8.0+ CGPA',
+        eligibleDepartments: [
+          'Computer Science & Engineering',
+          'Information Technology',
+        ],
+        eligibleBatch: '2026 Batch',
         requiredSkills: [
           'DSA',
           'System Design',
           'Databases',
           'Operating Systems',
+          'C++',
+          'Java',
+        ],
+        preferredSkills: [
+          'Azure',
+          'Distributed Systems',
+          'Kubernetes',
+          'High Concurrency',
+          'Redis',
         ],
         minimumMatchScore: 75,
+        isVerified: true,
       },
     ];
 
@@ -987,8 +1287,19 @@ async function runSeed() {
         {
           $set: {
             companyName: item.companyName,
+            description: item.description,
+            industry: item.industry,
+            location: item.location,
+            website: item.website,
+            targetRole: item.targetRole,
+            openPositions: item.openPositions,
+            cgpaCutoff: item.cgpaCutoff,
+            eligibleDepartments: item.eligibleDepartments,
+            eligibleBatch: item.eligibleBatch,
             requiredSkills: item.requiredSkills,
+            preferredSkills: item.preferredSkills,
             minimumMatchScore: item.minimumMatchScore,
+            isVerified: item.isVerified !== undefined ? item.isVerified : true,
           },
         },
         {
@@ -999,7 +1310,7 @@ async function runSeed() {
         }
       );
       companyMap.set(item.companyName, comp);
-      console.log(`[company] ${comp.companyName} (Min Score: ${comp.minimumMatchScore})`);
+      console.log(`[company] ${comp.companyName} (Role: ${comp.targetRole}, Min Score: ${comp.minimumMatchScore})`);
     }
 
     // ─────────────────────────────────────────────
@@ -1152,7 +1463,8 @@ async function runSeed() {
     console.log(`  HOD: 1`);
     console.log(`  Alumni: ${alumniMap.size}`);
     console.log(`  Recruiters: ${recruiterMap.size}`);
-    console.log(`  Total Users: ${studentMap.size + facultyMap.size + 1 + alumniMap.size + recruiterMap.size}`);
+    console.log(`  Admins: ${adminMap.size}`);
+    console.log(`  Total Users: ${studentMap.size + facultyMap.size + 1 + alumniMap.size + recruiterMap.size + adminMap.size}`);
     console.log('--------------------------------------------------');
     console.log('Populated Models:');
     console.log(`  StudentProfiles: ${studentMap.size}`);
@@ -1195,6 +1507,11 @@ async function runSeed() {
 
     console.log('\nRECRUITER ACCOUNTS:');
     for (const item of recruiterData) {
+      console.log(`  ${item.name} | Email: ${item.email} | Password: ${DEFAULT_PASSWORD}`);
+    }
+
+    console.log('\nADMIN ACCOUNTS:');
+    for (const item of adminData) {
       console.log(`  ${item.name} | Email: ${item.email} | Password: ${DEFAULT_PASSWORD}`);
     }
 

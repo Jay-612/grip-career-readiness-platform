@@ -16,7 +16,7 @@ export const StudentInfoCard = ({
   user = {},
   profile = {},
   bio = '',
-  onEdit = () => {},
+  onEdit = null,
 }) => {
   const displayName = user?.name || 'Student';
   const displayEmail = user?.email || 'student@campus.edu';
@@ -87,18 +87,20 @@ export const StudentInfoCard = ({
           </div>
         </div>
 
-        {/* Right: Quick Edit CTA */}
-        <div className="shrink-0 self-end md:self-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEdit}
-            leftIcon={<Edit3 className="w-3.5 h-3.5 text-blue-600" />}
-            className="text-xs font-semibold text-blue-600 border-blue-200 hover:bg-blue-50"
-          >
-            Edit Profile Info
-          </Button>
-        </div>
+        {/* Right: Quick Edit CTA (Optional) */}
+        {onEdit && (
+          <div className="shrink-0 self-end md:self-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              leftIcon={<Edit3 className="w-3.5 h-3.5 text-blue-600" />}
+              className="text-xs font-semibold text-blue-600 border-blue-200 hover:bg-blue-50"
+            >
+              Edit Profile Info
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

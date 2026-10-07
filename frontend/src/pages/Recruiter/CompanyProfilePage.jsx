@@ -184,22 +184,14 @@ export const CompanyProfilePage = () => {
         </div>
       )}
 
-      {/* Back button & Title */}
-      <div className="flex items-center justify-between">
+      {/* Back button */}
+      <div>
         <button
           onClick={() => navigate('/recruiter/dashboard')}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Candidate Workspace</span>
-        </button>
-
-        <button
-          onClick={() => setIsEditModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-xs cursor-pointer"
-        >
-          <Edit3 className="w-3.5 h-3.5" />
-          <span>Edit Company &amp; Drive</span>
         </button>
       </div>
 

@@ -81,7 +81,6 @@ export const Dashboard = () => {
         appointmentsRes,
         guidanceRes,
         eventsRes,
-        recruiterFeedbackRes,
       ] = await Promise.allSettled([
         studentService.getPlacementReadiness(studentId),
         studentService.getMyRank(),
@@ -90,7 +89,6 @@ export const Dashboard = () => {
         studentService.getAppointments(),
         guidanceService.getRequests(1, 5),
         eventService.getEvents({ upcomingOnly: true }),
-        studentService.getRecruiterFeedback(),
       ]);
 
       if (signal?.aborted) return;
@@ -126,13 +124,6 @@ export const Dashboard = () => {
           eventsRes.status === 'fulfilled' && eventsRes.value?.events
             ? eventsRes.value.events
             : [],
-        recruiterFeedback:
-          recruiterFeedbackRes.status === 'fulfilled' &&
-          (Array.isArray(recruiterFeedbackRes.value?.feedback)
-            ? recruiterFeedbackRes.value.feedback
-            : Array.isArray(recruiterFeedbackRes.value)
-            ? recruiterFeedbackRes.value
-            : []),
         leaderboardRank: myRank,
         leaderboardTotal: totalStudents,
       });
@@ -244,23 +235,9 @@ export const Dashboard = () => {
     })[0];
   }, [dashboardData.appointments]);
 
-  // Latest Evaluation / Mentor / Recruiter Feedback
+  // Latest Evaluation / Mentor Feedback
   const latestFeedback = useMemo(() => {
-    // 1. Recruiter reviews (Official industry feedback)
-    const latestRecruiter = dashboardData.recruiterFeedback?.[0];
-    if (latestRecruiter) {
-      const recName = latestRecruiter.recruiterId?.name || 'Industry Recruiter';
-      const company = latestRecruiter.recruiterId?.company ? ` • ${latestRecruiter.recruiterId.company}` : '';
-      return {
-        author: `${recName}${company}`,
-        title: 'Campus Recruiter Review',
-        content: latestRecruiter.comments || 'Candidate evaluation recorded by recruiter.',
-        score: latestRecruiter.rating,
-        date: latestRecruiter.createdAt,
-      };
-    }
-
-    // 2. Completed mock interview with feedback
+    // 1. Completed mock interview with feedback
     const evaluatedAppointment = dashboardData.appointments.find(
       (apt) => apt.status === 'completed' && apt.feedback
     );
@@ -279,7 +256,7 @@ export const Dashboard = () => {
       };
     }
 
-    // 3. Guidance replies
+    // 2. Guidance replies
     const answeredRequest = dashboardData.guidanceRequests.find((req) => req.latestReply);
     if (answeredRequest) {
       return {
@@ -291,7 +268,7 @@ export const Dashboard = () => {
     }
 
     return null;
-  }, [dashboardData.recruiterFeedback, dashboardData.guidanceRequests, dashboardData.appointments]);
+  }, [dashboardData.guidanceRequests, dashboardData.appointments]);
 
   // ─────────────────────────────────────────────────────────────
   // 3. ACTION HANDLERS

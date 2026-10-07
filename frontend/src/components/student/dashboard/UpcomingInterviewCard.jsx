@@ -113,13 +113,20 @@ export const UpcomingInterviewCard = ({ interview = null }) => {
             <span>Next Scheduled Session</span>
           </span>
 
-          <Badge
-            variant={isConfirmed ? 'success' : isPending ? 'warning' : 'neutral'}
-            size="xs"
-            className="capitalize"
-          >
-            {isConfirmed ? 'Confirmed' : isPending ? 'Awaiting Acceptance' : interview.status}
-          </Badge>
+          {isPending ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              <Clock className="w-3 h-3 text-amber-300 shrink-0" />
+              <span>Awaiting Acceptance</span>
+            </span>
+          ) : (
+            <Badge
+              variant={isConfirmed ? 'success' : 'neutral'}
+              size="xs"
+              className="capitalize"
+            >
+              {isConfirmed ? 'Confirmed' : interview.status}
+            </Badge>
+          )}
         </div>
 
         {/* Title & Faculty */}

@@ -137,19 +137,18 @@ export const UpcomingInterviewCard = ({
       <div className="flex flex-col items-start md:items-end gap-2.5 shrink-0 z-10">
         {isPending ? (
           <div className="flex flex-col items-start md:items-end gap-2 w-full sm:w-auto">
-            <Button
-              disabled
-              variant="secondary"
-              size="md"
-              leftIcon={<Clock className="w-4 h-4 text-amber-300" />}
-              className="bg-white/10 text-amber-200 border-white/20 cursor-not-allowed font-medium text-xs sm:text-sm w-full sm:w-auto"
+            <div
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-200 font-semibold text-xs sm:text-sm shadow-sm w-full sm:w-auto select-none"
+              role="status"
+              aria-label="Interview status: Awaiting Faculty Acceptance"
             >
-              Awaiting Faculty Acceptance
-            </Button>
+              <Clock className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+              <span className="text-amber-200 font-semibold tracking-wide">Awaiting Faculty Acceptance</span>
+            </div>
             <button
               type="button"
               onClick={() => onCancel(interview)}
-              className="text-xs text-rose-300 hover:text-rose-200 transition underline underline-offset-2"
+              className="text-xs text-rose-300 hover:text-rose-200 transition underline underline-offset-2 font-medium"
             >
               Withdraw Request
             </button>
@@ -217,16 +216,13 @@ export const UpcomingInterviewCard = ({
         ) : (
           <div className="flex flex-col items-start md:items-end gap-2 w-full sm:w-auto">
             <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-              <Button
-                disabled
-                variant="secondary"
-                size="md"
-                leftIcon={<Lock className="w-4 h-4 text-slate-300" />}
-                className="bg-white/10 text-slate-200 border-white/20 cursor-not-allowed font-medium text-xs sm:text-sm w-full sm:w-auto"
+              <div
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-slate-200 border border-white/20 font-medium text-xs sm:text-sm w-full sm:w-auto select-none"
                 title={`Room unlocks 5 minutes before scheduled start (at ${joinWindow.opensAtStr})`}
               >
-                Opens at {joinWindow.opensAtStr}
-              </Button>
+                <Lock className="w-4 h-4 text-blue-300 shrink-0" />
+                <span className="text-slate-200">Opens at {joinWindow.opensAtStr}</span>
+              </div>
 
               {interview.calendarHtmlLink && (
                 <a
