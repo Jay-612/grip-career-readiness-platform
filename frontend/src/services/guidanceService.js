@@ -1,0 +1,72 @@
+import apiClient from './apiClient';
+
+/**
+ * Guidance Service
+ * Interfaces with backend endpoints for guidance requests and threaded replies.
+ */
+export const guidanceService = {
+  // Student submits a new guidance question with target routing
+  // POST /api/guidance/request -> body: { question, targetType, targetFacultyId }
+  createRequest: async (payloadOrQuestion, targetType = 'alumni', targetFacultyId = null) => {
+    let payload = {};
+    if (typeof payloadOrQuestion === 'string') {
+      payload = {
+        question: payloadOrQuestion,
+        targetType,
+        targetFacultyId,
+      };
+    } else if (payloadOrQuestion && typeof payloadOrQuestion === 'object') {
+      payload = payloadOrQuestion;
+    }
+    const response = await apiClient.post('/guidance/request', payload);
+    return response.data;
+  },
+
+  // List student's guidance requests (role-based: students see only their own)
+  // GET /api/guidance/requests -> query: ?page=&limit=
+  getRequests: async (page = 1, limit = 50) => {
+    const response = await apiClient.get('/guidance/requests', {
+      params: { page, limit },
+    });
+    return response.data;
+  },
+
+  // Get single guidance request with all mentor replies
+  // GET /api/guidance/requests/:id
+  getRequestById: async (id) => {
+    const response = await apiClient.get(`/guidance/requests/${id}`);
+    return response.data;
+  },
+
+  // Reply to guidance request (mentors and student authors)
+  // POST /api/guidance/requests/:id/reply -> body: { answerText }
+  replyRequest: async (requestId, answerText) => {
+    const response = await apiClient.post(`/guidance/requests/${requestId}/reply`, {
+      answerText,
+    });
+    return response.data;
+  },
+
+  // Mark guidance request as resolved
+  // PUT /api/guidance/requests/:id/resolve
+  resolveRequest: async (requestId) => {
+    const response = await apiClient.put(`/guidance/requests/${requestId}/resolve`);
+    return response.data;
+  },
+
+  // Get dynamic list of verified Faculty Mentors
+  // GET /api/guidance/mentors/faculty
+  getFacultyMentors: async () => {
+    const response = await apiClient.get('/guidance/mentors/faculty');
+    return response.data?.faculty || [];
+  },
+
+  // Get dynamic list of verified Alumni Mentors
+  // GET /api/guidance/mentors/alumni
+  getAlumniMentors: async () => {
+    const response = await apiClient.get('/guidance/mentors/alumni');
+    return response.data?.alumni || [];
+  },
+};
+
+export default guidanceService;

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRIP — Faculty Dashboard & Placement Cohort Command Center</title>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            surface: {
+              base: '#f8fafc',
+              card: '#ffffff',
+              border: '#e2e8f0',
+            }
+          },
+          fontFamily: {
+            heading: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex">
+
+  <!-- ================= LEFT NAVIGATION SIDEBAR (260px Fixed) ================= -->
+  <aside class="fixed top-0 left-0 h-screen w-[260px] bg-white border-r border-[#e2e8f0] z-40 flex flex-col justify-between select-none">
+    
+    <!-- Top Branding & Profile Header -->
+    <div>
+      <!-- GRIP Brand Header -->
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <!-- Graduation Cap Emblem -->
+          <div class="w-9 h-9 rounded-xl bg-brand-700 flex items-center justify-center text-white shadow-sm shadow-brand-700/30">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-xl tracking-tight text-slate-900 font-heading">GRIP</span>
+              <span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Faculty</span>
+            </div>
+            <p class="text-[10px] text-slate-400 font-medium tracking-wide">Learn • Prepare • Grow</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faculty Profile Summary Card -->
+      <div class="px-4 py-3 mx-3 mt-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-700 to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-inner ring-2 ring-purple-100 shrink-0">
+          NS
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1">
+            <p class="text-xs font-bold text-slate-900 truncate font-heading">Prof. Neha Sharma</p>
+            <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <p class="text-[11px] text-slate-500 truncate leading-tight">Associate Prof • Placement Cell Lead</p>
+          <span class="inline-flex items-center gap-1 mt-0.5 text-[10px] text-emerald-600 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Available for Mocks
+          </span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="px-3 mt-4 space-y-1">
+        <!-- Dashboard (ACTIVE) -->
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-brand-50 text-brand-700 font-medium text-xs border-l-4 border-brand-700 transition-colors shadow-sm shadow-brand-50">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-brand-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+            </svg>
+            <span class="font-semibold">Faculty Dashboard</span>
+          </div>
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-700"></span>
+        </a>
+
+        <!-- Interview Evaluation -->
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium text-xs transition-colors">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+            </svg>
+            <span>Interview Evaluation</span>
+          </div>
+          <span class="px-1.5 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full">4 pending</span>
+        </a>
+
+        <!-- Guidance Inbox -->
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium text-xs transition-colors">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+            <span>Guidance Inbox</span>
+          </div>
+          <span class="px-1.5 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-full">6 unread</span>
+        </a>
+
+        <!-- HOD Analytics -->
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium text-xs transition-colors">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <span>HOD Analytics</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-medium">CSE Dept</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Bottom Cohort Widget & Footer Links -->
+    <div class="p-3 border-t border-slate-100 bg-slate-50/50">
+      <!-- Cohort Benchmark Widget -->
+      <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-sm mb-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Cohort Readiness</span>
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700">
+            +6.2% vs last batch
+          </span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-2xl font-black text-slate-900 font-heading">78.4%</span>
+          <span class="text-xs text-slate-500 font-medium">Avg Score</span>
+        </div>
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden my-2">
+          <div class="bg-emerald-500 h-full rounded-full" style="width: 78.4%"></div>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-600 font-medium">
+          <span>142 Active Mentees</span>
+          <span class="text-brand-700 font-semibold">Tier-1 in 42d</span>
+        </div>
+      </div>
+
+      <!-- Settings & Sign Out -->
+      <div class="space-y-1">
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 rounded-md hover:bg-white transition-colors">
+          <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Faculty Settings</span>
+        </a>
+        <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-rose-600 hover:text-rose-700 rounded-md hover:bg-rose-50 transition-colors">
+          <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Sign Out</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN WORKSPACE AREA ================= -->
+  <div class="ml-[260px] flex-1 flex flex-col min-w-0">
+
+    <!-- Sticky Top Navigation Bar -->
+    <header class="sticky top-0 z-30 h-16 bg-white border-b border-[#e2e8f0] px-8 flex items-center justify-between">
+      <!-- Breadcrumbs -->
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-slate-400 font-medium">Portal</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 font-semibold font-heading">Faculty Dashboard</span>
+        <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium">Computer Science & Engineering</span>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="relative w-96">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          placeholder="Search mentees by name, roll no, skill gaps, or rubrics..." 
+          class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-700/20 focus:border-brand-700 transition-all shadow-sm"
+        />
+        <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center">
+          <kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-slate-100 border border-slate-200 rounded">⌘K</kbd>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-3">
+        <!-- Secondary Action: Schedule Office Hours -->
+        <button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold shadow-sm transition-colors">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span>+ Schedule Office Hours</span>
+        </button>
+
+        <!-- Primary Action: Evaluate Student -->
+        <button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-xs font-semibold shadow-sm shadow-brand-700/25 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>+ Evaluate Student</span>
+        </button>
+
+        <div class="h-6 w-px bg-slate-200 mx-1"></div>
+
+        <!-- Notification Bell -->
+        <button class="relative p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-600 text-white font-bold text-[9px] rounded-full flex items-center justify-center border-2 border-white">5</span>
+        </button>
+
+        <!-- Faculty Avatar -->
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-700 to-indigo-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-slate-100 cursor-pointer">
+          NS
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Scrollable Content -->
+    <main class="p-8 space-y-6 max-w-[1440px] w-full">
+
+      <!-- 1. Welcome Banner & Cohort KPI Grid -->
+      <section class="space-y-4">
+        <!-- Banner Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-slate-900 via-brand-900 to-slate-900 text-white p-6 rounded-2xl shadow-sm relative overflow-hidden">
+          <!-- Subtle decorative ambient circles -->
+          <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-2 text-xs font-semibold text-brand-200 mb-1">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-400/30 text-[10px] uppercase tracking-wider">
+                Institutional Verified Portal
+              </span>
+              <span>•</span>
+              <span>Semester 5 Academic Sprint Window</span>
+            </div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white font-heading">
+              Good Morning, Prof. Sharma! Here is your CSE Placement Cohort Overview.
+            </h1>
+            <p class="text-xs text-slate-300 mt-1">
+              Class of 2026 • 142 Registered Candidates • Target: Day-1 Tier-1 Enterprise & High-Growth Tech Placements
+            </p>
+          </div>
+          <div class="relative z-10 flex items-center gap-2 self-start md:self-auto">
+            <div class="bg-white/10 backdrop-blur-sm border border-white/15 px-3 py-2 rounded-xl text-right">
+              <div class="text-[10px] text-slate-300 uppercase tracking-wider font-semibold">Tier-1 Window</div>
+              <div class="text-sm font-bold text-white font-heading">Oct 2025 (42 Days)</div>
+            </div>
+            <button class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-3 py-2.5 rounded-xl transition-colors shadow-sm flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              <span>Export Cohort Report</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Key Metrics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Cohort Placement Readiness -->
+          <div class="bg-white rounded-xl p-5 border border-[#e2e8f0] shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+              <span>Cohort Placement Readiness</span>
+              <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl font-black text-slate-900 font-heading">78.4%</span>
+              <span class="inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                +6.2% vs last week
+              </span>
+            </div>
+            <div class="mt-3 text-[11px] text-slate-600 flex items-center justify-between border-t border-slate-100 pt-2.5">
+              <span>38 Tier-1 Qualified Candidates</span>
+              <span class="text-brand-700 font-semibold cursor-pointer hover:underline">View Roster →</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Pending Milestone Reviews -->
+          <div class="bg-white rounded-xl p-5 border border-[#e2e8f0] shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+              <span>Pending Milestone Reviews</span>
+              <span class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl font-black text-slate-900 font-heading">8 Reviews</span>
+              <span class="inline-flex items-center text-[11px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded">
+                3 Urgent / Due Today
+              </span>
+            </div>
+            <div class="mt-3 text-[11px] text-slate-600 flex items-center justify-between border-t border-slate-100 pt-2.5">
+              <span>Avg review turnaround: 18 hrs</span>
+              <span class="text-rose-600 font-semibold cursor-pointer hover:underline">Clear Queue →</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Today's Scheduled Interviews -->
+          <div class="bg-white rounded-xl p-5 border border-[#e2e8f0] shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+              <span>Today's Scheduled Interviews</span>
+              <span class="w-7 h-7 rounded-lg bg-blue-50 text-brand-700 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl font-black text-slate-900 font-heading">4 Sessions</span>
+              <span class="inline-flex items-center text-[11px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                First sync at 4:00 PM
+              </span>
+            </div>
+            <div class="mt-3 text-[11px] text-slate-600 flex items-center justify-between border-t border-slate-100 pt-2.5">
+              <span>2 In-Person • 2 Virtual Meet</span>
+              <span class="text-brand-700 font-semibold cursor-pointer hover:underline">Daily Agenda →</span>
+            </div>
+          </div>
+
+          <!-- Card 4: At-Risk Candidates -->
+          <div class="bg-white rounded-xl p-5 border border-[#e2e8f0] shadow-sm hover:shadow transition-shadow">
+            <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+              <span>At-Risk Candidates</span>
+              <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl font-black text-slate-900 font-heading">12 Students</span>
+              <span class="inline-flex items-center text-[11px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
+                Readiness &lt; 65%
+              </span>
+            </div>
+            <div class="mt-3 text-[11px] text-slate-600 flex items-center justify-between border-t border-slate-100 pt-2.5">
+              <span>Primary Gap: System Design</span>
+              <span class="text-amber-700 font-semibold cursor-pointer hover:underline">Intervene →</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Two-Column High-Utility Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- ================= LEFT COLUMN (65% width / 8 cols) ================= -->
+        <div class="lg:col-span-8 space-y-6">
+
+          <!-- A. Pending Milestone Evaluations & Skill Approvals Table -->
+          <div class="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 class="text-sm font-bold text-slate-900 font-heading flex items-center gap-2">
+                  <span>Pending Student Milestone Submissions</span>
+                  <span class="bg-amber-100 text-amber-800 text-[11px] font-semibold px-2 py-0.5 rounded-full">8 Pending Reviews</span>
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Faculty verification records directly contribute to student's Tier-1 Placement Readiness score.</p>
+              </div>
+              <a href="#" class="text-xs font-semibold text-brand-700 hover:text-brand-800 hover:underline flex items-center gap-1">
+                <span>View All (8)</span>
+                <span>→</span>
+              </a>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50/75 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    <th class="py-3 px-4">Student & Roll No</th>
+                    <th class="py-3 px-4">Milestone Submission</th>
+                    <th class="py-3 px-4">Readiness</th>
+                    <th class="py-3 px-4">Submitted</th>
+                    <th class="py-3 px-4 text-right">Evaluation Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+                  
+                  <!-- Row 1: Rohan Mehta -->
+                  <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0">
+                          RM
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-900 flex items-center gap-1">
+                            <span>Rohan Mehta</span>
+                            <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-700">Tier-1 Fit</span>
+                          </div>
+                          <div class="text-[11px] text-slate-500">CS-2023-0482 • Sem 5</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="font-semibold text-slate-900">Distributed Caching & Redis Sharding Proof of Concept</div>
+                      <div class="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <span class="text-brand-700 font-medium">Track: Distributed Systems</span>
+                        <span>•</span>
+                        <span>Lab 4 Capstone</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-slate-900 text-xs">85%</span>
+                        <div class="w-12 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                          <div class="bg-emerald-500 h-full rounded-full" style="width: 85%"></div>
+                        </div>
+                      </div>
+                      <span class="text-[10px] text-emerald-600 font-medium">Ready</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-[11px] text-slate-500">
+                      <div class="font-medium text-slate-700">2 hours ago</div>
+                      <div class="text-[10px] text-rose-500 font-semibold">Priority Review</div>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-xs font-semibold shadow-sm transition-colors">
+                        <span>Open Rubric</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Row 2: Sneha Patel -->
+                  <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs shrink-0">
+                          SP
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-900">Sneha Patel</div>
+                          <div class="text-[11px] text-slate-500">CS-2023-0512 • Sem 5</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="font-semibold text-slate-900">Microservices gRPC Event Bus</div>
+                      <div class="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <span class="text-purple-700 font-medium">Backend Architecture</span>
+                        <span>•</span>
+                        <span>Sprint 5.3</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-slate-900 text-xs">81%</span>
+                        <div class="w-12 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                          <div class="bg-emerald-500 h-full rounded-full" style="width: 81%"></div>
+                        </div>
+                      </div>
+                      <span class="text-[10px] text-emerald-600 font-medium">On Track</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-[11px] text-slate-500">
+                      <div class="font-medium text-slate-700">5 hours ago</div>
+                      <div class="text-[10px] text-slate-400">Regular Queue</div>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-colors">
+                        <span>Review Submission</span>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Row 3: Ananya Gupta -->
+                  <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-xs shrink-0">
+                          AG
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-900">Ananya Gupta</div>
+                          <div class="text-[11px] text-slate-500">CS-2023-0391 • Sem 5</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="font-semibold text-slate-900">LeetCode 100 DP Milestone Proof</div>
+                      <div class="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <span class="text-teal-700 font-medium">Algorithms & DS</span>
+                        <span>•</span>
+                        <span>80 Hard / Med Solved</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-slate-900 text-xs">74%</span>
+                        <div class="w-12 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                          <div class="bg-blue-500 h-full rounded-full" style="width: 74%"></div>
+                        </div>
+                      </div>
+                      <span class="text-[10px] text-blue-600 font-medium">Borderline Tier-1</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-[11px] text-slate-500">
+                      <div class="font-medium text-slate-700">Yesterday</div>
+                      <div class="text-[10px] text-slate-400">Automated Sync Pass</div>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-colors">
+                        <span>Verify Code</span>
+                      </button>
+                    </td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table Footer Status Note -->
+            <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Submissions authenticated against GitHub and Institutional CodeSandbox sandboxes.</span>
+              </div>
+              <span class="text-[11px] text-slate-400 font-medium">Showing 3 of 8 active queue items</span>
+            </div>
+          </div>
+
+          <!-- B. Priority Interventions & Skill Gaps (CSE Cohort) -->
+          <div class="bg-white rounded-xl border border-[#e2e8f0] shadow-sm p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-sm font-bold text-slate-900 font-heading flex items-center gap-2">
+                  <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                  </svg>
+                  <span>Priority Interventions & Skill Gaps (CSE Cohort)</span>
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Automated cohort diagnostic flagged competencies blocking Day-1 Recruiter eligibility.</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                Action Recommended
+              </span>
+            </div>
+
+            <!-- Diagnostic Alert Box -->
+            <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-xs font-bold text-slate-900">
+                    12 Candidates Falling Below TechCorp & CloudSys Cutoff in System Design & Caching
+                  </h3>
+                  <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Diagnostic evaluations across Sprint 5 show students scoring under 60% on Redis cluster failover mechanisms, partition rebalancing, and write-through cache patterns. Without intervention, these candidates will not qualify for the TechCorp Day-1 interview shortlisting on Oct 12.
+                  </p>
+                  
+                  <!-- Action Recommendation Buttons -->
+                  <div class="mt-3.5 flex flex-wrap items-center gap-2.5">
+                    <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-xs font-semibold shadow-sm transition-colors">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      <span>Schedule Group Architecture Masterclass</span>
+                    </button>
+                    <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-colors">
+                      <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                      </svg>
+                      <span>Send Automated Remedial Sprint Notice</span>
+                    </button>
+                    <button class="text-xs font-semibold text-brand-700 hover:text-brand-800 hover:underline px-2 py-1">
+                      Inspect 12 Students List →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Breakdown of Cohort Gaps -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div class="text-[11px] font-bold text-slate-500 uppercase">System Design & Scaling</div>
+                <div class="text-lg font-bold text-slate-900 font-heading mt-0.5">64.2% Avg</div>
+                <p class="text-[11px] text-rose-600 font-medium mt-0.5">-10.8% below Day-1 bar</p>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div class="text-[11px] font-bold text-slate-500 uppercase">DSA & Dynamic Prog.</div>
+                <div class="text-lg font-bold text-slate-900 font-heading mt-0.5">82.5% Avg</div>
+                <p class="text-[11px] text-emerald-600 font-medium mt-0.5">Exceeds Tier-1 bar</p>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div class="text-[11px] font-bold text-slate-500 uppercase">STAR Behavioral Tech</div>
+                <div class="text-lg font-bold text-slate-900 font-heading mt-0.5">79.0% Avg</div>
+                <p class="text-[11px] text-blue-600 font-medium mt-0.5">On track for HR rounds</p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ================= RIGHT COLUMN (35% width / 4 cols) ================= -->
+        <div class="lg:col-span-4 space-y-6">
+
+          <!-- A. Today's Mentorship & Interview Schedule -->
+          <div class="bg-white rounded-xl border border-[#e2e8f0] shadow-sm p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h2 class="text-sm font-bold text-slate-900 font-heading flex items-center gap-2">
+                  <svg class="w-4 h-4 text-brand-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  <span>Today's Agenda</span>
+                </h2>
+                <p class="text-xs text-slate-500">Tuesday, Sep 16 • 3 Upcoming Sessions</p>
+              </div>
+              <button class="text-xs font-semibold text-brand-700 hover:text-brand-800 hover:underline">
+                Calendar View
+              </button>
+            </div>
+
+            <!-- Schedule Cards -->
+            <div class="space-y-3">
+
+              <!-- Card 1 (Active/Upcoming Next: 4:00 PM - 4:45 PM) -->
+              <div class="p-3.5 rounded-xl border-2 border-brand-100 bg-brand-50/40 relative">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-bold text-brand-900 font-heading flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-brand-700 animate-pulse"></span>
+                    4:00 PM – 4:45 PM (45m)
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                    Confirmed In-Person
+                  </span>
+                </div>
+                <h3 class="text-xs font-bold text-slate-900">1-on-1 System Design Mock Screen</h3>
+                <div class="text-[11px] text-slate-600 mt-1 space-y-0.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-semibold text-slate-800">Candidate:</span> Rohan Mehta (CSE, 85% Ready)
+                  </div>
+                  <div class="flex items-center gap-1.5 text-slate-500">
+                    <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    </svg>
+                    <span>Dept. Seminar Lab 3 • Campus Meet Room 102</span>
+                  </div>
+                  <div class="text-slate-500 italic text-[10px]">
+                    Focus: Distributed Caching, Redis Sharding & Fault Tolerance
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-3 pt-2.5 border-t border-brand-100/80 flex items-center gap-2">
+                  <button class="flex-1 py-1.5 bg-brand-700 hover:bg-brand-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors text-center">
+                    Start Session
+                  </button>
+                  <button class="flex-1 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold shadow-sm transition-colors text-center">
+                    Open Rubric
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card 2 (5:15 PM - 5:45 PM) -->
+              <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/60 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-bold text-slate-800 font-heading">5:15 PM – 5:45 PM (30m)</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700">
+                    Virtual Meet
+                  </span>
+                </div>
+                <h3 class="text-xs font-bold text-slate-900">Placement Track Strategy Sync</h3>
+                <div class="text-[11px] text-slate-600 mt-1">
+                  <div>Candidate: <span class="font-semibold text-slate-800">Vikram Rao</span> (DevOps Track)</div>
+                  <div class="text-slate-400 text-[10px] mt-0.5">Google Meet Integration Ready</div>
+                </div>
+                <div class="mt-2 flex items-center justify-between pt-2 border-t border-slate-100">
+                  <span class="text-[11px] text-slate-500">Status: Scheduled</span>
+                  <button class="text-xs font-semibold text-brand-700 hover:underline">Prep Notes →</button>
+                </div>
+              </div>
+
+              <!-- Card 3 (6:00 PM - 6:30 PM) -->
+              <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/60 transition-colors">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-bold text-slate-800 font-heading">6:00 PM – 6:30 PM (30m)</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-700">
+                    Department Office
+                  </span>
+                </div>
+                <h3 class="text-xs font-bold text-slate-900">DSA Diagnostic Review</h3>
+                <div class="text-[11px] text-slate-600 mt-1">
+                  <div>Candidate: <span class="font-semibold text-slate-800">Aarav Sharma</span> (Final Year B.Tech)</div>
+                  <div class="text-slate-400 text-[10px] mt-0.5">Review Dynamic Programming Rubric</div>
+                </div>
+                <div class="mt-2 flex items-center justify-between pt-2 border-t border-slate-100">
+                  <span class="text-[11px] text-slate-500">Status: Scheduled</span>
+                  <button class="text-xs font-semibold text-brand-700 hover:underline">View History →</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- B. Department Recruiter Alignment Insights -->
+          <div class="bg-white rounded-xl border border-[#e2e8f0] shadow-sm p-5 space-y-3.5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h2 class="text-sm font-bold text-slate-900 font-heading flex items-center gap-2">
+                  <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                  <span>Visiting Tech Recruiters Alignment</span>
+                </h2>
+                <p class="text-xs text-slate-500">Day-1 criteria mapped against cohort skills.</p>
+              </div>
+              <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">3 Active Drives</span>
+            </div>
+
+            <!-- Partner status cards -->
+            <div class="space-y-2.5">
+              <!-- Partner 1: TechCorp -->
+              <div class="p-3 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded bg-brand-700 text-white font-bold text-xs flex items-center justify-center">
+                      TC
+                    </div>
+                    <div>
+                      <div class="font-bold text-xs text-slate-900">TechCorp Global</div>
+                      <div class="text-[10px] text-slate-500">Placement Drive: <span class="font-semibold text-slate-700">Oct 12, 2025</span></div>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-emerald-700">38 Eligible</span>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-[11px] text-slate-600">
+                  <span>Readiness Cutoff: 80%</span>
+                  <span class="text-brand-700 font-medium hover:underline cursor-pointer">Candidate Match List →</span>
+                </div>
+                <div class="w-full bg-slate-200 h-1 rounded-full overflow-hidden mt-1.5">
+                  <div class="bg-brand-600 h-full" style="width: 76%"></div>
+                </div>
+              </div>
+
+              <!-- Partner 2: CloudSys -->
+              <div class="p-3 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">
+                      CS
+                    </div>
+                    <div>
+                      <div class="font-bold text-xs text-slate-900">CloudSys Systems</div>
+                      <div class="text-[10px] text-slate-500">Placement Drive: <span class="font-semibold text-slate-700">Oct 18, 2025</span></div>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-emerald-700">42 Eligible</span>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-[11px] text-slate-600">
+                  <span>Readiness Cutoff: 75%</span>
+                  <span class="text-brand-700 font-medium hover:underline cursor-pointer">Candidate Match List →</span>
+                </div>
+                <div class="w-full bg-slate-200 h-1 rounded-full overflow-hidden mt-1.5">
+                  <div class="bg-indigo-600 h-full" style="width: 84%"></div>
+                </div>
+              </div>
+
+              <!-- Partner 3: FinTech Apex -->
+              <div class="p-3 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded bg-slate-900 text-white font-bold text-xs flex items-center justify-center">
+                      FA
+                    </div>
+                    <div>
+                      <div class="font-bold text-xs text-slate-900">FinTech Apex</div>
+                      <div class="text-[10px] text-slate-500">Placement Drive: <span class="font-semibold text-slate-700">Oct 25, 2025</span></div>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-amber-700">29 Eligible</span>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-[11px] text-slate-600">
+                  <span>Readiness Cutoff: 82%</span>
+                  <span class="text-brand-700 font-medium hover:underline cursor-pointer">Candidate Match List →</span>
+                </div>
+                <div class="w-full bg-slate-200 h-1 rounded-full overflow-hidden mt-1.5">
+                  <div class="bg-amber-500 h-full" style="width: 58%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recruiter Sync Note -->
+            <div class="pt-2 text-[11px] text-slate-500 flex items-center justify-between">
+              <span>Rubrics validated with corporate placement cell</span>
+              <a href="#" class="font-semibold text-brand-700 hover:underline">Manage Cutoffs</a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Institutional Footer Bar -->
+    <footer class="mt-auto border-t border-[#e2e8f0] bg-white px-8 py-4 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <span class="font-semibold text-slate-700">© 2026 GRIP — Career Readiness & Placement Platform</span>
+        <span class="text-slate-300">•</span>
+        <span>Faculty & Placement Evaluation Console v3.4</span>
+      </div>
+      <div class="flex items-center gap-4 text-slate-600">
+        <a href="#" class="hover:text-brand-700 transition-colors">Institutional Governance</a>
+        <a href="#" class="hover:text-brand-700 transition-colors">FERPA & Academic Integrity</a>
+        <a href="#" class="hover:text-brand-700 transition-colors">Faculty Support</a>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>

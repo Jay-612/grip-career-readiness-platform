@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import ExperiencePost from '../model/ExperiencePost.js';
 import User from '../model/User.js';
+import AlumniProfile from '../model/AlumniProfile.js';
 
 // ─── Create Experience Post (Alumni only) ─────────────────────────
 export const createPost = async (req, res) => {
@@ -46,7 +47,7 @@ export const createPost = async (req, res) => {
 export const getAllPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
     const filter = {};
@@ -56,14 +57,59 @@ export const getAllPosts = async (req, res) => {
       filter.tags = { $in: [req.query.tag] };
     }
 
-    const [posts, totalItems] = await Promise.all([
+    // Optional search query
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search.trim(), 'i');
+      filter.$or = [
+        { title: searchRegex },
+        { content: searchRegex },
+        { tags: { $in: [searchRegex] } },
+      ];
+    }
+
+    const [rawPosts, totalItems] = await Promise.all([
       ExperiencePost.find(filter)
         .populate('alumniId', 'name email')
         .sort({ date: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       ExperiencePost.countDocuments(filter),
     ]);
+
+    // Fetch corresponding alumni profiles for rich company/role display
+    const alumniUserIds = rawPosts
+      .map((p) => p.alumniId?._id || p.alumniId)
+      .filter(Boolean);
+
+    const profiles = await AlumniProfile.find({
+      alumniId: { $in: alumniUserIds },
+    }).lean();
+
+    const profileMap = new Map();
+    profiles.forEach((pr) => {
+      if (pr.alumniId) {
+        profileMap.set(pr.alumniId.toString(), pr);
+      }
+    });
+
+    const posts = rawPosts.map((post) => {
+      const aId = (post.alumniId?._id || post.alumniId || '').toString();
+      const prof = aId ? profileMap.get(aId) : null;
+      return {
+        ...post,
+        id: post._id,
+        author: {
+          id: post.alumniId?._id || post.alumniId || null,
+          name: post.alumniId?.name || 'Verified Alumni',
+          email: post.alumniId?.email || '',
+          currentCompany: prof?.currentCompany || '',
+          jobRole: prof?.jobRole || '',
+          graduationYear: prof?.graduationYear || null,
+        },
+        alumniProfile: prof || null,
+      };
+    });
 
     const totalPages = Math.ceil(totalItems / limit);
 
@@ -96,10 +142,9 @@ export const getPostById = async (req, res) => {
       });
     }
 
-    const post = await ExperiencePost.findById(id).populate(
-      'alumniId',
-      'name email'
-    );
+    const post = await ExperiencePost.findById(id)
+      .populate('alumniId', 'name email')
+      .lean();
 
     if (!post) {
       return res.status(404).json({
@@ -108,7 +153,27 @@ export const getPostById = async (req, res) => {
       });
     }
 
-    res.status(200).json({ success: true, post });
+    let prof = null;
+    const aId = post.alumniId?._id || post.alumniId;
+    if (aId) {
+      prof = await AlumniProfile.findOne({ alumniId: aId }).lean();
+    }
+
+    const enrichedPost = {
+      ...post,
+      id: post._id,
+      author: {
+        id: post.alumniId?._id || post.alumniId || null,
+        name: post.alumniId?.name || 'Verified Alumni',
+        email: post.alumniId?.email || '',
+        currentCompany: prof?.currentCompany || '',
+        jobRole: prof?.jobRole || '',
+        graduationYear: prof?.graduationYear || null,
+      },
+      alumniProfile: prof || null,
+    };
+
+    res.status(200).json({ success: true, post: enrichedPost });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -122,7 +187,7 @@ export const getPostById = async (req, res) => {
 export const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = (req.user?.id || req.user?._id || req.user?.userId || '').toString();
     const { title, content, tags } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -142,7 +207,8 @@ export const updatePost = async (req, res) => {
     }
 
     // Only the author can update
-    if (post.alumniId.toString() !== userId) {
+    const authorId = (post.alumniId?._id || post.alumniId || '').toString();
+    if (authorId !== userId) {
       return res.status(403).json({
         success: false,
         message: 'You can only update your own posts',
@@ -178,8 +244,8 @@ export const updatePost = async (req, res) => {
 export const deletePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
-    const userRole = req.user.role;
+    const userId = (req.user?.id || req.user?._id || req.user?.userId || '').toString();
+    const userRole = (req.user?.role || '').toLowerCase();
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -198,7 +264,8 @@ export const deletePost = async (req, res) => {
     }
 
     // Only the author or an admin can delete
-    if (post.alumniId.toString() !== userId && userRole !== 'admin') {
+    const authorId = (post.alumniId?._id || post.alumniId || '').toString();
+    if (authorId !== userId && userRole !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'You can only delete your own posts',

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP — Mentorship &amp; Q&amp;A Hub</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-low": "#eff4ff",
+            "on-primary": "#ffffff",
+            "on-surface": "#0b1c30",
+            "surface-container-highest": "#d3e4fe",
+            "surface-bright": "#f8f9ff",
+            "secondary-container": "#dae2fd",
+            "on-primary-fixed": "#001551",
+            "on-primary-fixed-variant": "#0039b5",
+            "background": "#f8f9ff",
+            "on-secondary-fixed": "#131b2e",
+            "on-surface-variant": "#434655",
+            "on-tertiary-fixed-variant": "#005137",
+            "surface-dim": "#cbdbf5",
+            "error-container": "#ffdad6",
+            "error": "#ba1a1a",
+            "tertiary-fixed-dim": "#68dba9",
+            "secondary": "#565e74",
+            "on-background": "#0b1c30",
+            "on-primary-container": "#cad3ff",
+            "tertiary": "#004f35",
+            "surface-variant": "#d3e4fe",
+            "on-error": "#ffffff",
+            "surface-container-high": "#dce9ff",
+            "primary-fixed": "#dce1ff",
+            "inverse-surface": "#213145",
+            "secondary-fixed-dim": "#bec6e0",
+            "primary": "#0037b0",
+            "tertiary-fixed": "#85f8c4",
+            "surface-tint": "#2151da",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#dae2fd",
+            "on-tertiary-fixed": "#002114",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-tertiary-container": "#76eab6",
+            "surface": "#f8f9ff",
+            "on-secondary-container": "#5c647a",
+            "primary-container": "#1d4ed8",
+            "primary-fixed-dim": "#b7c4ff",
+            "on-tertiary": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-container": "#e5eeff",
+            "inverse-primary": "#b7c4ff",
+            "outline-variant": "#c4c5d7",
+            "on-error-container": "#93000a",
+            "surface-container-lowest": "#ffffff",
+            "tertiary-container": "#006948",
+            "outline": "#747686"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "margin": "2rem",
+            "space-lg": "1.5rem",
+            "gutter-sm": "1rem",
+            "space-xl": "2.5rem",
+            "space-xs": "0.25rem",
+            "margin-sm": "1rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "gutter": "1.5rem"
+          },
+          fontFamily: {
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"]
+          },
+          fontSize: {
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen">
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-outline-variant shadow-sm">
+<div class="w-[260px] h-full flex flex-col justify-between p-4">
+<!-- Upper Section: Brand & Nav -->
+<div class="flex flex-col gap-4">
+<!-- Brand Header -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center text-on-primary font-headline-sm font-bold shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">GRIP</span>
+<span class="bg-surface-container-low text-primary text-[10px] font-bold px-1.5 py-0.5 rounded border border-surface-variant font-label-sm">CAMPUS</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Learn • Prepare • Grow</p>
+</div>
+</div>
+</div>
+<!-- Student Summary Chip -->
+<div class="bg-surface-container-low border border-surface-variant rounded-xl p-2.5 flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-lg font-bold text-xs shadow-inner">
+            RM
+          </div>
+<div class="min-w-0 flex-1">
+<h4 class="font-label-lg text-label-lg text-on-surface truncate">Rohan Mehta</h4>
+<p class="font-body-sm text-[11px] text-on-surface-variant truncate">3rd Year • CSE Track</p>
+</div>
+<div class="w-2 h-2 rounded-full bg-tertiary-container ring-4 ring-emerald-100"></div>
+</div>
+<!-- Navigation Menu -->
+<nav class="flex flex-col gap-1 mt-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-colors hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Profile & Skills -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-colors hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span>Profile &amp; Skills</span>
+</a>
+<!-- Career Compass -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-colors hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined text-[20px]">explore</span>
+<span>Career Compass</span>
+</a>
+<!-- Goal Tracker -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-colors hover:bg-surface-container-low" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+<span>Goal Tracker</span>
+</div>
+<span class="bg-secondary-container text-on-secondary-fixed text-[10px] font-semibold px-2 py-0.5 rounded-full font-label-sm">3 active</span>
+</a>
+<!-- Mentorship & Q&A (ACTIVE) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-container-low text-primary font-label-lg text-label-lg font-semibold border-l-4 border-primary shadow-xs" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">school</span>
+<span>Mentorship &amp; Q&amp;A</span>
+</a>
+<!-- Interview & Readiness -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-colors hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined text-[20px]">quiz</span>
+<span>Interview &amp; Readiness</span>
+</a>
+</nav>
+</div>
+<!-- Lower Section: Readiness Benchmark & Footer -->
+<div class="flex flex-col gap-3 pt-3">
+<!-- Readiness Widget -->
+<div class="bg-gradient-to-br from-surface-container-low to-white border border-surface-variant rounded-xl p-3.5 shadow-sm">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider">Readiness Benchmark</span>
+<span class="bg-emerald-50 text-tertiary-container border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded font-label-sm">+12%</span>
+</div>
+<div class="flex items-baseline justify-between mb-2">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">85% Ready</span>
+<span class="font-label-sm text-[11px] text-on-surface-variant">Tier-1 Fit</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden mb-2.5">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+<div class="flex items-center gap-1.5 text-tertiary font-label-sm text-[11px]">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-medium truncate">TechCorp Partner Verified</span>
+</div>
+</div>
+<!-- System Footers -->
+<div class="pt-2 border-t border-outline-variant flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-colors hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined text-[19px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-error font-label-lg text-label-lg transition-colors hover:bg-error-container/30" href="#">
+<span class="material-symbols-outlined text-[19px]">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</div>
+</div>
+</aside>
+<!-- ==================== TOP BAR ==================== -->
+<header class="sticky top-0 right-0 z-30 w-full h-16 ml-[260px] max-w-[calc(100vw-260px)] bg-surface-container-lowest border-b border-outline-variant px-8 flex items-center justify-between shadow-sm">
+<!-- Left: Breadcrumbs & Search -->
+<div class="flex items-center gap-6 flex-1 max-w-2xl">
+<nav class="flex items-center gap-1.5 text-xs text-on-surface-variant font-label-md shrink-0">
+<span class="hover:text-primary transition-colors cursor-pointer">Portal</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Mentorship &amp; Q&amp;A Hub</span>
+</nav>
+<!-- Global Search -->
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-4 text-xs bg-surface-container-low border border-outline-variant rounded-lg text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-white transition-all" placeholder="Search mentors, alumni advisors, verified questions..." type="text"/>
+</div>
+</div>
+<!-- Right Actions & Profile -->
+<div class="flex items-center gap-3">
+<button class="h-9 px-3.5 bg-surface-container-low border border-primary text-primary hover:bg-surface-container-highest rounded-lg font-label-lg text-xs font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">calendar_add_on</span>
+<span>+ Book 1-on-1 Mentorship</span>
+</button>
+<button class="h-9 px-3.5 bg-primary-container hover:bg-primary text-white rounded-lg font-label-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[16px]">help</span>
+<span>+ Ask Question / Post Doubt</span>
+</button>
+<div class="h-5 w-px bg-outline-variant mx-1"></div>
+<!-- Notification Icon -->
+<button class="relative w-9 h-9 rounded-lg hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-white rounded-full text-[10px] font-bold flex items-center justify-center">2</span>
+</button>
+<!-- Avatar with Status -->
+<div class="relative cursor-pointer pl-1">
+<div class="w-9 h-9 rounded-full bg-primary-container text-white flex items-center justify-center font-label-lg text-xs font-bold ring-2 ring-white shadow-sm">
+          RM
+        </div>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-tertiary-container border-2 border-white rounded-full"></span>
+</div>
+</div>
+</header>
+<!-- ==================== MAIN CONTENT ==================== -->
+<main class="ml-[260px] p-8 bg-[#F8FAFC] max-w-[calc(100vw-260px)] min-h-[calc(100vh-64px)] space-y-8">
+<!-- 1. Header Banner & Metrics Strip -->
+<section class="space-y-5">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Faculty Mentorship &amp; Alumni Advisory Hub</h1>
+<span class="bg-primary-container/10 text-primary-container border border-primary-container/20 font-label-sm text-[11px] px-2.5 py-0.5 rounded-full font-semibold">Institutional Verified</span>
+</div>
+<p class="font-body-md text-on-surface-variant max-w-3xl">
+            Connect 1-on-1 with university faculty leaders and corporate alumni mentors for code reviews, roadmap guidance, and mock interviews.
+          </p>
+</div>
+<div class="flex items-center gap-2 self-start md:self-auto">
+<span class="font-label-sm text-xs text-on-surface-variant bg-surface-container-lowest px-3 py-1.5 border border-outline-variant rounded-lg shadow-xs flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            14 Mentors Online Today
+          </span>
+</div>
+</div>
+<!-- 4 Metric Cards Bento Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Metric 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-on-surface-variant">Completed Sessions</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">task_alt</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-on-surface">6</span>
+<span class="text-tertiary-container font-label-sm text-xs font-semibold flex items-center">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> +2 this month
+            </span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant mt-1">2 Code Reviews • 4 Mock Screens</p>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-on-surface-variant">Upcoming Syncs</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">event_available</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-on-surface">2</span>
+<span class="bg-emerald-50 text-tertiary-container border border-emerald-200 text-[10px] font-bold px-1.5 py-0.2 rounded font-label-sm">Active</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant mt-1">Next: Tuesday, 4:00 PM (Lab 3)</p>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-tertiary-container"></div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-on-surface-variant">Faculty Endorsements</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-on-surface">4</span>
+<span class="text-primary font-label-sm text-xs font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">verified</span> Verified
+            </span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant mt-1">Algorithms, DB Systems, Cloud Arch</p>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-container"></div>
+</div>
+<!-- Metric 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-on-surface-variant">Avg Mentor Rating</span>
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-on-surface">4.9</span>
+<span class="text-on-surface-variant font-label-sm text-xs">/ 5.0</span>
+</div>
+<div class="flex items-center gap-1 text-amber-400 mt-1">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-on-surface-variant font-body-sm text-[11px] ml-1">(From 5 mentor notes)</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400"></div>
+</div>
+</div>
+</section>
+<!-- 2. Upcoming & Active Guidance Sessions (Two Side-by-Side Cards) -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Upcoming Confirmed Mentorship Sessions</h2>
+</div>
+<a class="font-label-sm text-xs text-primary hover:underline font-semibold flex items-center gap-0.5" href="#">
+          Sync with Google Calendar <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+<!-- Session Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm hover:border-primary/40 transition-all">
+<div class="flex items-start justify-between gap-3 mb-3">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-xl bg-surface-container-low border border-surface-variant flex items-center justify-center text-primary font-bold text-base shadow-xs shrink-0">
+                NS
+              </div>
+<div>
+<span class="bg-emerald-50 text-tertiary-container border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full font-label-sm inline-flex items-center gap-1 mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Confirmed In-Person
+                </span>
+<h3 class="font-headline-sm text-[16px] font-bold text-on-surface">1-on-1 System Design Architecture Review</h3>
+<p class="font-body-sm text-xs text-on-surface-variant">Prof. Neha Sharma • Associate Professor &amp; Placement Lead, Dept. of CSE</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low/60 rounded-lg p-3.5 space-y-2 border border-surface-variant/80 text-xs">
+<div class="flex items-center gap-2 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary">schedule</span>
+<span>Tuesday, Sep 16, 2025 · 4:00 PM - 4:45 PM</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary">room</span>
+<span>Dept. Seminar Lab 3 / Campus Meet Room 102</span>
+</div>
+<div class="pt-1.5 border-t border-surface-variant flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">assignment</span>
+<div>
+<span class="text-on-surface-variant font-label-sm">Agenda:</span>
+<span class="text-on-surface font-body-sm text-[12px] ml-1">Distributed Caching Strategy &amp; Redis Sharding Proof of Concept</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 mt-2">
+<button class="h-8 px-3.5 bg-surface-container-lowest border border-primary text-primary hover:bg-surface-container-low rounded-lg font-label-lg text-xs font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[15px]">description</span>
+<span>View Session Prep Sheet</span>
+</button>
+<a class="font-label-sm text-xs text-on-surface-variant hover:text-on-surface font-medium hover:underline" href="#">
+              Reschedule / Notes
+            </a>
+</div>
+</div>
+<!-- Session Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm hover:border-primary/40 transition-all">
+<div class="flex items-start justify-between gap-3 mb-3">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-primary-container font-bold text-base shadow-xs shrink-0">
+                AV
+              </div>
+<div>
+<span class="bg-blue-50 text-primary border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full font-label-sm inline-flex items-center gap-1 mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Confirmed Virtual
+                </span>
+<h3 class="font-headline-sm text-[16px] font-bold text-on-surface">Alumni Mock DSA &amp; Placement Strategy Sync</h3>
+<p class="font-body-sm text-xs text-on-surface-variant">Amit Verma • Staff SWE at TechCorp · Alumni Class of '21</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low/60 rounded-lg p-3.5 space-y-2 border border-surface-variant/80 text-xs">
+<div class="flex items-center gap-2 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary">schedule</span>
+<span>Friday, Sep 19, 2025 · 2:00 PM (45 mins)</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary">video_call</span>
+<span>Virtual via Google Meet (Integration Link ready)</span>
+</div>
+<div class="pt-1.5 border-t border-surface-variant flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">target</span>
+<div>
+<span class="text-on-surface-variant font-label-sm">Focus Area:</span>
+<span class="text-on-surface font-body-sm text-[12px] ml-1">Graph Traversal, Multi-source BFS &amp; TechCorp Day-1 Round 2 Rubric</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 mt-2">
+<button class="h-8 px-3.5 bg-primary-container hover:bg-primary text-white rounded-lg font-label-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[15px]">videocam</span>
+<span>Join Video Room</span>
+</button>
+<button class="h-8 px-3 border border-outline-variant hover:bg-surface-container-low rounded-lg font-label-sm text-xs text-on-surface-variant transition-colors">
+              View Shared Rubric
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Recommended & Available Mentors Directory -->
+<section class="space-y-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Institutional Mentors &amp; Alumni Directory</h2>
+<p class="font-body-sm text-xs text-on-surface-variant">Verified faculty advisors and top industry alumni available for booking</p>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-lowest border border-outline-variant p-1 rounded-lg">
+<button class="px-2.5 py-1 text-xs font-label-md rounded bg-primary text-white font-semibold">All Mentors (18)</button>
+<button class="px-2.5 py-1 text-xs font-label-md rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low">Faculty Advisors</button>
+<button class="px-2.5 py-1 text-xs font-label-md rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low">Industry Alumni</button>
+<button class="px-2.5 py-1 text-xs font-label-md rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low hidden md:block">Placement Officers</button>
+<button class="px-2.5 py-1 text-xs font-label-md rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low hidden xl:block">Cloud &amp; Systems</button>
+</div>
+</div>
+<!-- 4 Mentors Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Mentor 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-start justify-between mb-3">
+<div class="w-12 h-12 rounded-xl bg-blue-100 text-primary font-bold flex items-center justify-center font-headline-sm">
+                NS
+              </div>
+<div class="flex items-center gap-1 bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.95</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-[15px] font-bold text-on-surface">Prof. Neha Sharma</h3>
+<p class="font-label-sm text-[11px] text-primary font-semibold">Faculty Lead • CSE Dept.</p>
+<p class="font-body-sm text-[12px] text-on-surface-variant mt-2">
+              Specialized in Distributed Systems &amp; DBMS. 15+ Yrs Academic &amp; Research Exp.
+            </p>
+<div class="flex flex-wrap gap-1.5 mt-3">
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">Dist. Systems</span>
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">DB Internals</span>
+</div>
+</div>
+<div class="pt-4 mt-3 border-t border-surface-variant flex items-center justify-between">
+<span class="text-[11px] font-label-sm text-tertiary-container font-medium flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Avail Wed/Fri
+            </span>
+<button class="h-7 px-3 bg-surface-container-low text-primary hover:bg-primary-container hover:text-white rounded-md font-label-sm text-xs font-semibold transition-colors">
+              Book Office Hours
+            </button>
+</div>
+</div>
+<!-- Mentor 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-start justify-between mb-3">
+<div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center font-headline-sm">
+                AV
+              </div>
+<div class="flex items-center gap-1 bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.98</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-[15px] font-bold text-on-surface">Amit Verma</h3>
+<p class="font-label-sm text-[11px] text-primary font-semibold">Staff SWE @ TechCorp (Ex-Amazon)</p>
+<p class="font-body-sm text-[12px] text-on-surface-variant mt-2">
+              Alumni Class of '21. Mentored 40+ campus students through Day-1 placement cycles.
+            </p>
+<div class="flex flex-wrap gap-1.5 mt-3">
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">Algorithms</span>
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">Mock Screens</span>
+</div>
+</div>
+<div class="pt-4 mt-3 border-t border-surface-variant flex items-center justify-between">
+<span class="text-[11px] font-label-sm text-on-surface-variant font-medium">Day-1 Mentor</span>
+<button class="h-7 px-3 bg-surface-container-low text-primary hover:bg-primary-container hover:text-white rounded-md font-label-sm text-xs font-semibold transition-colors">
+              Request Mock Screen
+            </button>
+</div>
+</div>
+<!-- Mentor 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-start justify-between mb-3">
+<div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 font-bold flex items-center justify-center font-headline-sm">
+                AS
+              </div>
+<div class="flex items-center gap-1 bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>5.0</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-[15px] font-bold text-on-surface">Dr. Arvind Swaminathan</h3>
+<p class="font-label-sm text-[11px] text-primary font-semibold">HOD &amp; Professor</p>
+<p class="font-body-sm text-[12px] text-on-surface-variant mt-2">
+              Advanced Algorithms, Formal Verification &amp; Research Capstone Evaluator.
+            </p>
+<div class="flex flex-wrap gap-1.5 mt-3">
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">Research</span>
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">Graph Theory</span>
+</div>
+</div>
+<div class="pt-4 mt-3 border-t border-surface-variant flex items-center justify-between">
+<span class="text-[11px] font-label-sm text-tertiary-container font-medium flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Avail Thu
+            </span>
+<button class="h-7 px-3 bg-surface-container-low text-primary hover:bg-primary-container hover:text-white rounded-md font-label-sm text-xs font-semibold transition-colors">
+              Request Review
+            </button>
+</div>
+</div>
+<!-- Mentor 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-start justify-between mb-3">
+<div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 font-bold flex items-center justify-center font-headline-sm">
+                PS
+              </div>
+<div class="flex items-center gap-1 bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.92</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-[15px] font-bold text-on-surface">Priya Sundaram</h3>
+<p class="font-label-sm text-[11px] text-primary font-semibold">Sr. Cloud Architect @ CloudSys</p>
+<p class="font-body-sm text-[12px] text-on-surface-variant mt-2">
+              Class of '19. Specializing in Kubernetes, Golang Microservices &amp; AWS Infrastructure.
+            </p>
+<div class="flex flex-wrap gap-1.5 mt-3">
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">Kubernetes</span>
+<span class="bg-surface-container-low text-on-surface text-[10px] px-2 py-0.5 rounded font-label-sm">Go / Microservices</span>
+</div>
+</div>
+<div class="pt-4 mt-3 border-t border-surface-variant flex items-center justify-between">
+<span class="text-[11px] font-label-sm text-on-surface-variant font-medium">Slots Open Next Wk</span>
+<button class="h-7 px-3 bg-surface-container-low text-primary hover:bg-primary-container hover:text-white rounded-md font-label-sm text-xs font-semibold transition-colors">
+              Book 1:1 Advisory
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Institutional Discussion & Technical Q&A Board -->
+<section class="space-y-4 pb-8">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">forum</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Institutional Technical Q&amp;A Board</h2>
+</div>
+<p class="font-body-sm text-xs text-on-surface-variant">Peer doubts vetted with authoritative answers from professors and recruiters</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 overflow-x-auto py-1">
+<span class="px-2.5 py-1 text-xs font-label-md rounded-full bg-primary-container text-white cursor-pointer">All Discussions</span>
+<span class="px-2.5 py-1 text-xs font-label-md rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:text-on-surface cursor-pointer">System Design</span>
+<span class="px-2.5 py-1 text-xs font-label-md rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:text-on-surface cursor-pointer">DSA &amp; LeetCode</span>
+<span class="px-2.5 py-1 text-xs font-label-md rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:text-on-surface cursor-pointer">Placement Policies</span>
+<span class="px-2.5 py-1 text-xs font-label-md rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:text-on-surface cursor-pointer">Capstone Projects</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<!-- Thread 1 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm hover:border-outline transition-colors">
+<!-- Question Header -->
+<div class="flex items-start justify-between gap-4 mb-3">
+<div class="space-y-1.5 flex-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="bg-emerald-50 text-tertiary-container border border-emerald-200 text-[11px] font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 font-label-sm">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                  Faculty Answered
+                </span>
+<span class="bg-surface-container-low text-primary text-[11px] font-semibold px-2 py-0.5 rounded font-label-sm">#SystemDesign</span>
+<span class="bg-surface-container-low text-primary text-[11px] font-semibold px-2 py-0.5 rounded font-label-sm">#Redis</span>
+<span class="bg-surface-container-low text-primary text-[11px] font-semibold px-2 py-0.5 rounded font-label-sm">#DistributedSystems</span>
+</div>
+<h3 class="font-headline-sm text-[17px] font-bold text-on-surface">
+                Best way to handle Redis cluster partition failover in Microservices Capstone?
+              </h3>
+<p class="font-body-sm text-xs text-on-surface-variant">
+                Posted by <strong class="text-on-surface font-semibold">Rohan Mehta</strong> · 1 day ago · Dept. of Computer Science &amp; Engineering
+              </p>
+</div>
+<!-- Upvote Box -->
+<div class="flex flex-col items-center justify-center bg-surface-container-low border border-surface-variant rounded-lg px-2.5 py-1.5 shrink-0 text-center">
+<span class="material-symbols-outlined text-primary text-[18px] cursor-pointer hover:scale-110 transition-transform">thumb_up</span>
+<span class="font-label-lg text-xs text-primary font-bold">14</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm">votes</span>
+</div>
+</div>
+<!-- Verified Response Box -->
+<div class="mt-3 bg-gradient-to-r from-emerald-50/40 via-white to-white border-l-4 border-emerald-500 border-y border-r border-outline-variant/60 rounded-r-xl p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-[10px]">
+                  NS
+                </div>
+<div>
+<span class="font-label-md text-xs font-bold text-on-surface">Prof. Neha Sharma</span>
+<span class="text-[11px] text-tertiary-container font-medium ml-1">· Verified Faculty Lead Response</span>
+</div>
+</div>
+<span class="bg-emerald-100/70 text-tertiary-container text-[10px] font-bold px-2 py-0.5 rounded font-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">verified</span> Endorsed by Placement Panel
+              </span>
+</div>
+<p class="font-body-md text-xs text-on-surface leading-relaxed">
+              "Utilize Redis Sentinel or Cluster Raft-based election with <code class="bg-surface-container-low px-1 py-0.5 rounded text-primary font-mono text-[11px]">min-replicas-to-write</code> set to 1. In your capstone architecture, ensure the FastAPI circuit breaker triggers gracefully before cache stampede occurs. We will benchmark this during our Tuesday review."
+            </p>
+</div>
+<!-- Thread Footer -->
+<div class="flex items-center justify-between pt-3 mt-3 border-t border-outline-variant/50 text-xs text-on-surface-variant">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1 font-label-sm text-[12px] text-primary font-medium hover:underline cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">reply</span> 3 Replies
+              </span>
+<span class="flex items-center gap-1 font-label-sm text-[12px]">
+<span class="material-symbols-outlined text-[16px]">visibility</span> 142 Views
+              </span>
+</div>
+<button class="font-label-sm text-xs text-primary hover:underline font-semibold flex items-center gap-1">
+<span>View Full Thread Discussion</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- Thread 2 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm hover:border-outline transition-colors">
+<!-- Question Header -->
+<div class="flex items-start justify-between gap-4 mb-3">
+<div class="space-y-1.5 flex-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="bg-blue-50 text-primary border border-blue-200 text-[11px] font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 font-label-sm">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                  Alumni Answered
+                </span>
+<span class="bg-surface-container-low text-primary text-[11px] font-semibold px-2 py-0.5 rounded font-label-sm">#Tier1Prep</span>
+<span class="bg-surface-container-low text-primary text-[11px] font-semibold px-2 py-0.5 rounded font-label-sm">#TechCorp</span>
+<span class="bg-surface-container-low text-primary text-[11px] font-semibold px-2 py-0.5 rounded font-label-sm">#DSA</span>
+</div>
+<h3 class="font-headline-sm text-[17px] font-bold text-on-surface">
+                TechCorp Day-1 Placement: What specific DP and Graph patterns are tested in Round 2?
+              </h3>
+<p class="font-body-sm text-xs text-on-surface-variant">
+                Posted by <strong class="text-on-surface font-semibold">Sneha Patel</strong> · 2 days ago · Final Year CSE
+              </p>
+</div>
+<!-- Upvote Box -->
+<div class="flex flex-col items-center justify-center bg-surface-container-low border border-surface-variant rounded-lg px-2.5 py-1.5 shrink-0 text-center">
+<span class="material-symbols-outlined text-primary text-[18px] cursor-pointer hover:scale-110 transition-transform">thumb_up</span>
+<span class="font-label-lg text-xs text-primary font-bold">28</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm">votes</span>
+</div>
+</div>
+<!-- Verified Response Box -->
+<div class="mt-3 bg-gradient-to-r from-blue-50/40 via-white to-white border-l-4 border-primary-container border-y border-r border-outline-variant/60 rounded-r-xl p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-[10px]">
+                  AV
+                </div>
+<div>
+<span class="font-label-md text-xs font-bold text-on-surface">Amit Verma</span>
+<span class="text-[11px] text-primary font-medium ml-1">· TechCorp Staff SWE (Alumni Mentor)</span>
+</div>
+</div>
+<span class="bg-blue-100 text-primary text-[10px] font-bold px-2 py-0.5 rounded font-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">attach_file</span> Verified Placement Rubric Attached
+              </span>
+</div>
+<p class="font-body-md text-xs text-on-surface leading-relaxed">
+              "Expect multi-dimensional DP, segment trees, or topological sort with cycle detection. Make sure you can articulate space complexity constraints under <code class="bg-surface-container-low px-1 py-0.5 rounded text-primary font-mono text-[11px]">O(N) auxiliary space</code>. Emphasize modular clean code during live coding."
+            </p>
+</div>
+<!-- Thread Footer -->
+<div class="flex items-center justify-between pt-3 mt-3 border-t border-outline-variant/50 text-xs text-on-surface-variant">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1 font-label-sm text-[12px] text-primary font-medium hover:underline cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">reply</span> 8 Replies
+              </span>
+<span class="flex items-center gap-1 font-label-sm text-[12px]">
+<span class="material-symbols-outlined text-[16px]">visibility</span> 389 Views
+              </span>
+</div>
+<button class="font-label-sm text-xs text-primary hover:underline font-semibold flex items-center gap-1">
+<span>View Full Thread Discussion</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+</div>
+</section>
+</main>
+</body></html>

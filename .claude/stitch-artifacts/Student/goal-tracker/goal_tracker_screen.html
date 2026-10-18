@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP Platform - Goal Tracker &amp; Academic Sprint Management</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#eff4ff",
+            "on-surface-variant": "#434655",
+            "on-secondary-fixed": "#131b2e",
+            "tertiary": "#004f35",
+            "secondary-container": "#dae2fd",
+            "secondary-fixed": "#dae2fd",
+            "on-background": "#0b1c30",
+            "on-surface": "#0b1c30",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-secondary": "#ffffff",
+            "surface-container-highest": "#d3e4fe",
+            "on-primary": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "error": "#ba1a1a",
+            "surface": "#f8f9ff",
+            "primary": "#0037b0",
+            "surface-container-high": "#dce9ff",
+            "tertiary-fixed-dim": "#68dba9",
+            "surface-dim": "#cbdbf5",
+            "on-tertiary-container": "#76eab6",
+            "surface-container": "#e5eeff",
+            "on-primary-fixed": "#001551",
+            "on-primary-fixed-variant": "#0039b5",
+            "secondary": "#565e74",
+            "on-error-container": "#93000a",
+            "tertiary-fixed": "#85f8c4",
+            "outline-variant": "#c4c5d7",
+            "tertiary-container": "#006948",
+            "surface-tint": "#2151da",
+            "on-secondary-container": "#5c647a",
+            "primary-container": "#1d4ed8",
+            "on-tertiary": "#ffffff",
+            "on-error": "#ffffff",
+            "inverse-primary": "#b7c4ff",
+            "on-tertiary-fixed": "#002114",
+            "error-container": "#ffdad6",
+            "primary-fixed-dim": "#b7c4ff",
+            "inverse-surface": "#213145",
+            "background": "#f8f9ff",
+            "outline": "#747686",
+            "on-tertiary-fixed-variant": "#005137",
+            "on-primary-container": "#cad3ff",
+            "surface-variant": "#d3e4fe",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#bec6e0",
+            "surface-bright": "#f8f9ff",
+            "primary-fixed": "#dce1ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-sm": "0.5rem",
+            "gutter-sm": "1rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-xl": "2.5rem",
+            "margin": "2rem",
+            "margin-sm": "1rem",
+            "gutter": "1.5rem"
+          },
+          "fontFamily": {
+            "label-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col font-body-md text-body-md selection:bg-primary selection:text-white">
+<!-- ========================================================================= -->
+<!-- SIDE NAVIGATION (Mandated Shared Component Anchor: 260px Fixed)          -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-outline-variant shadow-sm">
+<div class="p-4 flex flex-col gap-5">
+<!-- Header / Logo -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="school">school</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">GRIP</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container-low text-primary text-[10px] font-bold tracking-wider">CAMPUS</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant leading-none">Learn • Prepare • Grow</p>
+</div>
+</div>
+</div>
+<!-- Student Profile Chip -->
+<div class="flex items-center gap-3 p-2.5 rounded-xl bg-surface border border-outline-variant/60">
+<div class="relative w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm tracking-tight flex-shrink-0">
+          RM
+          <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="font-label-lg text-label-lg text-on-surface truncate">Rohan Mehta</h4>
+</div>
+<p class="font-body-sm text-[12px] text-on-surface-variant truncate">3rd Year • CSE Track</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1">
+<!-- 1. Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- 2. Profile & Skills -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+<span>Profile &amp; Skills</span>
+</a>
+<!-- 3. Career Compass -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="explore">explore</span>
+<span>Career Compass</span>
+</a>
+<!-- 4. Goal Tracker (ACTIVE) -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-surface-container-low text-primary font-label-lg text-label-lg font-semibold border-l-4 border-primary" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary" data-icon="flag">flag</span>
+<span>Goal Tracker</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold">3 active</span>
+</a>
+<!-- 5. Mentorship & Q&A -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="school">school</span>
+<span>Mentorship &amp; Q&amp;A</span>
+</a>
+<!-- 6. Interview & Readiness -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="quiz">quiz</span>
+<span>Interview &amp; Readiness</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Section: Readiness Benchmark & Footers -->
+<div class="p-4 flex flex-col gap-3 border-t border-outline-variant/60">
+<!-- Benchmark Widget -->
+<div class="p-3.5 rounded-xl bg-surface border border-outline-variant/70">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Readiness Benchmark</span>
+<span class="flex items-center text-emerald-700 font-bold text-[11px] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+<span class="material-symbols-outlined text-[12px] mr-0.5" data-icon="trending_up">trending_up</span> +12%
+          </span>
+</div>
+<div class="flex items-baseline gap-1.5 mb-2">
+<span class="font-metric-val text-metric-val font-bold text-on-surface">85%</span>
+<span class="font-body-sm text-[12px] text-on-surface-variant">Placement Ready</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden mb-2">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 85%"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] text-on-surface-variant">
+<span>5 of 6 Rubrics Done</span>
+<span class="flex items-center gap-1 text-emerald-700 font-medium">
+<span class="material-symbols-outlined text-[13px] text-emerald-600" data-icon="verified">verified</span> Verified
+          </span>
+</div>
+</div>
+<!-- Footer Action Links -->
+<div class="pt-1 flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-error hover:bg-error-container/30 font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="logout">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- TOP APP BAR (Sticky Desktop Nav Cluster, 260px offset)                    -->
+<!-- ========================================================================= -->
+<header class="sticky top-0 z-30 ml-[260px] w-[calc(100vw-260px)] h-16 bg-surface-container-lowest/95 backdrop-blur-sm border-b border-outline-variant flex items-center justify-between px-8">
+<!-- Breadcrumb & Title -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+<span>Portal</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface font-semibold">Goal Tracker &amp; Sprint Management</span>
+</div>
+</div>
+<!-- Search & Actions Cluster -->
+<div class="flex items-center gap-4">
+<!-- Search Bar -->
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline" data-icon="search">search</span>
+<input class="w-full h-9 pl-9 pr-4 text-xs rounded-lg border border-outline-variant bg-surface focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-outline" placeholder="Search active goals, weekly milestones, deadlines..." type="text"/>
+</div>
+<!-- Semester Selector Dropdown -->
+<button class="h-9 px-3 rounded-lg border border-outline-variant bg-white hover:bg-surface-container-low text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="calendar_month">calendar_month</span>
+<span>Filter by Semester 5</span>
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="arrow_drop_down">arrow_drop_down</span>
+</button>
+<!-- Primary Action: Create New Goal -->
+<button class="h-9 px-4 rounded-lg bg-primary hover:bg-primary-container text-white font-label-sm text-label-sm flex items-center gap-1.5 transition-all shadow-sm active:scale-[0.98]" onclick="document.getElementById('createGoalModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+<span>+ Create New Goal</span>
+</button>
+<!-- Notification Bell -->
+<button class="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-error text-white font-label-sm text-[9px] flex items-center justify-center rounded-full ring-2 ring-white">2</span>
+</button>
+<!-- Student Thumbnail Avatar -->
+<div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-outline-variant">
+        RM
+      </div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- MAIN CONTENT CANVAS                                                       -->
+<!-- ========================================================================= -->
+<main class="ml-[260px] p-8 max-w-[1440px] flex flex-col gap-8">
+<!-- 1. SPRINT & GOAL VELOCITY HEADER SUMMARY -->
+<section class="flex flex-col gap-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Academic Sprint &amp; Placement Goals</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Track semester milestones, weekly commitments, and skill acquisition deadlines.</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Semester 5 On-Track (Week 3 of 16)
+          </span>
+</div>
+</div>
+<!-- Velocity Metrics Grid (4 Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Card 1: Active Goals -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/80 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Active Goals</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" data-icon="target">flag</span>
+</div>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">6 Total</div>
+<div class="flex items-center gap-1.5 text-xs text-on-surface-variant">
+<span class="font-medium text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">3 High Priority</span>
+<span>• 1 Due This Week</span>
+</div>
+</div>
+<!-- Card 2: Sprint 5 Velocity -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/80 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Sprint 5 Velocity</span>
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" data-icon="bolt">bolt</span>
+</div>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">78%</div>
+<div class="flex items-center gap-1.5 text-xs text-on-surface-variant">
+<span class="font-medium text-on-surface">14 of 18</span>
+<span>sub-milestones completed</span>
+</div>
+</div>
+<!-- Card 3: Weekly Completion Rate -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/80 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Weekly Completion</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">85%</div>
+<div class="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+<span class="px-1.5 py-0.5 bg-emerald-50 border border-emerald-200 rounded">Top 10% in CSE Cohort</span>
+</div>
+</div>
+<!-- Card 4: Days to Placement Drive -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/80 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Placement Drive</span>
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" data-icon="schedule">schedule</span>
+</div>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">42 Days</div>
+<div class="flex items-center gap-1.5 text-xs text-on-surface-variant">
+<span class="font-medium text-primary bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Tier-1 Drive Starts</span>
+<span>Oct 2025</span>
+</div>
+</div>
+</div>
+<!-- Quick Filter Segmented Bar -->
+<div class="flex items-center justify-between border-b border-outline-variant pb-3 pt-2">
+<div class="flex items-center gap-1 bg-surface-container p-1 rounded-lg border border-outline-variant/60">
+<button class="px-3 py-1.5 rounded-md bg-white text-primary font-label-sm text-label-sm font-semibold shadow-xs">
+            All Goals (6)
+          </button>
+<button class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">
+            Active Semester 5 (4)
+          </button>
+<button class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">
+            Weekly Sprints (5)
+          </button>
+<button class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">
+            Placement Milestones (2)
+          </button>
+<button class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">
+            Completed Archives (18)
+          </button>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant">Sort by:</span>
+<select class="h-8 pl-2 pr-6 text-xs rounded-md border border-outline-variant bg-white text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
+<option>Highest Priority</option>
+<option>Earliest Deadline</option>
+<option>Highest % Completed</option>
+</select>
+</div>
+</div>
+</section>
+<!-- 2. SEMESTER STRATEGIC GOALS SECTION (MACRO LEVEL) -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Semester Strategic Milestones</h2>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-medium border border-primary/20">Semester 5 Focus</span>
+</div>
+<span class="text-xs text-on-surface-variant">Macro learning outcomes mapped directly to Placement Readiness Score</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- CARD 1: Distributed Systems -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm flex flex-col justify-between relative hover:border-primary/50 transition-colors">
+<div class="flex flex-col gap-3.5">
+<!-- Header Badges -->
+<div class="flex items-center justify-between flex-wrap gap-2">
+<span class="px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-label-sm text-label-sm">High Priority</span>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-label-sm text-[11px]">Academic &amp; Tier-1 Prep</span>
+</div>
+<!-- Title -->
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface leading-snug">
+                Master Distributed Systems Architecture &amp; Event Streaming
+              </h3>
+<p class="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="event">event</span> Due Oct 15, 2025 (4 Weeks Left)
+              </p>
+</div>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-1.5 pt-1">
+<div class="flex justify-between text-xs font-semibold">
+<span class="text-on-surface">65% Completed</span>
+<span class="text-primary">3 of 5 Checkpoints Done</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 65%"></div>
+</div>
+<p class="text-[11px] text-on-surface-variant">Endorsed by Prof. Neha Sharma (Distributed Systems Chair)</p>
+</div>
+<!-- Checkpoint Interactive Checklist -->
+<div class="mt-2 pt-3 border-t border-outline-variant/60 flex flex-col gap-2">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline text-[10px]">Key Checkpoints</span>
+<!-- Checkpoint 1 -->
+<div class="flex items-start gap-2 text-xs text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-emerald-600 flex-shrink-0 mt-0.5" data-icon="check_circle">check_circle</span>
+<span class="line-through text-on-surface-variant">Redis Clustering &amp; Cache Invalidation</span>
+</div>
+<!-- Checkpoint 2 (Active) -->
+<div class="flex items-start gap-2 text-xs font-medium text-primary bg-blue-50/60 p-1.5 rounded border border-blue-200">
+<span class="material-symbols-outlined text-[16px] text-primary flex-shrink-0 mt-0.5" data-icon="play_arrow">play_arrow</span>
+<span>Kafka Pub/Sub &amp; Partition Rebalancing (Active Sprint)</span>
+</div>
+<!-- Checkpoint 3 -->
+<div class="flex items-start gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-outline flex-shrink-0 mt-0.5" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span>Distributed Consensus &amp; Raft/Paxos (Pending Lab)</span>
+</div>
+</div>
+</div>
+<!-- Card Actions -->
+<div class="mt-6 pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+<button class="h-8 px-3 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container font-label-sm text-label-sm font-semibold transition-colors">
+              Update Progress
+            </button>
+<button class="text-xs text-on-surface-variant hover:text-on-surface p-1.5 rounded">
+              Edit Goal
+            </button>
+</div>
+</div>
+<!-- CARD 2: LeetCode DSA -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm flex flex-col justify-between relative hover:border-primary/50 transition-colors">
+<div class="flex flex-col gap-3.5">
+<!-- Header Badges -->
+<div class="flex items-center justify-between flex-wrap gap-2">
+<span class="px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-label-sm text-label-sm">High Priority</span>
+<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-label-sm text-[11px] font-medium">Due in 12 days</span>
+</div>
+<!-- Title -->
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface leading-snug">
+                Solve 150 Hard/Medium LeetCode DSA Problems (Graphs &amp; DP)
+              </h3>
+<p class="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="code">code</span> Technical Interview Prep
+              </p>
+</div>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-1.5 pt-1">
+<div class="flex justify-between text-xs font-semibold">
+<span class="text-on-surface">80% Completed</span>
+<span class="text-emerald-600">120 / 150 Solved</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-full rounded-full" style="width: 80%"></div>
+</div>
+<p class="text-[11px] text-on-surface-variant">Benchmark: 80 DP &amp; 40 Graph problems verified</p>
+</div>
+<!-- Focus Sub-metrics -->
+<div class="mt-2 pt-3 border-t border-outline-variant/60 flex flex-col gap-2">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline text-[10px]">Topic Breakdown</span>
+<div class="grid grid-cols-2 gap-2 text-xs">
+<div class="p-2 rounded bg-surface border border-outline-variant/60 flex flex-col">
+<span class="text-on-surface-variant text-[10px]">Dynamic Prog</span>
+<span class="font-bold text-on-surface">80 / 90 (88%)</span>
+</div>
+<div class="p-2 rounded bg-surface border border-outline-variant/60 flex flex-col">
+<span class="text-on-surface-variant text-[10px]">Graphs &amp; TopoSort</span>
+<span class="font-bold text-on-surface">40 / 60 (66%)</span>
+</div>
+</div>
+<div class="p-2 bg-amber-50/70 rounded border border-amber-200 text-xs text-amber-900 mt-1">
+                Next up: 30 Hard Graph/Flow questions for Goldman Sachs Drive.
+              </div>
+</div>
+</div>
+<!-- Card Actions -->
+<div class="mt-6 pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+<button class="h-8 px-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="sync">sync</span> Sync LeetCode Stats
+            </button>
+<button class="text-xs text-on-surface-variant hover:text-on-surface p-1.5 rounded">
+              View Problem List
+            </button>
+</div>
+</div>
+<!-- CARD 3: AWS Certification -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm flex flex-col justify-between relative hover:border-primary/50 transition-colors">
+<div class="flex flex-col gap-3.5">
+<!-- Header Badges -->
+<div class="flex items-center justify-between flex-wrap gap-2">
+<span class="px-2 py-0.5 rounded bg-blue-50 text-primary border border-blue-200 font-label-sm text-label-sm">Medium Priority</span>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-label-sm text-[11px]">Industry Credential</span>
+</div>
+<!-- Title -->
+<div>
+<h3 class="font-headline-sm text-headline-sm font-semibold text-on-surface leading-snug">
+                Secure AWS Solutions Architect Associate Certification (SAA-C03)
+              </h3>
+<p class="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="event">event</span> Target: Nov 10, 2025
+              </p>
+</div>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-1.5 pt-1">
+<div class="flex justify-between text-xs font-semibold">
+<span class="text-on-surface">40% Completed</span>
+<span class="text-primary">3 Practice Exams Taken</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 40%"></div>
+</div>
+<p class="text-[11px] text-on-surface-variant">Average mock exam score: 74% (Passing: 72%)</p>
+</div>
+<!-- Domain Milestones -->
+<div class="mt-2 pt-3 border-t border-outline-variant/60 flex flex-col gap-2">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline text-[10px]">Preparation Modules</span>
+<div class="space-y-1.5 text-xs text-on-surface">
+<div class="flex items-center justify-between">
+<span>IAM, VPC &amp; Networking</span>
+<span class="text-emerald-600 font-medium">Completed</span>
+</div>
+<div class="flex items-center justify-between">
+<span>S3, EBS, EFS &amp; Storage Architectures</span>
+<span class="text-emerald-600 font-medium">Completed</span>
+</div>
+<div class="flex items-center justify-between">
+<span>High Availability &amp; Serverless Lambda</span>
+<span class="text-amber-600 font-medium">In Review</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card Actions -->
+<div class="mt-6 pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+<button class="h-8 px-3 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container font-label-sm text-label-sm font-semibold transition-colors">
+              Upload Scorecard
+            </button>
+<button class="h-8 px-3 rounded-lg border border-outline-variant bg-white hover:bg-surface font-label-sm text-label-sm font-semibold transition-colors">
+              Schedule Exam
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. WEEKLY SPRINTS & MICRO-TASKS BOARD (GRANULAR WEEKLY EXECUTION) -->
+<section class="flex flex-col gap-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-3">
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Current Sprint: Week 3 (Sep 15 - Sep 21)</h2>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-label-sm text-label-sm font-medium">
+            Sprint On-Track • 4 of 6 Done
+          </span>
+</div>
+<button class="h-8 px-3 rounded-lg border border-primary text-primary hover:bg-surface-container-low font-label-sm text-label-sm font-semibold flex items-center gap-1 transition-colors self-start sm:self-auto" onclick="document.getElementById('createGoalModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+<span>+ Add Quick Weekly Task</span>
+</button>
+</div>
+<!-- Granular Kanban / Sprint Task Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Task 1: In Progress -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border-l-4 border-l-primary border-t border-r border-b border-outline-variant shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-blue-50 text-primary font-label-sm text-[11px] font-semibold">In Progress</span>
+<span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-label-sm text-[10px] font-semibold border border-rose-200">High</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface mb-2">
+              Implement Redis Distributed Cache with TTL &amp; Cache Invalidation
+            </h4>
+<p class="text-xs text-on-surface-variant mb-3">
+              Configure write-through cache pattern for Capstone e-commerce product catalog.
+            </p>
+</div>
+<div class="pt-2 border-t border-outline-variant/60 flex items-center justify-between text-xs">
+<span class="text-rose-600 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="timer">timer</span> Due Tomorrow
+            </span>
+<span class="text-on-surface-variant">Capstone Project</span>
+</div>
+</div>
+<!-- Task 2: Completed -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border-l-4 border-l-emerald-500 border-t border-r border-b border-outline-variant shadow-xs flex flex-col justify-between opacity-90">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-label-sm text-[11px] font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="check">check</span> Completed
+              </span>
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-label-sm text-[10px]">Verified</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface line-through text-on-surface-variant mb-2">
+              Complete LeetCode Biweekly Contest &amp; Review DP Solutions
+            </h4>
+<p class="text-xs text-on-surface-variant mb-3">
+              Solved 3 of 4 problems in Contest 114. Up-solved problem 4 (Bitmask DP).
+            </p>
+</div>
+<div class="pt-2 border-t border-outline-variant/60 flex items-center justify-between text-xs">
+<span class="text-emerald-700 font-medium">Finished Yesterday</span>
+<span class="text-on-surface-variant">LeetCode Sync</span>
+</div>
+</div>
+<!-- Task 3: Pending -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border-l-4 border-l-amber-500 border-t border-r border-b border-outline-variant shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-label-sm text-[11px] font-semibold">Pending Review</span>
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-label-sm text-[10px]">Medium</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface mb-2">
+              Draft 1-page Architecture Diagram for Microservices Capstone
+            </h4>
+<p class="text-xs text-on-surface-variant mb-3">
+              Map API Gateway routing, auth microservice JWT validation, and Kafka topic layout.
+            </p>
+</div>
+<div class="pt-2 border-t border-outline-variant/60 flex items-center justify-between text-xs">
+<span class="text-on-surface-variant font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span> Due Fri, Sep 19
+            </span>
+<span class="text-on-surface-variant">Architecture</span>
+</div>
+</div>
+<!-- Task 4: Pending High Priority -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border-l-4 border-l-rose-500 border-t border-r border-b border-outline-variant shadow-xs flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-label-sm text-[11px] font-semibold">Scheduled</span>
+<span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-label-sm text-[10px] font-semibold border border-rose-200">High</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface mb-2">
+              Conduct Peer Mock Interview on System Design &amp; Rate Limiting
+            </h4>
+<p class="text-xs text-on-surface-variant mb-3">
+              1-hour live session with Alumni Mentor (Google SRE). Focus on Token Bucket algorithms.
+            </p>
+</div>
+<div class="pt-2 border-t border-outline-variant/60 flex items-center justify-between text-xs">
+<span class="text-rose-600 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="alarm">alarm</span> Sat, Sep 20 • 4 PM
+            </span>
+<span class="text-primary font-medium">Alumni Network</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. GOAL COMPLETION HISTORY & FACULTY ENDORSEMENT LOG -->
+<section class="flex flex-col gap-4 mb-10">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Goal Completion &amp; Faculty Verification Log</h2>
+<p class="text-xs text-on-surface-variant">Audit-ready verification records contributing to your Institutional Placement Profile.</p>
+</div>
+<button class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="download">download</span> Export Verified Transcript
+        </button>
+</div>
+<!-- Data Table -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-outline-variant text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant h-10">
+<th class="px-5">Goal / Milestone Name</th>
+<th class="px-4">Category</th>
+<th class="px-4">Completed Date</th>
+<th class="px-4">Verified By</th>
+<th class="px-5 text-right">Readiness Impact</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/40 text-xs">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-14">
+<td class="px-5 font-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-emerald-600" data-icon="task_alt">task_alt</span>
+<span>Core CS: DSA Masterclass &amp; B-Tree Indexing Implementation</span>
+</div>
+</td>
+<td class="px-4">
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-label-sm text-[11px]">Core CS</span>
+</td>
+<td class="px-4 text-on-surface-variant">Sep 04, 2025</td>
+<td class="px-4">
+<div class="flex items-center gap-1.5 font-medium text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-primary" data-icon="school">school</span>
+<span>Prof. Neha Sharma</span>
+</div>
+</td>
+<td class="px-5 text-right">
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-[11px]">
+                    +2.0% Placement Ready
+                  </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-14">
+<td class="px-5 font-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-emerald-600" data-icon="task_alt">task_alt</span>
+<span>Database Management Systems (DBMS) Lab Final &amp; ACID Assessment</span>
+</div>
+</td>
+<td class="px-4">
+<span class="px-2 py-0.5 rounded bg-blue-50 text-primary font-label-sm text-[11px]">Academic Lab</span>
+</td>
+<td class="px-4 text-on-surface-variant">Aug 28, 2025</td>
+<td class="px-4">
+<div class="flex items-center gap-1.5 font-medium text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant" data-icon="memory">memory</span>
+<span>Automated Lab Platform</span>
+</div>
+</td>
+<td class="px-5 text-right">
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-[11px]">
+                    +1.5% Placement Ready
+                  </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors h-14">
+<td class="px-5 font-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-emerald-600" data-icon="task_alt">task_alt</span>
+<span>REST API Design with FastAPI &amp; Automated OpenAPI Specification</span>
+</div>
+</td>
+<td class="px-4">
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-label-sm text-[11px]">Software Eng</span>
+</td>
+<td class="px-4 text-on-surface-variant">Aug 15, 2025</td>
+<td class="px-4">
+<div class="flex items-center gap-1.5 font-medium text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-primary" data-icon="verified_user">verified_user</span>
+<span>Dr. Arvind Swaminathan</span>
+</div>
+</td>
+<td class="px-5 text-right">
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-[11px]">
+                    +1.8% Placement Ready
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+<!-- ========================================================================= -->
+<!-- MODAL DIALOG: '+ Create New Goal'                                         -->
+<!-- ========================================================================= -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs" id="createGoalModal">
+<div class="bg-surface-container-lowest w-full max-w-xl rounded-2xl border border-outline-variant shadow-2xl p-6 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200">
+<!-- Modal Header -->
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_task">add_task</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Create New Goal or Milestone</h3>
+<p class="text-xs text-on-surface-variant">Align your objective with institutional criteria and placement competencies.</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded-lg" onclick="document.getElementById('createGoalModal').classList.add('hidden')">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Modal Body Form -->
+<form class="flex flex-col gap-4">
+<!-- Goal Title -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm font-semibold text-on-surface">Goal Title</label>
+<input class="h-10 px-3 text-xs rounded-lg border border-outline-variant bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="e.g., Build High-Throughput URL Shortener with Kafka &amp; Redis" type="text" value="Build High-Throughput URL Shortener with Kafka"/>
+</div>
+<!-- Goal Type Toggle -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm font-semibold text-on-surface">Goal Category &amp; Scope</label>
+<div class="grid grid-cols-3 gap-2">
+<label class="flex items-center justify-center p-2.5 rounded-lg border border-primary bg-surface-container-low text-primary text-xs font-semibold cursor-pointer">
+<input checked="" class="hidden" name="goal_type" type="radio"/>
+<span>Semester Milestone</span>
+</label>
+<label class="flex items-center justify-center p-2.5 rounded-lg border border-outline-variant bg-white text-on-surface-variant text-xs font-medium cursor-pointer hover:bg-surface">
+<input class="hidden" name="goal_type" type="radio"/>
+<span>Weekly Sprint Task</span>
+</label>
+<label class="flex items-center justify-center p-2.5 rounded-lg border border-outline-variant bg-white text-on-surface-variant text-xs font-medium cursor-pointer hover:bg-surface">
+<input class="hidden" name="goal_type" type="radio"/>
+<span>Placement Credential</span>
+</label>
+</div>
+</div>
+<!-- Two Columns: Track & Priority -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm font-semibold text-on-surface">Linked Skill Track</label>
+<select class="h-10 px-3 text-xs rounded-lg border border-outline-variant bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+<option selected="">Distributed Systems &amp; Cloud Backend</option>
+<option>Data Structures &amp; Algorithms</option>
+<option>Full-Stack Web Engineering</option>
+<option>Machine Learning Foundations</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm font-semibold text-on-surface">Priority Level</label>
+<div class="flex gap-2 h-10 items-center">
+<label class="flex-1 text-center py-2 text-xs font-semibold rounded-lg bg-rose-50 border border-rose-300 text-rose-700 cursor-pointer">High</label>
+<label class="flex-1 text-center py-2 text-xs font-semibold rounded-lg bg-surface border border-outline-variant text-on-surface-variant cursor-pointer hover:bg-slate-100">Medium</label>
+<label class="flex-1 text-center py-2 text-xs font-semibold rounded-lg bg-surface border border-outline-variant text-on-surface-variant cursor-pointer hover:bg-slate-100">Normal</label>
+</div>
+</div>
+</div>
+<!-- Target Deadline -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm font-semibold text-on-surface">Target Completion Deadline</label>
+<div class="relative">
+<input class="w-full h-10 px-3 text-xs rounded-lg border border-outline-variant bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" type="date" value="2025-10-30"/>
+</div>
+</div>
+<!-- Sub-Milestones Checklist Preview -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm font-semibold text-on-surface">Initial Checkpoints (Optional)</label>
+<button class="text-[11px] text-primary font-semibold hover:underline" type="button">+ Add checkpoint</button>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="check_box_outline_blank">check_box_outline_blank</span>
+<input class="flex-1 h-8 px-2 text-xs rounded border border-outline-variant/80 bg-surface" type="text" value="System design schema &amp; Redis cluster setup"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="check_box_outline_blank">check_box_outline_blank</span>
+<input class="flex-1 h-8 px-2 text-xs rounded border border-outline-variant/80 bg-surface" type="text" value="Implement MurmurHash3 URL hashing logic"/>
+</div>
+</div>
+</div>
+</form>
+<!-- Modal Footer Actions -->
+<div class="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant/60">
+<button class="h-9 px-4 rounded-lg border border-outline-variant bg-white hover:bg-surface text-on-surface font-label-sm text-label-sm transition-colors" onclick="document.getElementById('createGoalModal').classList.add('hidden')" type="button">
+          Cancel
+        </button>
+<button class="h-9 px-5 rounded-lg bg-primary hover:bg-primary-container text-white font-label-sm text-label-sm font-semibold shadow-sm transition-all active:scale-[0.98]" onclick="document.getElementById('createGoalModal').classList.add('hidden')" type="button">
+          Save &amp; Track Goal
+        </button>
+</div>
+</div>
+</div>
+<script>
+    // Lightweight interactivity for checkbox state toggling
+    document.addEventListener('DOMContentLoaded', () => {
+      // Close modal on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('createGoalModal');
+          if (modal && !modal.classList.contains('hidden')) {
+            modal.classList.add('hidden');
+          }
+        }
+      });
+    });
+  </script>
+</body></html>

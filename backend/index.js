@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: './config/.env' });
 
 import express from 'express';
+import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import companyRoutes from './routes/companyRoutes.js';
@@ -18,11 +19,17 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import placementRoutes from './routes/placementRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
+import studentRoutes from './routes/studentRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import actionPlanRoutes from './routes/actionPlanRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import { runEventReminderScan } from './services/eventReminderService.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ─── Middleware ────────────────────────────────────────────────
+app.use(cors());
 app.use(express.json());
 
 // ─── Routes ───────────────────────────────────────────────────
@@ -41,6 +48,11 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/placement', placementRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/department', departmentRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/action-plans', actionPlanRoutes);
+app.use('/api/action-plan', actionPlanRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ─── Health check ─────────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -50,6 +62,13 @@ app.get('/', (req, res) => {
 // ─── Start Server ─────────────────────────────────────────────
 const startServer = async () => {
   await connectDB();
+
+  // Run initial reminder check on startup and schedule periodic interval (every 5 minutes)
+  runEventReminderScan().catch((err) => console.warn('Startup reminder scan warning:', err.message));
+  const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+  setInterval(() => {
+    runEventReminderScan().catch((err) => console.warn('Periodic reminder scan error:', err.message));
+  }, REMINDER_INTERVAL_MS);
   app.listen(PORT, () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 Auth routes:         POST   /api/auth/register`);
@@ -89,7 +108,10 @@ const startServer = async () => {
     console.log(`                        GET    /api/progress/interviews/:studentId`);
     console.log(`🏫 Department routes:   GET    /api/department/analytics`);
     console.log(`                        GET    /api/department/skill-gaps`);
-    console.log(`                        GET    /api/department/placement-stats\n`);
+    console.log(`                        GET    /api/department/placement-stats`);
+    console.log(`📋 Action Plan routes:  POST   /api/action-plans/preview`);
+    console.log(`                        GET    /api/action-plans/student/:studentId`);
+    console.log(`                        GET    /api/action-plans/interview/:interviewId\n`);
   });
 };
 

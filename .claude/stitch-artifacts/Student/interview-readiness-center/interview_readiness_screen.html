@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP Platform - Interview &amp; Readiness Center</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed": "#131b2e",
+            "tertiary": "#004f35",
+            "surface-container-low": "#eff4ff",
+            "on-tertiary-container": "#76eab6",
+            "primary-container": "#1d4ed8",
+            "primary": "#0037b0",
+            "secondary": "#565e74",
+            "on-tertiary-fixed": "#002114",
+            "surface": "#f8f9ff",
+            "surface-container-highest": "#d3e4fe",
+            "on-secondary-fixed-variant": "#3f465c",
+            "tertiary-container": "#006948",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#cad3ff",
+            "background": "#f8f9ff",
+            "surface-tint": "#2151da",
+            "primary-fixed-dim": "#b7c4ff",
+            "inverse-surface": "#213145",
+            "surface-container": "#e5eeff",
+            "surface-container-lowest": "#ffffff",
+            "on-background": "#0b1c30",
+            "on-primary-fixed-variant": "#0039b5",
+            "error": "#ba1a1a",
+            "secondary-fixed": "#dae2fd",
+            "outline-variant": "#c4c5d7",
+            "on-primary-fixed": "#001551",
+            "on-error": "#ffffff",
+            "on-surface": "#0b1c30",
+            "secondary-fixed-dim": "#bec6e0",
+            "on-tertiary": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "error-container": "#ffdad6",
+            "on-tertiary-fixed-variant": "#005137",
+            "outline": "#747686",
+            "inverse-primary": "#b7c4ff",
+            "secondary-container": "#dae2fd",
+            "on-surface-variant": "#434655",
+            "on-secondary": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "on-error-container": "#93000a",
+            "surface-container-high": "#dce9ff",
+            "on-secondary-container": "#5c647a",
+            "tertiary-fixed": "#85f8c4",
+            "tertiary-fixed-dim": "#68dba9",
+            "surface-dim": "#cbdbf5",
+            "primary-fixed": "#dce1ff",
+            "surface-variant": "#d3e4fe"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-sm": "1rem",
+            "space-xl": "2.5rem",
+            "gutter-sm": "1rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem",
+            "margin": "2rem",
+            "gutter": "1.5rem",
+            "space-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "body-sm": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased selection:bg-primary selection:text-on-primary">
+<!-- ================= LEFT NAVIGATION SIDEBAR ================= -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-outline-variant shadow-sm">
+<div class="p-4 flex flex-col h-full justify-between">
+<!-- Top Section: Brand & Student Summary -->
+<div>
+<!-- Brand Header -->
+<div class="flex items-center gap-3 px-2 py-1 mb-5">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[24px]">school</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">GRIP</span>
+<span class="px-1.5 py-0.5 text-[10px] font-bold tracking-wider rounded bg-surface-container-low text-primary border border-outline-variant">CAMPUS</span>
+</div>
+<p class="font-body-sm text-[11px] text-secondary leading-none mt-0.5">Learn • Prepare • Grow</p>
+</div>
+</div>
+<!-- Student Summary Chip -->
+<div class="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low border border-outline-variant mb-6">
+<div class="relative w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs shadow-inner">
+<span>RM</span>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary-container border-2 border-surface-container-lowest"></span>
+</div>
+<div class="overflow-hidden">
+<p class="font-label-lg text-label-lg font-semibold text-on-surface truncate leading-tight">Rohan Mehta</p>
+<p class="font-body-sm text-[11px] text-secondary truncate">3rd Year • CSE Track</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav aria-label="Primary Navigation" class="space-y-1.5">
+<!-- Dashboard (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Profile & Skills (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span>Profile &amp; Skills</span>
+</a>
+<!-- Career Compass (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">explore</span>
+<span>Career Compass</span>
+</a>
+<!-- Goal Tracker (inactive) -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+<span>Goal Tracker</span>
+</div>
+<span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-surface-container text-primary">3 active</span>
+</a>
+<!-- Mentorship & Q&A (inactive) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">school</span>
+<span>Mentorship &amp; Q&amp;A</span>
+</a>
+<!-- Interview & Readiness (ACTIVE) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-container-low text-primary font-label-lg text-label-lg font-semibold border-l-4 border-primary" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">quiz</span>
+<span>Interview &amp; Readiness</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Widget & Footer Actions -->
+<div class="space-y-4 pt-4 border-t border-outline-variant">
+<!-- Readiness Benchmark Card -->
+<div class="p-3.5 rounded-xl bg-surface border border-outline-variant space-y-2.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[10px] uppercase font-bold tracking-wider text-secondary">READINESS BENCHMARK</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-bold bg-tertiary-fixed text-on-tertiary-fixed">+12%</span>
+</div>
+<div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">85% Ready</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Tier-1 Fit</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden mt-1.5">
+<div class="bg-primary-container h-full rounded-full w-[85%]"></div>
+</div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-[11px] text-secondary pt-0.5">
+<span>5 of 6 Rubrics Done</span>
+<div class="flex items-center gap-1 text-tertiary font-semibold">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+<span>TechCorp Verified</span>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/30 font-label-md text-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</div>
+</div>
+</aside>
+<!-- ================= TOP APP BAR ================= -->
+<header class="ml-[260px] sticky top-0 z-30 h-16 bg-surface-container-lowest/90 backdrop-blur-md border-b border-outline-variant px-8 flex items-center justify-between">
+<!-- Breadcrumb & Search -->
+<div class="flex items-center gap-6 w-full max-w-xl">
+<div class="flex items-center gap-2 text-sm">
+<span class="text-secondary font-label-md text-label-md">Portal</span>
+<span class="text-outline-variant">/</span>
+<span class="font-headline-sm text-label-lg font-bold text-on-surface">Interview &amp; Readiness</span>
+</div>
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 text-body-sm font-body-sm bg-surface border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-secondary" placeholder="Search mock slots, evaluation rubrics, interview feedback..." type="text"/>
+</div>
+</div>
+<!-- Actions & User Profile -->
+<div class="flex items-center gap-3.5">
+<button class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary">download</span>
+<span>Export Readiness Transcript (PDF)</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>+ Book New Mock Interview</span>
+</button>
+<div class="h-6 w-[1px] bg-outline-variant mx-1"></div>
+<!-- Notifications -->
+<button class="relative p-2 rounded-lg text-secondary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-on-error font-label-sm text-[10px] flex items-center justify-center font-bold">2</span>
+</button>
+<!-- Profile Avatar -->
+<div class="w-8 h-8 rounded-full bg-on-background text-on-primary flex items-center justify-center font-bold text-xs ring-2 ring-outline-variant/50">
+        RM
+      </div>
+</div>
+</header>
+<!-- ================= MAIN CONTENT CANVAS ================= -->
+<main class="ml-[260px] p-8 min-h-screen space-y-8 bg-surface">
+<!-- 1. Page Header -->
+<section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Placement Readiness &amp; Mock Interview Center</h1>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+            Institutional Verified
+          </span>
+</div>
+<p class="font-body-md text-body-md text-secondary mt-1">Standardized campus evaluation rubrics, faculty-reviewed mock interviews, and AI-driven skill diagnostics.</p>
+</div>
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant text-body-sm font-medium text-on-surface shadow-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+<span class="font-label-md text-label-md">14 Faculty &amp; Alumni Evaluators Active This Week</span>
+</div>
+</section>
+<!-- 2. Placement Readiness Index & Tier-1 Clearance Banner (Hero Analytics) -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-container via-primary-fixed-dim to-tertiary-container"></div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Left Column: Circular Benchmark Metric -->
+<div class="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-outline-variant/60 pb-6 lg:pb-0 lg:pr-6">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-md text-label-md uppercase tracking-wider text-secondary font-bold">Comprehensive Score</span>
+<div class="flex items-baseline gap-3 mt-1">
+<span class="font-display-lg text-display-lg font-bold text-on-surface">85%</span>
+<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                  +12% this month
+                </span>
+</div>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]">insights</span>
+</div>
+</div>
+<div class="mt-4 p-3 rounded-lg bg-surface-container-low border border-outline-variant/60">
+<div class="flex items-center gap-2 text-primary font-semibold font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Tier-1 Qualified Status</span>
+</div>
+<p class="font-body-sm text-[12px] text-secondary mt-1">
+              5 of 6 Rubrics Verified. Day-1 Campus Drive Eligibility cleared for <span class="font-medium text-on-surface">TechCorp</span>, <span class="font-medium text-on-surface">CloudSys</span>, and <span class="font-medium text-on-surface">FinTech Apex</span>.
+            </p>
+</div>
+</div>
+<!-- Right Column: 4 Competency Telemetry Meters -->
+<div class="lg:col-span-8 space-y-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Meter 1 -->
+<div class="p-3 rounded-lg bg-surface border border-outline-variant/60 space-y-2">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="text-on-surface font-semibold">DSA &amp; Problem Solving</span>
+<span class="text-primary font-bold">88%</span>
+</div>
+<div class="w-full bg-outline-variant/40 h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[88%]"></div>
+</div>
+<div class="flex justify-between text-[11px] text-secondary">
+<span class="font-semibold text-tertiary">Advanced Tier</span>
+<span>500+ LeetCode Solved &amp; Verified</span>
+</div>
+</div>
+<!-- Meter 2 -->
+<div class="p-3 rounded-lg bg-surface border border-outline-variant/60 space-y-2">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="text-on-surface font-semibold">System Design &amp; Architecture</span>
+<span class="text-primary font-bold">80%</span>
+</div>
+<div class="w-full bg-outline-variant/40 h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[80%]"></div>
+</div>
+<div class="flex justify-between text-[11px] text-secondary">
+<span class="font-semibold text-primary">Proficient</span>
+<span>Microservices &amp; Caching Cleared</span>
+</div>
+</div>
+<!-- Meter 3 -->
+<div class="p-3 rounded-lg bg-surface border border-outline-variant/60 space-y-2">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="text-on-surface font-semibold">Behavioral &amp; STAR Communication</span>
+<span class="text-tertiary-container font-bold">92%</span>
+</div>
+<div class="w-full bg-outline-variant/40 h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full w-[92%]"></div>
+</div>
+<div class="flex justify-between text-[11px] text-secondary">
+<span class="font-semibold text-tertiary">Top Tier Rating</span>
+<span>High Articulation &amp; Leadership</span>
+</div>
+</div>
+<!-- Meter 4 -->
+<div class="p-3 rounded-lg bg-surface border border-outline-variant/60 space-y-2">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="text-on-surface font-semibold">Core CS Fundamentals</span>
+<span class="text-primary font-bold">84%</span>
+</div>
+<div class="w-full bg-outline-variant/40 h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[84%]"></div>
+</div>
+<div class="flex justify-between text-[11px] text-secondary">
+<span class="font-semibold text-primary">Verified</span>
+<span>OS, DBMS, Networks Certified</span>
+</div>
+</div>
+</div>
+<!-- Bottom Notice -->
+<div class="flex items-center gap-2 text-xs font-body-sm text-secondary pt-1">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_clock</span>
+<span>Day-1 Recruitment Window starts <strong class="text-on-surface">Oct 2025</strong>. You are completely on track for Super-Dream and Tier-1 SWE roles.</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Upcoming Scheduled & Confirmed Mock Interviews -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Upcoming Confirmed Mock Interviews</h2>
+<p class="font-body-sm text-body-sm text-secondary">Prepared evaluation sheets and faculty meeting credentials</p>
+</div>
+<button class="flex items-center gap-1.5 text-primary font-label-md text-label-md hover:underline">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Sync with Calendar</span>
+</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Interview Card 1: Faculty In-Person -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm hover:border-primary/40 transition-colors flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">location_on</span>
+                  Confirmed In-Person
+                </span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mt-2">Faculty System Design Mock Screen</h3>
+</div>
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary font-bold text-sm">
+                NS
+              </div>
+</div>
+<div class="space-y-2 text-body-sm font-body-sm text-secondary border-t border-outline-variant/40 pt-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">person</span>
+<span><strong>Prof. Neha Sharma</strong> (Placement Lead &amp; Associate Professor, CSE Dept.)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">schedule</span>
+<span class="text-on-surface font-medium">Tuesday, Sep 16, 2025 · 4:00 PM – 4:45 PM (45 min)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">meeting_room</span>
+<span>Dept. Seminar Lab 3 / Campus Meet Room 102</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">target</span>
+<span class="text-on-surface">Focus: <strong class="font-medium text-primary">Distributed Caching, Redis Sharding &amp; Fault Tolerance</strong></span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 pt-5 mt-4 border-t border-outline-variant/40">
+<button class="flex-1 py-2 px-3 rounded-lg bg-surface-container-low border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">description</span>
+<span>Download Rubric Sheet</span>
+</button>
+<button class="py-2 px-3 rounded-lg border border-outline-variant text-secondary hover:text-on-surface hover:bg-surface font-label-md text-label-md transition-colors">
+              Reschedule / Notes
+            </button>
+</div>
+</div>
+<!-- Interview Card 2: Alumni Virtual -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm hover:border-primary/40 transition-colors flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-secondary-container text-on-secondary-fixed border border-outline-variant inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">videocam</span>
+                  Confirmed Virtual
+                </span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mt-2">Alumni Staff Engineer Technical Screen</h3>
+</div>
+<div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary flex items-center justify-center font-bold text-sm">
+                AV
+              </div>
+</div>
+<div class="space-y-2 text-body-sm font-body-sm text-secondary border-t border-outline-variant/40 pt-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">person</span>
+<span><strong>Amit Verma</strong> (Staff SWE at TechCorp · Alumni Class of '21)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">schedule</span>
+<span class="text-on-surface font-medium">Friday, Sep 19, 2025 · 2:00 PM (45 mins)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">link</span>
+<span class="text-primary font-medium">Virtual via Google Meet (Integration link ready)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">code</span>
+<span class="text-on-surface">Focus: <strong class="font-medium text-primary">Live Code: Dynamic Programming on Trees &amp; Graphs</strong></span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 pt-5 mt-4 border-t border-outline-variant/40">
+<button class="flex-1 py-2 px-3 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">video_call</span>
+<span>Join Video Room</span>
+</button>
+<button class="py-2 px-3 rounded-lg border border-outline-variant text-secondary hover:text-on-surface hover:bg-surface font-label-md text-label-md transition-colors">
+              View Shared Rubric
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Instant Booking Grid — Available Mock Slots -->
+<section class="space-y-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Book Faculty &amp; Alumni Mock Interview Slots</h2>
+<p class="font-body-sm text-body-sm text-secondary">Institutional evaluation slots mapped against official rubric guidelines</p>
+</div>
+<!-- Filter Chips -->
+<div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg border border-outline-variant overflow-x-auto">
+<button class="px-3 py-1 rounded-md bg-surface-container-lowest text-primary font-label-sm text-label-sm font-semibold shadow-xs">All Slots (8)</button>
+<button class="px-3 py-1 rounded-md text-secondary hover:text-on-surface font-label-sm text-label-sm">Faculty Evaluators</button>
+<button class="px-3 py-1 rounded-md text-secondary hover:text-on-surface font-label-sm text-label-sm">Industry Alumni</button>
+<button class="px-3 py-1 rounded-md text-secondary hover:text-on-surface font-label-sm text-label-sm">Placement Panels</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- Slot 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition-all">
+<div class="space-y-2">
+<div class="flex justify-between items-start">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-container text-primary uppercase">Faculty Technical Panel</span>
+<span class="material-symbols-outlined text-outline text-[18px]">verified</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-bold text-on-surface leading-snug">System Design: Large-Scale Microservices</h4>
+<div class="space-y-1 text-xs text-secondary pt-1">
+<p class="text-on-surface font-medium">Dr. Arvind Swaminathan</p>
+<p>HOD &amp; Professor • Formal Verification</p>
+<div class="flex items-center gap-1 text-primary pt-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>Thu, Sep 18 · 3:30 PM (Lab 4)</span>
+</div>
+</div>
+</div>
+<button class="w-full py-2 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary border border-primary text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1">
+<span>Book Slot</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Slot 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition-all">
+<div class="space-y-2">
+<div class="flex justify-between items-start">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary-container text-on-secondary-fixed uppercase">Institutional HR Rubric</span>
+<span class="material-symbols-outlined text-outline text-[18px]">groups</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-bold text-on-surface leading-snug">Tier-1 Recruiter Simulated HR &amp; Behavioral</h4>
+<div class="space-y-1 text-xs text-secondary pt-1">
+<p class="text-on-surface font-medium">Campus Placement Advisory Board</p>
+<p>Panel of 2 Senior Recruiters</p>
+<div class="flex items-center gap-1 text-primary pt-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>Mon, Sep 22 · 11:00 AM (Boardroom)</span>
+</div>
+</div>
+</div>
+<button class="w-full py-2 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary border border-primary text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1">
+<span>Book Slot</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Slot 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition-all">
+<div class="space-y-2">
+<div class="flex justify-between items-start">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-fixed uppercase">Industry Mock Screen</span>
+<span class="material-symbols-outlined text-outline text-[18px]">cloud</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-bold text-on-surface leading-snug">DevOps &amp; Cloud SRE Architecture Mock</h4>
+<div class="space-y-1 text-xs text-secondary pt-1">
+<p class="text-on-surface font-medium">Priya Sundaram</p>
+<p>Sr. Cloud Architect at CloudSys · Alumni '19</p>
+<div class="flex items-center gap-1 text-primary pt-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>Wed, Sep 24 · 5:00 PM (Virtual)</span>
+</div>
+</div>
+</div>
+<button class="w-full py-2 rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary border border-primary text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1">
+<span>Book Slot</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 5. Historic Evaluator Scorecards & Rubric Telemetry -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Historical Evaluation Scorecards &amp; Faculty Feedback Log</h2>
+<p class="font-body-sm text-body-sm text-secondary">Official institutional transcripts with granular rubrics &amp; mentor recommendations</p>
+</div>
+<span class="text-xs font-semibold text-secondary">Showing 2 verified transcripts</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Scorecard 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm space-y-4">
+<div class="flex items-start justify-between border-b border-outline-variant/40 pb-3">
+<div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-tertiary-fixed text-on-tertiary-fixed">Grade A+ • Exceptional</span>
+<span class="text-xs text-secondary">Sep 02, 2025</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1">Distributed Systems &amp; Database Internals</h3>
+<p class="text-xs text-secondary mt-0.5">Evaluated by: <strong>Prof. Neha Sharma</strong> (Faculty Lead)</p>
+</div>
+<div class="text-right">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">4.5</span>
+<span class="text-xs text-secondary font-medium">/ 5.0</span>
+</div>
+</div>
+<!-- Detailed Rubric Parameters -->
+<div class="space-y-2.5">
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-label-md text-label-md">
+<span class="text-on-surface">Architecture Modularity</span>
+<span class="font-semibold text-on-surface">4.6 / 5.0</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[92%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-label-md text-label-md">
+<span class="text-on-surface">Concurrency &amp; Locking</span>
+<span class="font-semibold text-on-surface">4.2 / 5.0</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[84%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-label-md text-label-md">
+<span class="text-on-surface">Articulation &amp; Trade-off Analysis</span>
+<span class="font-semibold text-on-surface">4.8 / 5.0</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[96%]"></div>
+</div>
+</div>
+</div>
+<!-- Evaluator Feedback Quote -->
+<div class="p-3 bg-surface-container-low/60 rounded-lg border-l-2 border-primary text-body-sm text-[13px] text-on-surface italic">
+            "Exceptional clarity on Redis eviction policies and write-through cache patterns. Needs deeper discussion on network split-brain scenarios and Raft consensus leader election before Day-1 drives."
+          </div>
+<div class="flex items-center justify-between text-xs pt-1">
+<span class="flex items-center gap-1 text-tertiary font-semibold">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+              Digital Signature Verified
+            </span>
+<a class="text-primary hover:underline font-label-sm text-label-sm font-semibold" href="#">View Complete Rubric Log →</a>
+</div>
+</div>
+<!-- Scorecard 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm space-y-4">
+<div class="flex items-start justify-between border-b border-outline-variant/40 pb-3">
+<div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-secondary-container text-on-secondary-fixed">Grade A • Strong Pass</span>
+<span class="text-xs text-secondary">Aug 20, 2025</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1">Advanced Data Structures &amp; Algorithms</h3>
+<p class="text-xs text-secondary mt-0.5">Evaluated by: <strong>Amit Verma</strong> (Staff SWE, TechCorp)</p>
+</div>
+<div class="text-right">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">4.2</span>
+<span class="text-xs text-secondary font-medium">/ 5.0</span>
+</div>
+</div>
+<!-- Detailed Rubric Parameters -->
+<div class="space-y-2.5">
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-label-md text-label-md">
+<span class="text-on-surface">Algorithmic Correctness</span>
+<span class="font-semibold text-on-surface">4.5 / 5.0</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[90%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-label-md text-label-md">
+<span class="text-on-surface">Time/Space Complexity Analysis</span>
+<span class="font-semibold text-on-surface">4.4 / 5.0</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[88%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-label-md text-label-md">
+<span class="text-on-surface">Clean Code &amp; Modularity</span>
+<span class="font-semibold text-on-surface">3.8 / 5.0</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full w-[76%]"></div>
+</div>
+</div>
+</div>
+<!-- Evaluator Feedback Quote -->
+<div class="p-3 bg-surface-container-low/60 rounded-lg border-l-2 border-secondary text-body-sm text-[13px] text-on-surface italic">
+            "Clean implementation of Dijkstra and topological sort. Good asymptotic analysis under O(V+E) time. Advised practicing production-grade exception handling during live paired coding."
+          </div>
+<div class="flex items-center justify-between text-xs pt-1">
+<span class="flex items-center gap-1 text-tertiary font-semibold">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+              Digital Signature Verified
+            </span>
+<a class="text-primary hover:underline font-label-sm text-label-sm font-semibold" href="#">View Complete Rubric Log →</a>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Actionable Improvement Areas & Target Preparation Sprints -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="space-y-2 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-primary text-on-primary">Target Improvement Sprint</span>
+<span class="text-xs font-semibold text-primary">+4% Readiness Boost toward 90% Mark</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Solidify Raft Consensus &amp; Distributed Leader Election</h3>
+<p class="font-body-sm text-body-sm text-secondary">
+            Flagged during Prof. Sharma’s review. Completing this targeted sprint closes your final gap for Tier-1 Systems roles before campus placement begins.
+          </p>
+<div class="pt-1">
+<a class="text-xs text-secondary hover:text-primary transition-colors inline-flex items-center gap-1" href="#">
+<span>Also recommended: Refine System Design STAR Scenario for High-Throughput Failure Modes</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0">
+<button class="px-5 py-2.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary shadow-sm flex items-center justify-center gap-2 transition-all">
+<span>Start Recommended Sprint 5.4</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+<button class="px-4 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant text-secondary hover:text-on-surface font-label-md text-label-md text-center transition-colors">
+            Practice Behavioral Prompts
+          </button>
+</div>
+</div>
+</section>
+</main>
+</body></html>

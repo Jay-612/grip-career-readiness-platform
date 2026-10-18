@@ -1,0 +1,218 @@
+{
+  "admin-dashboard": {
+    "title": "Admin Dashboard",
+    "path": "/admin/dashboard",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 1307,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1.5,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 23,
+        "actionsCount": 29
+      },
+      "tablet": {
+        "scrollHeight": 1921,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1.9,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 23,
+        "actionsCount": 29
+      },
+      "mobile": {
+        "scrollHeight": 2497,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 3,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 23,
+        "actionsCount": 29
+      }
+    }
+  },
+  "admin-users": {
+    "title": "User Management",
+    "path": "/admin/users",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 975,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1.1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 45,
+        "actionsCount": 55
+      },
+      "tablet": {
+        "scrollHeight": 1024,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 45,
+        "actionsCount": 55
+      },
+      "mobile": {
+        "scrollHeight": 1443,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 1.7,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 45,
+        "actionsCount": 55
+      }
+    }
+  },
+  "admin-curriculum": {
+    "title": "Curriculum & Tracks",
+    "path": "/admin/curriculum",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 900,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 21,
+        "actionsCount": 28
+      },
+      "tablet": {
+        "scrollHeight": 1024,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 21,
+        "actionsCount": 28
+      },
+      "mobile": {
+        "scrollHeight": 958,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 1.1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 21,
+        "actionsCount": 28
+      }
+    }
+  },
+  "admin-companies": {
+    "title": "Hiring Partners",
+    "path": "/admin/companies",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 900,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 24,
+        "actionsCount": 31
+      },
+      "tablet": {
+        "scrollHeight": 1024,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 24,
+        "actionsCount": 31
+      },
+      "mobile": {
+        "scrollHeight": 1113,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 1.3,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 24,
+        "actionsCount": 31
+      }
+    }
+  },
+  "admin-events": {
+    "title": "Event Management",
+    "path": "/admin/events",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 900,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 9,
+        "actionsCount": 16
+      },
+      "tablet": {
+        "scrollHeight": 1024,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 9,
+        "actionsCount": 16
+      },
+      "mobile": {
+        "scrollHeight": 844,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 9,
+        "actionsCount": 16
+      }
+    }
+  },
+  "admin-analytics": {
+    "title": "System Analytics",
+    "path": "/admin/analytics",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 1311,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1.5,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 20,
+        "actionsCount": 17
+      },
+      "tablet": {
+        "scrollHeight": 1722,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1.7,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 20,
+        "actionsCount": 17
+      },
+      "mobile": {
+        "scrollHeight": 2034,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 2.4,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 20,
+        "actionsCount": 17
+      }
+    }
+  }
+}

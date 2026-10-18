@@ -1,11 +1,21 @@
 import mongoose from 'mongoose';
 import MockInterview from '../model/MockInterview.js';
 import User from '../model/User.js';
+import Notification from '../model/Notification.js';
+import googleCalendarService from '../services/googleCalendarService.js';
 
-// ─── POST /api/appointments — Schedule Mock Interview ─────────────
+// ─── POST /api/appointments — Request Mock Interview (Status: Pending) ──
 export const scheduleMockInterview = async (req, res) => {
   try {
-    const { date, time, facultyId } = req.body;
+    const {
+      date,
+      time,
+      facultyId,
+      duration = 45,
+      dateTime: reqDateTime,
+      timezoneOffset,
+      customMeetLink = '',
+    } = req.body;
     const studentId = req.user?.id || req.user?.userId;
 
     if (!date || !time || !facultyId) {
@@ -22,7 +32,7 @@ export const scheduleMockInterview = async (req, res) => {
       });
     }
 
-    // Verify interviewer exists
+    // Verify interviewer exists and has faculty role
     const facultyUser = await User.findById(facultyId);
     if (!facultyUser) {
       return res.status(404).json({
@@ -31,31 +41,85 @@ export const scheduleMockInterview = async (req, res) => {
       });
     }
 
-    // Construct Date object from date and time strings
+    // Construct Date object with timezone awareness without timezone skew
     let dateTime;
-    if (date.includes('T')) {
+    if (reqDateTime) {
+      dateTime = new Date(reqDateTime);
+    } else if (timezoneOffset !== undefined && timezoneOffset !== null && date && time) {
+      const timeClean = time.length === 5 ? `${time}:00` : time;
+      const localIsoLike = `${date}T${timeClean}.000Z`;
+      const utcMillis = new Date(localIsoLike).getTime() + Number(timezoneOffset) * 60 * 1000;
+      dateTime = new Date(utcMillis);
+    } else if (date.includes('T')) {
       dateTime = new Date(date);
     } else {
-      dateTime = new Date(`${date}T${time}:00`);
+      dateTime = new Date(`${date}T${time.length === 5 ? `${time}:00` : time}`);
     }
 
     if (isNaN(dateTime.getTime())) {
-      // Fallback if parsing with seconds failed
       dateTime = new Date(`${date} ${time}`);
       if (isNaN(dateTime.getTime())) {
-        dateTime = new Date();
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid date or time format provided',
+        });
       }
     }
 
-    await MockInterview.create({
+    // Guard against scheduling in the past
+    const now = new Date();
+    if (dateTime.getTime() < now.getTime() - 60 * 1000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Interview appointment cannot be scheduled in the past. Please select a future date and time.',
+      });
+    }
+
+    // Slot Conflict Checking: ensure faculty doesn't already have an active appointment in this time window
+    const durationMinutes = Number(duration) || 45;
+    const durationMs = durationMinutes * 60 * 1000;
+    const slotStart = new Date(dateTime.getTime() - 29 * 60 * 1000);
+    const slotEnd = new Date(dateTime.getTime() + durationMs - 1000);
+
+    const conflictingAppointment = await MockInterview.findOne({
+      interviewerId: facultyId,
+      dateTime: { $gte: slotStart, $lt: slotEnd },
+      status: { $nin: ['cancelled', 'rejected'] }, // Excludes cancelled and rejected appointments, immediately releasing the slot!
+    });
+
+    if (conflictingAppointment) {
+      return res.status(409).json({
+        success: false,
+        code: 'SLOT_OCCUPIED',
+        message: 'This faculty member is already booked for this time slot. Please choose another date or time.',
+      });
+    }
+
+    let cleanMeetLink = '';
+    if (customMeetLink && typeof customMeetLink === 'string' && customMeetLink.trim()) {
+      cleanMeetLink = customMeetLink.trim();
+      if (!/^https?:\/\//i.test(cleanMeetLink)) {
+        cleanMeetLink = `https://${cleanMeetLink}`;
+      }
+    }
+
+    // Appointment starts in pending status.
+    // The Google Meet link is generated strictly when the faculty accepts, unless custom link was provided.
+    const createdInterview = await MockInterview.create({
       studentId,
       interviewerId: facultyId,
       dateTime,
-      status: 'scheduled',
+      duration: Number(duration) || 45,
+      meetLink: cleanMeetLink || null,
+      googleEventId: '',
+      calendarHtmlLink: '',
+      status: 'pending',
     });
 
     return res.status(201).json({
-      message: 'Appointment confirmed',
+      success: true,
+      message: 'Mock interview requested successfully. Waiting for faculty acceptance.',
+      appointment: createdInterview,
     });
   } catch (error) {
     return res.status(500).json({
@@ -70,6 +134,10 @@ export const scheduleMockInterview = async (req, res) => {
 export const getAppointments = async (req, res) => {
   try {
     const currentUserId = req.user?.id || req.user?.userId;
+    const userRole = (req.user?.role || '').toLowerCase();
+    const isStudent = userRole === 'student';
+    const now = new Date();
+    const EARLY_BUFFER_MS = 5 * 60 * 1000; // 5 minutes prior to session
 
     if (!currentUserId) {
       return res.status(401).json({
@@ -78,9 +146,14 @@ export const getAppointments = async (req, res) => {
       });
     }
 
-    const appointments = await MockInterview.find({
+    const filter = {
       $or: [{ studentId: currentUserId }, { interviewerId: currentUserId }],
-    })
+    };
+    if (req.query.status && req.query.status !== 'all') {
+      filter.status = req.query.status;
+    }
+
+    const appointments = await MockInterview.find(filter)
       .populate('studentId', 'name email')
       .populate('interviewerId', 'name email')
       .sort({ dateTime: -1 });
@@ -92,11 +165,108 @@ export const getAppointments = async (req, res) => {
         ? dt.toTimeString().slice(0, 5)
         : '';
 
+      const startTime = apt.dateTime ? new Date(apt.dateTime) : new Date();
+      const durationMs = (apt.duration || 45) * 60 * 1000;
+      const unlockTime = new Date(startTime.getTime() - EARLY_BUFFER_MS);
+      const endTime = new Date(startTime.getTime() + durationMs + 15 * 60 * 1000);
+
+      // Determine time-gate join status
+      let canJoin = false;
+      let joinStatusReason = 'PENDING';
+      let joinMessage = '';
+
+      if (apt.status === 'pending') {
+        canJoin = false;
+        joinStatusReason = 'PENDING_FACULTY';
+        joinMessage = 'Awaiting faculty acceptance. Link will be generated once accepted.';
+      } else if (apt.status === 'cancelled' || apt.status === 'rejected') {
+        canJoin = false;
+        joinStatusReason = 'CANCELLED';
+        joinMessage = 'Session has been cancelled or declined.';
+      } else if (apt.status === 'completed') {
+        canJoin = false;
+        joinStatusReason = 'COMPLETED';
+        joinMessage = 'Session has concluded.';
+      } else if (!apt.meetLink) {
+        canJoin = false;
+        joinStatusReason = 'NO_LINK';
+        joinMessage = 'Meeting link is being generated.';
+      } else if (userRole === 'faculty' || userRole === 'admin') {
+        canJoin = true;
+        joinStatusReason = 'HOST';
+        joinMessage = 'Faculty host access active.';
+      } else {
+        // Student time check: strictly prevent joining before the scheduled start window (5 min prior)
+        if (now.getTime() < unlockTime.getTime()) {
+          canJoin = false;
+          joinStatusReason = 'EARLY_LOCK';
+          const diffMs = unlockTime.getTime() - now.getTime();
+          const diffMins = Math.ceil(diffMs / (60 * 1000));
+          const diffHrs = Math.floor(diffMins / 60);
+          const remainingMins = diffMins % 60;
+          const timeUntil = diffHrs > 0 ? `${diffHrs}h ${remainingMins}m` : `${diffMins}m`;
+          joinMessage = `Room unlocks 5 minutes before scheduled start (in ${timeUntil}).`;
+        } else if (now.getTime() > endTime.getTime()) {
+          canJoin = false;
+          joinStatusReason = 'EXPIRED';
+          joinMessage = 'Session window has closed.';
+        } else {
+          canJoin = true;
+          joinStatusReason = 'ACTIVE';
+          joinMessage = 'Session active now. You can join.';
+        }
+      }
+
+      // If student and session is not joinable yet, mask the raw meetLink to prevent scraping
+      const visibleMeetLink = isStudent && !canJoin ? '' : (apt.meetLink || '');
+
       return {
         id: apt._id,
         date: dateStr,
         time: timeStr,
+        dateTime: apt.dateTime,
+        duration: apt.duration || 45,
         status: apt.status,
+        meetLink: visibleMeetLink,
+        rawMeetLinkAvailable: Boolean(apt.meetLink),
+        meetingType: apt.meetLink?.includes('meet.google.com')
+          ? 'google_meet'
+          : apt.meetLink?.includes('jit.si')
+          ? 'instant_webrtc'
+          : apt.meetLink
+          ? 'custom_video'
+          : 'none',
+        meetingProvider: apt.meetLink?.includes('meet.google.com')
+          ? 'Google Meet'
+          : apt.meetLink?.includes('jit.si')
+          ? 'Instant WebRTC Room'
+          : apt.meetLink
+          ? 'Custom Video Room'
+          : 'None',
+        canJoin,
+        joinStatusReason,
+        joinMessage,
+        opensAt: unlockTime,
+        googleEventId: apt.googleEventId || '',
+        calendarHtmlLink: isStudent && !canJoin ? '' : (apt.calendarHtmlLink || ''),
+        cancelledByRole: apt.cancelledByRole || null,
+        cancelledByUser: apt.cancelledByUser || null,
+        cancelReason: apt.cancelReason || '',
+        cancelledAt: apt.cancelledAt || null,
+        student: apt.studentId
+          ? {
+              id: apt.studentId._id,
+              name: apt.studentId.name,
+              email: apt.studentId.email,
+            }
+          : null,
+        interviewer: apt.interviewerId
+          ? {
+              id: apt.interviewerId._id,
+              name: apt.interviewerId.name,
+              email: apt.interviewerId.email,
+            }
+          : null,
       };
     });
 
@@ -109,3 +279,572 @@ export const getAppointments = async (req, res) => {
     });
   }
 };
+
+// ─── POST /api/appointments/:id/create-meet — Generate / Refresh Google Meet ──
+export const createOrRefreshMeetLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { customMeetLink } = req.body || {};
+    const currentUserId = (req.user?.id || req.user?.userId || '').toString();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment ID format',
+      });
+    }
+
+    const appointment = await MockInterview.findById(id)
+      .populate('studentId', 'name email')
+      .populate('interviewerId', 'name email');
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found',
+      });
+    }
+
+    // Authorization check
+    const studentIdStr = (appointment.studentId?._id || appointment.studentId || '').toString();
+    const interviewerIdStr = (appointment.interviewerId?._id || appointment.interviewerId || '').toString();
+
+    if (
+      studentIdStr !== currentUserId &&
+      interviewerIdStr !== currentUserId &&
+      req.user.role !== 'admin'
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only manage Google Meet for your own appointments.',
+      });
+    }
+
+    // If user provided a custom Meet link (e.g. from meet.google.com/new), save it directly
+    if (customMeetLink && typeof customMeetLink === 'string' && customMeetLink.trim()) {
+      let cleanLink = customMeetLink.trim();
+      if (!/^https?:\/\//i.test(cleanLink)) {
+        cleanLink = `https://${cleanLink}`;
+      }
+      appointment.meetLink = cleanLink;
+      await appointment.save();
+
+      const isGoogle = cleanLink.includes('meet.google.com');
+      return res.status(200).json({
+        success: true,
+        message: 'Meeting room link updated successfully',
+        meetLink: appointment.meetLink,
+        googleEventId: appointment.googleEventId,
+        calendarHtmlLink: appointment.calendarHtmlLink,
+        meetingType: isGoogle ? 'google_meet' : 'custom_url',
+        meetingProvider: isGoogle ? 'Google Meet' : 'Custom Meeting URL',
+      });
+    }
+
+    // Call calendar service
+    const calendarResult = await googleCalendarService.createCalendarEventWithMeet({
+      summary: `GRIP Mock Interview: ${appointment.studentId?.name || 'Student'} & ${appointment.interviewerId?.name || 'Faculty'}`,
+      description: 'GRIP Career Readiness Platform - Mock Technical Interview Session',
+      startDateTime: appointment.dateTime || new Date(),
+      durationMinutes: appointment.duration || 45,
+      student: appointment.studentId,
+      faculty: appointment.interviewerId,
+    });
+
+    appointment.meetLink = calendarResult.meetLink;
+    appointment.googleEventId = calendarResult.eventId;
+    appointment.calendarHtmlLink = calendarResult.calendarHtmlLink;
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Meeting room generated successfully',
+      meetLink: appointment.meetLink,
+      googleEventId: appointment.googleEventId,
+      calendarHtmlLink: appointment.calendarHtmlLink,
+      meetingType: calendarResult.meetingType || (appointment.meetLink?.includes('meet.google.com') ? 'google_meet' : 'instant_webrtc'),
+      meetingProvider: calendarResult.meetingProvider || (appointment.meetLink?.includes('meet.google.com') ? 'Google Meet' : 'Instant WebRTC Room'),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while generating Google Meet link',
+      error: error.message,
+    });
+  }
+};
+
+// ─── PATCH /api/appointments/:id/cancel — Cancel Appointment ────────
+export const cancelAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason = '' } = req.body || {};
+    const currentUserId = (req.user?.id || req.user?.userId || '').toString();
+    const userRole = (req.user?.role || '').toLowerCase();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment ID format',
+      });
+    }
+
+    const appointment = await MockInterview.findById(id);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found',
+      });
+    }
+
+    // Authorization: Only the student who booked, the assigned faculty, or an admin can cancel
+    const studentIdStr = (appointment.studentId?._id || appointment.studentId || '').toString();
+    const interviewerIdStr = (appointment.interviewerId?._id || appointment.interviewerId || '').toString();
+    const isStudent = studentIdStr === currentUserId;
+    const isInterviewer = interviewerIdStr === currentUserId;
+    const isAdmin = userRole === 'admin';
+
+    if (!isStudent && !isInterviewer && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only cancel your own appointments.',
+      });
+    }
+
+    // Cancellation is allowed for: pending, accepted, scheduled.
+    // NOT allowed for: in_progress, completed, cancelled.
+    const cancellableStatuses = ['pending', 'accepted', 'scheduled'];
+
+    if (!cancellableStatuses.includes(appointment.status)) {
+      if (appointment.status === 'cancelled') {
+        return res.status(409).json({
+          success: false,
+          code: 'ALREADY_CANCELLED',
+          message: 'Appointment has already been cancelled.',
+        });
+      }
+      return res.status(409).json({
+        success: false,
+        code: 'NOT_CANCELLABLE',
+        message: `Appointment cannot be cancelled because it is already ${appointment.status}.`,
+      });
+    }
+
+    // Determine cancelling actor and reason
+    const cancelledByRole = isStudent ? 'student' : isInterviewer ? 'faculty' : 'admin';
+    const defaultReason = isStudent && appointment.status === 'pending' ? 'Withdrawn by student' : 'Cancelled by participant';
+    const cleanReason = reason && typeof reason === 'string' && reason.trim() ? reason.trim() : defaultReason;
+    const cancelledAt = new Date();
+
+    // ATOMIC CONDITIONAL UPDATE: ensures thread-safety if two actions occur concurrently
+    const updated = await MockInterview.findOneAndUpdate(
+      {
+        _id: id,
+        status: { $in: cancellableStatuses },
+      },
+      {
+        $set: {
+          status: 'cancelled',
+          cancelledByRole,
+          cancelledByUser: currentUserId,
+          cancelReason: cleanReason,
+          cancelledAt,
+        },
+      },
+      { new: true }
+    )
+      .populate('studentId', 'name email')
+      .populate('interviewerId', 'name email');
+
+    if (!updated) {
+      // Race condition occurred: status changed while processing
+      const freshRecord = await MockInterview.findById(id);
+      return res.status(409).json({
+        success: false,
+        code: 'CONCURRENT_STATUS_CONFLICT',
+        message: `Appointment status conflict: appointment was concurrently updated to "${freshRecord?.status || 'unknown'}".`,
+      });
+    }
+
+    // If Google Calendar event exists, delete it
+    if (updated.googleEventId) {
+      try {
+        await googleCalendarService.deleteCalendarEvent(updated.googleEventId);
+      } catch (calErr) {
+        console.warn('Calendar event deletion warning:', calErr.message);
+      }
+    }
+
+    // Send In-App Notification to the other participant
+    try {
+      const dt = updated.dateTime ? new Date(updated.dateTime) : new Date();
+      const dateStr = dt.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const timeStr = dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      if (isStudent) {
+        // Student cancelled -> notify faculty
+        const facultyUserId = updated.interviewerId?._id || updated.interviewerId;
+        const studentName = updated.studentId?.name || req.user?.name || 'A student';
+        if (facultyUserId) {
+          await Notification.create({
+            userId: facultyUserId,
+            type: 'interview_update',
+            title: 'Mock Interview Cancelled',
+            message: `${studentName} cancelled the mock interview scheduled for ${dateStr} at ${timeStr}.`,
+            actionPath: '/faculty/interviews',
+          });
+        }
+      } else {
+        // Faculty (or admin) cancelled -> notify student
+        const studentUserId = updated.studentId?._id || updated.studentId;
+        const facultyName = updated.interviewerId?.name || req.user?.name || 'Faculty';
+        if (studentUserId) {
+          await Notification.create({
+            userId: studentUserId,
+            type: 'interview_update',
+            title: 'Mock Interview Cancelled',
+            message: `${facultyName} cancelled your mock interview scheduled for ${dateStr} at ${timeStr}.`,
+            actionPath: '/student/interviews',
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.warn('Failed to send interview cancellation notification:', notifErr.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Appointment cancelled successfully and removed from calendar',
+      appointment: {
+        id: updated._id,
+        _id: updated._id,
+        status: updated.status,
+        cancelledByRole: updated.cancelledByRole,
+        cancelledByUser: updated.cancelledByUser,
+        cancelReason: updated.cancelReason,
+        cancelledAt: updated.cancelledAt,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while cancelling appointment',
+      error: error.message,
+    });
+  }
+};
+
+// ─── GET /api/appointments/occupied-slots — Get Occupied Slots for a Faculty on a Date ──
+export const getOccupiedSlots = async (req, res) => {
+  try {
+    const { facultyId, date } = req.query;
+
+    if (!facultyId || !date) {
+      return res.status(400).json({
+        success: false,
+        message: 'facultyId and date are required query parameters',
+      });
+    }
+
+    const startOfDay = new Date(`${date}T00:00:00.000Z`);
+    const queryStart = new Date(startOfDay.getTime() - 14 * 60 * 60 * 1000);
+    const queryEnd = new Date(startOfDay.getTime() + 38 * 60 * 60 * 1000);
+
+    // Only non-cancelled, non-rejected appointments occupy slots!
+    const activeAppointments = await MockInterview.find({
+      interviewerId: facultyId,
+      dateTime: { $gte: queryStart, $lte: queryEnd },
+      status: { $nin: ['cancelled', 'rejected'] },
+    }).sort({ dateTime: 1 });
+
+    const slotSet = new Set();
+    activeAppointments.forEach((apt) => {
+      const dt = new Date(apt.dateTime);
+      if (!isNaN(dt.getTime())) {
+        const localHours = String(dt.getHours()).padStart(2, '0');
+        const localMins = String(dt.getMinutes()).padStart(2, '0');
+        slotSet.add(`${localHours}:${localMins}`);
+
+        const utcHours = String(dt.getUTCHours()).padStart(2, '0');
+        const utcMins = String(dt.getUTCMinutes()).padStart(2, '0');
+        slotSet.add(`${utcHours}:${utcMins}`);
+      }
+    });
+
+    const occupiedSlots = Array.from(slotSet);
+
+    return res.status(200).json({
+      success: true,
+      facultyId,
+      date,
+      count: occupiedSlots.length,
+      occupiedSlots,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching occupied slots',
+      error: error.message,
+    });
+  }
+};
+
+// ─── PATCH /api/appointments/:id/accept — Faculty Accepts & Generates Meet ──
+export const acceptAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { customMeetLink = '' } = req.body || {};
+    const currentUserId = (req.user?.id || req.user?.userId || '').toString();
+    const userRole = (req.user?.role || '').toLowerCase();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment ID format',
+      });
+    }
+
+    const appointment = await MockInterview.findById(id)
+      .populate('studentId', 'name email')
+      .populate('interviewerId', 'name email');
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found',
+      });
+    }
+
+    // Verify user is assigned faculty member or admin
+    const interviewerIdStr = (appointment.interviewerId?._id || appointment.interviewerId || '').toString();
+    if (interviewerIdStr !== currentUserId && userRole !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only the assigned faculty interviewer can accept this request.',
+      });
+    }
+
+    if (appointment.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `Appointment cannot be accepted because it is already ${appointment.status}`,
+        appointment,
+      });
+    }
+
+    // Generate Google Calendar Event & Google Meet Room upon faculty acceptance
+    const calendarResult = await googleCalendarService.createCalendarEventWithMeet({
+      summary: `GRIP Mock Interview: ${appointment.studentId?.name || 'Student'} & ${appointment.interviewerId?.name || 'Faculty'}`,
+      description: 'GRIP Career Readiness Platform - Mock Technical Interview Session',
+      startDateTime: appointment.dateTime || new Date(),
+      durationMinutes: appointment.duration || 45,
+      student: appointment.studentId,
+      faculty: appointment.interviewerId,
+      customMeetLink: customMeetLink?.trim(),
+    });
+
+    appointment.status = 'scheduled';
+    appointment.meetLink = calendarResult.meetLink || '';
+    appointment.googleEventId = calendarResult.eventId || '';
+    appointment.calendarHtmlLink = calendarResult.calendarHtmlLink || '';
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Interview request accepted and Google Meet link generated successfully',
+      appointment: {
+        id: appointment._id,
+        status: appointment.status,
+        dateTime: appointment.dateTime,
+        duration: appointment.duration,
+        meetLink: appointment.meetLink,
+        googleEventId: appointment.googleEventId,
+        calendarHtmlLink: appointment.calendarHtmlLink,
+        meetingType: calendarResult.meetingType || (appointment.meetLink?.includes('meet.google.com') ? 'google_meet' : 'instant_webrtc'),
+        meetingProvider: calendarResult.meetingProvider || (appointment.meetLink?.includes('meet.google.com') ? 'Google Meet' : 'Instant WebRTC Room'),
+        student: appointment.studentId
+          ? {
+              id: appointment.studentId._id,
+              name: appointment.studentId.name,
+              email: appointment.studentId.email,
+            }
+          : null,
+        interviewer: appointment.interviewerId
+          ? {
+              id: appointment.interviewerId._id,
+              name: appointment.interviewerId.name,
+              email: appointment.interviewerId.email,
+            }
+          : null,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while accepting interview appointment',
+      error: error.message,
+    });
+  }
+};
+
+// ─── PATCH /api/appointments/:id/reject — Faculty Declines Appointment ────
+export const rejectAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason = '' } = req.body || {};
+    const currentUserId = (req.user?.id || req.user?.userId || '').toString();
+    const userRole = (req.user?.role || '').toLowerCase();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment ID format',
+      });
+    }
+
+    const appointment = await MockInterview.findById(id);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found',
+      });
+    }
+
+    const interviewerIdStr = (appointment.interviewerId || '').toString();
+    if (interviewerIdStr !== currentUserId && userRole !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only the assigned faculty interviewer can decline this appointment.',
+      });
+    }
+
+    if (appointment.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `Appointment cannot be declined because it is already ${appointment.status}`,
+      });
+    }
+
+    appointment.status = 'rejected';
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Interview appointment request declined',
+      appointment: {
+        id: appointment._id,
+        status: appointment.status,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while declining interview appointment',
+      error: error.message,
+    });
+  }
+};
+
+// ─── GET /api/appointments/:id/join — Secure Join Gate with Time Check ──
+export const joinAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = (req.user?.id || req.user?.userId || '').toString();
+    const userRole = (req.user?.role || '').toLowerCase();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid appointment ID format',
+      });
+    }
+
+    const appointment = await MockInterview.findById(id);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found',
+      });
+    }
+
+    const studentIdStr = (appointment.studentId?._id || appointment.studentId || '').toString();
+    const interviewerIdStr = (appointment.interviewerId?._id || appointment.interviewerId || '').toString();
+    const isStudent = studentIdStr === currentUserId;
+    const isInterviewer = interviewerIdStr === currentUserId;
+    const isAdmin = userRole === 'admin';
+
+    if (!isStudent && !isInterviewer && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You are not a participant in this mock interview.',
+      });
+    }
+
+    if (appointment.status === 'pending') {
+      return res.status(403).json({
+        success: false,
+        code: 'APPOINTMENT_PENDING',
+        message: 'This interview appointment is still pending faculty acceptance.',
+      });
+    }
+
+    if (appointment.status !== 'scheduled') {
+      return res.status(400).json({
+        success: false,
+        code: 'APPOINTMENT_NOT_ACTIVE',
+        message: `This interview appointment is ${appointment.status}.`,
+      });
+    }
+
+    if (!appointment.meetLink) {
+      return res.status(404).json({
+        success: false,
+        code: 'NO_MEET_LINK',
+        message: 'No video meeting link found for this appointment.',
+      });
+    }
+
+    // Faculty host / Admin can enter at any time
+    // Time-gate validation for student: cannot join before scheduled start (with 5-minute pre-session buffer)
+    if (isStudent && !isAdmin) {
+      const now = new Date();
+      const startTime = new Date(appointment.dateTime);
+      const EARLY_BUFFER_MS = 5 * 60 * 1000; // 5 min prior
+      const durationMs = (appointment.duration || 45) * 60 * 1000;
+      const unlockTime = new Date(startTime.getTime() - EARLY_BUFFER_MS);
+      const endTime = new Date(startTime.getTime() + durationMs + 15 * 60 * 1000);
+
+      if (now.getTime() < unlockTime.getTime()) {
+        const diffMs = unlockTime.getTime() - now.getTime();
+        const diffMins = Math.ceil(diffMs / (60 * 1000));
+        return res.status(403).json({
+          success: false,
+          code: 'EARLY_JOIN_FORBIDDEN',
+          message: `You cannot join the meeting before the scheduled time. Room opens 5 minutes before the session (in ${diffMins} minutes).`,
+          opensAt: unlockTime,
+        });
+      }
+
+      if (now.getTime() > endTime.getTime()) {
+        return res.status(403).json({
+          success: false,
+          code: 'SESSION_EXPIRED',
+          message: 'This mock interview session window has concluded.',
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      meetLink: appointment.meetLink,
+      status: appointment.status,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while checking meeting room access',
+      error: error.message,
+    });
+  }
+};
+

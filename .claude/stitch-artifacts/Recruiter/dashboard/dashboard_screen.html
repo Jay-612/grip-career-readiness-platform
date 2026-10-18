@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP — Campus Recruiter Dashboard &amp; Talent Acquisition Center</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "outline-variant": "#c4c5d7",
+            "tertiary-container": "#006948",
+            "on-primary-fixed": "#001551",
+            "tertiary": "#004f35",
+            "surface-dim": "#cbdbf5",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#0b1c30",
+            "error-container": "#ffdad6",
+            "surface-variant": "#d3e4fe",
+            "error": "#ba1a1a",
+            "primary-fixed-dim": "#b7c4ff",
+            "secondary-fixed-dim": "#bec6e0",
+            "on-surface-variant": "#434655",
+            "surface-container-low": "#eff4ff",
+            "primary-fixed": "#dce1ff",
+            "on-tertiary-fixed": "#002114",
+            "on-tertiary-fixed-variant": "#005137",
+            "on-tertiary-container": "#76eab6",
+            "inverse-primary": "#b7c4ff",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#2151da",
+            "primary": "#0037b0",
+            "on-secondary-container": "#5c647a",
+            "inverse-surface": "#213145",
+            "on-secondary-fixed": "#131b2e",
+            "secondary": "#565e74",
+            "secondary-container": "#dae2fd",
+            "tertiary-fixed": "#85f8c4",
+            "surface-container-lowest": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "surface": "#f8f9ff",
+            "surface-container": "#e5eeff",
+            "background": "#f8f9ff",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-error": "#ffffff",
+            "secondary-fixed": "#dae2fd",
+            "outline": "#747686",
+            "on-primary": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-container-highest": "#d3e4fe",
+            "on-primary-container": "#cad3ff",
+            "on-error-container": "#93000a",
+            "surface-container-high": "#dce9ff",
+            "on-background": "#0b1c30",
+            "primary-container": "#1d4ed8",
+            "on-primary-fixed-variant": "#0039b5",
+            "tertiary-fixed-dim": "#68dba9"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem",
+            "gutter-sm": "1rem",
+            "margin": "2rem",
+            "margin-sm": "1rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2.5rem",
+            "gutter": "1.5rem"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "body-sm": ["Inter"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c4c5d7;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-on-surface font-body-md text-body-md antialiased min-h-screen">
+<!-- 1. LEFT SIDEBAR (Width 260px, fixed top-0 left-0 h-screen bg-white border-r border-[#E2E8F0] z-40) -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-[#E2E8F0] shadow-sm">
+<div class="flex flex-col flex-1 overflow-y-auto custom-scrollbar p-4">
+<!-- Brand Header -->
+<div class="flex items-center justify-between pb-4 mb-4 border-b border-[#E2E8F0]">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-white shadow-sm font-headline-sm text-headline-sm font-bold">
+            G
+          </div>
+<div>
+<span class="font-headline-md text-headline-md font-bold text-[#1D4ED8] tracking-tight">GRIP</span>
+</div>
+</div>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE] rounded-full px-2.5 py-0.5 font-label-sm text-label-sm">
+          ENTERPRISE RECRUITER
+        </span>
+</div>
+<!-- Recruiter Snapshot Card -->
+<div class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl mb-4">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-headline-sm text-headline-sm font-bold">
+            MV
+          </div>
+<div class="overflow-hidden">
+<h4 class="font-headline-sm text-[14px] leading-tight font-bold text-on-surface truncate">Marcus Vance</h4>
+<p class="font-body-sm text-[12px] leading-tight text-secondary truncate">Campus TA Lead • TechCorp Global</p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-[#E2E8F0]/70 font-label-sm text-label-sm text-[#0F172A]">
+<span class="w-2 h-2 rounded-full bg-[#059669] animate-pulse"></span>
+<span class="font-medium text-[#334155]">Active Drive (Autumn '26)</span>
+</div>
+</div>
+<!-- Navigation Menu -->
+<nav class="space-y-1">
+<!-- Recruiter Dashboard [ACTIVE] -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-[#EFF6FF] text-[#1D4ED8] font-label-lg text-label-lg font-semibold border-l-4 border-[#1D4ED8]" href="#dashboard">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Recruiter Dashboard</span>
+</div>
+</a>
+<!-- Company Profile Manager -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#company">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+<span>Company Profile Manager</span>
+</div>
+</a>
+<!-- Candidate Talent Bench -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#talent-bench">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span>Candidate Talent Bench</span>
+</div>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold border border-[#BFDBFE]">32 Pre-Screened</span>
+</a>
+<!-- Active Drives & Schedules -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#drives">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+<span>Active Drives &amp; Schedules</span>
+</div>
+<span class="bg-[#F1F5F9] text-secondary font-label-sm text-label-sm px-2 py-0.5 rounded-md font-medium border border-[#E2E8F0]">Oct 1</span>
+</a>
+<!-- Student Feedback Portal -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#feedback">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">rate_review</span>
+<span>Student Feedback Portal</span>
+</div>
+<span class="bg-[#FFFBEB] text-[#B45309] font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold border border-[#FDE68A]">14 Pending</span>
+</a>
+<!-- ATS Integration & Sync -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#ats">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">sync_alt</span>
+<span>ATS Integration &amp; Sync</span>
+</div>
+<span class="bg-[#F5F3FF] text-[#7C3AED] font-label-sm text-label-sm px-2 py-0.5 rounded-md font-semibold border border-[#DDD6FE]">Workday</span>
+</a>
+<div class="pt-2 my-2 border-t border-[#E2E8F0]"></div>
+<!-- Recruitment Settings -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#settings">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Recruitment Settings</span>
+</a>
+<!-- Sign Out -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-error hover:bg-[#FEE2E2] font-label-lg text-label-lg transition-colors" href="#signout">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Sign Out</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Partner Card -->
+<div class="p-3 m-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="material-symbols-outlined text-[#1D4ED8] text-[18px]">verified</span>
+<h5 class="font-label-sm text-label-sm text-on-surface font-bold">Campus Partner Status</h5>
+</div>
+<p class="font-body-sm text-[12px] leading-snug text-secondary mb-2">
+<span class="font-semibold text-on-surface">Tier-1 Super Dream Partner</span><br/>
+        15 SDE-1 Target Offers • 94% Past Retention
+      </p>
+<div class="w-full bg-[#E2E8F0] h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#1D4ED8] h-full w-[94%] rounded-full"></div>
+</div>
+</div>
+</aside>
+<!-- 2. TOP BAR (Height 64px, sticky top-0 bg-white/95 backdrop-blur border-b border-[#E2E8F0] px-8 flex items-center justify-between z-30 ml-[260px]) -->
+<header class="sticky top-0 right-0 z-30 h-16 bg-white/95 backdrop-blur border-b border-[#E2E8F0] px-8 flex items-center justify-between ml-[260px] shadow-sm">
+<!-- Left: Breadcrumbs -->
+<nav class="flex items-center gap-2 font-label-md text-label-md text-secondary">
+<span>Portal</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Campus Recruitment</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="font-semibold text-on-surface">TechCorp Global Hiring Command</span>
+</nav>
+<!-- Center: Search Bar -->
+<div class="relative w-[440px] max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[18px]">search</span>
+<input class="w-full h-10 pl-9 pr-14 text-body-sm font-body-sm bg-[#FFFFFF] border border-[#E2E8F0] rounded-lg text-on-surface placeholder:text-secondary focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] focus:border-transparent transition-all" placeholder="Search candidates by skills, USN, faculty score, or target track..." type="text"/>
+<div class="absolute right-2.5 top-1/2 -translate-y-1/2">
+<kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-secondary bg-[#F1F5F9] border border-[#CBD5E1] rounded">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Right: Actions & Profile -->
+<div class="flex items-center gap-3">
+<!-- Drive countdown pill -->
+<div class="hidden lg:flex items-center gap-2 bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] px-3 py-1.5 rounded-full font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">event</span>
+<span class="font-medium">Autumn Drive: Starts in 14 Days (Oct 1)</span>
+</div>
+<!-- Primary Action -->
+<button class="flex items-center gap-1.5 h-10 px-4 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white font-label-lg text-label-lg rounded-lg transition-colors shadow-sm active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Post New Campus Drive</span>
+</button>
+<!-- Notification Bell -->
+<button class="relative p-2 text-secondary hover:text-on-surface hover:bg-[#F1F5F9] rounded-lg transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-[#BA1A1A] text-white font-label-sm text-[10px] font-bold rounded-full flex items-center justify-center">5</span>
+</button>
+<!-- User Avatar -->
+<div class="flex items-center pl-2 border-l border-[#E2E8F0]">
+<div class="w-9 h-9 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-headline-sm text-[13px] font-bold ring-2 ring-[#E2E8F0] cursor-pointer" title="Marcus Vance Profile">
+          MV
+        </div>
+</div>
+</div>
+</header>
+<!-- 3. MAIN CONTENT (ml-[260px] p-8 max-w-[1440px] space-y-6) -->
+<main class="ml-[260px] p-8 max-w-[1440px] space-y-6">
+<!-- A. Header Section -->
+<section class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex flex-wrap items-center gap-2.5 mb-2">
+<h1 class="font-headline-lg text-headline-lg text-[#0F172A] tracking-tight">
+              TechCorp Global — Campus Recruitment &amp; Talent Pipeline
+            </h1>
+<div class="flex items-center gap-2">
+<span class="bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE] rounded-full px-3 py-0.5 font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">school</span>
+                NBA Tier-1 Accredited Institution
+              </span>
+<span class="bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] rounded-full px-3 py-0.5 font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+                Institutional Readiness Pre-Screen Verified
+              </span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-secondary max-w-4xl">
+            Target Cohort: <span class="font-semibold text-on-surface">Dept. of Computer Science &amp; Engineering</span> (Class of 2026 • 142 Candidates) • <span class="font-semibold text-on-surface">SDE-1 Cloud Platform &amp; Core Backend</span> (24 - 28 LPA Super Dream Tier).
+          </p>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="flex items-center gap-1.5 h-9 px-3 bg-[#FFFFFF] border border-[#E2E8F0] hover:bg-[#F1F5F9] text-on-surface font-label-md text-label-md rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+            Filter Criteria
+          </button>
+<button class="flex items-center gap-1.5 h-9 px-3 bg-[#FFFFFF] border border-[#E2E8F0] hover:bg-[#F1F5F9] text-on-surface font-label-md text-label-md rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">share</span>
+            Share Roster
+          </button>
+</div>
+</div>
+</section>
+<!-- B. Top Recruitment KPI Metric Cards (4 Grid) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+<!-- Metric Card 1 -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm relative overflow-hidden border-t-[3px] border-t-[#1D4ED8]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">Pre-Screened Talent Pool</span>
+<span class="bg-[#ECFDF5] text-[#059669] font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold border border-[#A7F3D0] flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+            +8 vs 2025
+          </span>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">
+          32 Candidates
+        </div>
+<p class="font-body-sm text-body-sm text-secondary">
+          Scored &gt;80% Readiness (<span class="text-[#059669] font-semibold">12 Super Dream ready</span>)
+        </p>
+</div>
+<!-- Metric Card 2 -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm relative overflow-hidden border-t-[3px] border-t-[#059669]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">Faculty &amp; Alumni Endorsed</span>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold border border-[#BFDBFE]">
+            Faculty &amp; Alumni Vetted
+          </span>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">
+          24 Verified
+        </div>
+<p class="font-body-sm text-body-sm text-secondary truncate" title="Endorsed by Prof. Neha Sharma &amp; Vikram Singhania (TechCorp SWE)">
+          Endorsed by Prof. Neha Sharma &amp; Vikram Singhania
+        </p>
+</div>
+<!-- Metric Card 3 -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm relative overflow-hidden border-t-[3px] border-t-[#7C3AED]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">Interview Slots Booked</span>
+<span class="bg-[#F5F3FF] text-[#7C3AED] font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold border border-[#DDD6FE]">
+            80% Capacity
+          </span>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">
+          48 / 60 Slots
+        </div>
+<p class="font-body-sm text-body-sm text-secondary">
+          3 Technical Panels Assigned (System Design, DSA, STAR)
+        </p>
+</div>
+<!-- Metric Card 4 -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm relative overflow-hidden border-t-[3px] border-t-[#B45309]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">Target Offers Allocation</span>
+<span class="bg-[#FFFBEB] text-[#B45309] font-label-sm text-label-sm px-2 py-0.5 rounded-full font-semibold border border-[#FDE68A]">
+            Target: 15
+          </span>
+</div>
+<div class="font-metric-val text-metric-val font-bold text-on-surface mb-1">
+          15 SDE-1 Offers
+        </div>
+<p class="font-body-sm text-body-sm text-secondary">
+          CTC: 24-28 LPA (<span class="font-semibold text-on-surface">Super Dream Bracket</span>)
+        </p>
+</div>
+</section>
+<!-- C. Middle Section (Two Column Grid: 60% / 40%) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column (60% ~ 7 cols): Pre-Screened Top Candidate Bench -->
+<div class="lg:col-span-7 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm flex flex-col justify-between">
+<div>
+<!-- Header -->
+<div class="flex items-start justify-between pb-4 border-b border-[#E2E8F0]">
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+                  Pre-Screened Top Candidate Bench
+                </h3>
+<span class="bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] rounded-full px-2.5 py-0.5 font-label-sm text-label-sm font-semibold">
+                  Fast-Track Eligible
+                </span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mt-0.5">
+                Vetted candidates exceeding TechCorp's technical bar
+              </p>
+</div>
+<span class="text-secondary hover:text-on-surface cursor-pointer p-1">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</span>
+</div>
+<!-- Candidates List -->
+<div class="divide-y divide-[#F1F5F9] mt-3">
+<!-- Candidate 1: Rohan Mehta -->
+<div class="py-4 hover:bg-[#F8FAFC] transition-colors rounded-lg px-2">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-full bg-[#1D4ED8] text-white flex items-center justify-center font-headline-sm text-headline-sm font-bold shrink-0">
+                    RM
+                  </div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-headline-sm text-[15px] font-bold text-on-surface">Rohan Mehta</h4>
+<span class="font-body-sm text-[12px] text-secondary">• Final Year CSE-A • <strong class="text-on-surface font-semibold">9.24 CGPA</strong></span>
+</div>
+<span class="inline-flex items-center gap-1 bg-[#ECFDF5] text-[#059669] font-label-sm text-label-sm px-2 py-0.5 rounded-full mt-1 border border-[#A7F3D0]">
+<span class="material-symbols-outlined text-[13px]">bolt</span>
+                      96% Fit for Cloud Platform SDE-1
+                    </span>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="h-8 px-3 bg-[#059669] hover:bg-[#047857] text-white font-label-sm text-label-sm rounded-lg transition-colors shadow-sm">
+                    Fast-Track to Final Round
+                  </button>
+<button class="h-8 px-3 bg-[#FFFFFF] border border-[#E2E8F0] hover:bg-[#F1F5F9] text-on-surface font-label-sm text-label-sm rounded-lg transition-colors">
+                    View Dossier
+                  </button>
+</div>
+</div>
+<p class="font-body-sm text-[12px] text-secondary mt-2 pl-14">
+<span class="font-semibold text-on-surface">Technical Highlights:</span> Solved Distributed Cache Invalidation bug; Faculty score 4.35/5.0; Alumni Pre-Screen Approved.
+              </p>
+</div>
+<!-- Candidate 2: Ananya Iyer -->
+<div class="py-4 hover:bg-[#F8FAFC] transition-colors rounded-lg px-2">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-full bg-[#006948] text-white flex items-center justify-center font-headline-sm text-headline-sm font-bold shrink-0">
+                    AI
+                  </div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-headline-sm text-[15px] font-bold text-on-surface">Ananya Iyer</h4>
+<span class="font-body-sm text-[12px] text-secondary">• Final Year CSE-B • <strong class="text-on-surface font-semibold">8.91 CGPA</strong></span>
+</div>
+<span class="inline-flex items-center gap-1 bg-[#EFF6FF] text-[#1D4ED8] font-label-sm text-label-sm px-2 py-0.5 rounded-full mt-1 border border-[#BFDBFE]">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+                      91% Fit for Core Services SDE-1
+                    </span>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="h-8 px-3 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white font-label-sm text-label-sm rounded-lg transition-colors shadow-sm">
+                    Shortlist for Panel 1
+                  </button>
+<button class="h-8 px-3 bg-[#FFFFFF] border border-[#E2E8F0] hover:bg-[#F1F5F9] text-on-surface font-label-sm text-label-sm rounded-lg transition-colors">
+                    View Dossier
+                  </button>
+</div>
+</div>
+<p class="font-body-sm text-[12px] text-secondary mt-2 pl-14">
+<span class="font-semibold text-on-surface">Technical Highlights:</span> Distributed ACID &amp; Microservices specialist; Faculty score 4.20/5.0.
+              </p>
+</div>
+<!-- Candidate 3: Pooja Hegde -->
+<div class="py-4 hover:bg-[#F8FAFC] transition-colors rounded-lg px-2">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-full bg-[#7C3AED] text-white flex items-center justify-center font-headline-sm text-headline-sm font-bold shrink-0">
+                    PH
+                  </div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-headline-sm text-[15px] font-bold text-on-surface">Pooja Hegde</h4>
+<span class="font-body-sm text-[12px] text-secondary">• Final Year CSE-A • <strong class="text-on-surface font-semibold">8.65 CGPA</strong></span>
+</div>
+<span class="inline-flex items-center gap-1 bg-[#EFF6FF] text-[#1D4ED8] font-label-sm text-label-sm px-2 py-0.5 rounded-full mt-1 border border-[#BFDBFE]">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+                      88% Fit for Backend Core SDE-1
+                    </span>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="h-8 px-3 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white font-label-sm text-label-sm rounded-lg transition-colors shadow-sm">
+                    Shortlist for Panel 1
+                  </button>
+<button class="h-8 px-3 bg-[#FFFFFF] border border-[#E2E8F0] hover:bg-[#F1F5F9] text-on-surface font-label-sm text-label-sm rounded-lg transition-colors">
+                    View Dossier
+                  </button>
+</div>
+</div>
+<p class="font-body-sm text-[12px] text-secondary mt-2 pl-14">
+<span class="font-semibold text-on-surface">Technical Highlights:</span> Low-Level Design &amp; Concurrency mastery; LeetCode 1900+ rating.
+              </p>
+</div>
+</div>
+</div>
+<!-- Footer Link -->
+<div class="pt-4 border-t border-[#E2E8F0] flex justify-between items-center mt-2">
+<span class="font-body-sm text-body-sm text-secondary">Displaying 3 of 32 Pre-Screened Candidates</span>
+<a class="font-label-md text-label-md font-semibold text-[#1D4ED8] hover:text-[#1E40AF] flex items-center gap-1" href="#talent-bench">
+            View All 32 Pre-Screened Candidates in Talent Bench →
+          </a>
+</div>
+</div>
+<!-- Right Column (40% ~ 5 cols): Campus Drive Funnel & 3-Day Schedule -->
+<div class="lg:col-span-5 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm flex flex-col justify-between">
+<div>
+<!-- Header -->
+<div class="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+                Campus Drive Funnel &amp; 3-Day Schedule
+              </h3>
+<p class="font-body-sm text-[12px] text-secondary">Autumn 2026 Recruitment Execution</p>
+</div>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] font-label-sm text-label-sm font-semibold px-2.5 py-1 rounded-md border border-[#BFDBFE]">
+              Oct 1 - Oct 3, 2026
+            </span>
+</div>
+<!-- Segmented Funnel Flow -->
+<div class="my-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3">
+<div class="flex items-center justify-between text-center text-[11px] font-label-sm font-semibold text-secondary mb-2">
+<span>142 Cohort</span>
+<span class="text-outline-variant">→</span>
+<span>48 OA Shortlist</span>
+<span class="text-outline-variant">→</span>
+<span>32 In Panels</span>
+<span class="text-outline-variant">→</span>
+<span class="text-[#059669] font-bold">15 Offers</span>
+</div>
+<!-- Milestone Pipeline Bar -->
+<div class="w-full grid grid-cols-4 gap-1 h-2 rounded-full overflow-hidden bg-[#E2E8F0]">
+<div class="bg-[#1D4ED8] h-full" title="Step 1: Eligible"></div>
+<div class="bg-[#1D4ED8] h-full" title="Step 2: OA"></div>
+<div class="bg-[#1D4ED8] h-full" title="Step 3: Panels"></div>
+<div class="bg-[#059669] h-full" title="Step 4: Target Offers"></div>
+</div>
+</div>
+<!-- 3-Day Milestone Cards -->
+<div class="space-y-3">
+<!-- Day 1 -->
+<div class="border border-[#E2E8F0] bg-[#FFFFFF] p-3 rounded-lg hover:border-[#CBD5E1] transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-[#EFF6FF] text-[#1D4ED8] font-label-sm text-[11px] font-bold flex items-center justify-center border border-[#BFDBFE]">D1</span>
+<div>
+<h5 class="font-label-lg text-label-lg font-bold text-on-surface">Day 1 (Oct 1, 9:00 AM - 12:00 PM)</h5>
+<p class="font-body-sm text-[12px] text-secondary">Online Proctored Technical OA (Systems Labs 01-04)</p>
+</div>
+</div>
+<span class="bg-[#F1F5F9] text-[#334155] font-label-sm text-label-sm px-2 py-0.5 rounded font-medium">48 Candidates</span>
+</div>
+</div>
+<!-- Day 2 -->
+<div class="border border-[#BFDBFE] bg-[#EFF6FF]/30 p-3 rounded-lg">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-[#1D4ED8] text-white font-label-sm text-[11px] font-bold flex items-center justify-center">D2</span>
+<div>
+<h5 class="font-label-lg text-label-lg font-bold text-on-surface">Day 2 (Oct 2, 10:00 AM - 5:00 PM)</h5>
+<p class="font-body-sm text-[12px] text-secondary">Round 1 &amp; 2 Technical Panels (Distributed Systems &amp; LLD)</p>
+</div>
+</div>
+<span class="bg-[#EFF6FF] text-[#1D4ED8] font-label-sm text-label-sm px-2 py-0.5 rounded font-semibold border border-[#BFDBFE]">32 Candidates</span>
+</div>
+</div>
+<!-- Day 3 -->
+<div class="border border-[#E2E8F0] bg-[#FFFFFF] p-3 rounded-lg hover:border-[#CBD5E1] transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-[#ECFDF5] text-[#059669] font-label-sm text-[11px] font-bold flex items-center justify-center border border-[#A7F3D0]">D3</span>
+<div>
+<h5 class="font-label-lg text-label-lg font-bold text-on-surface">Day 3 (Oct 3, 2:00 PM - 6:00 PM)</h5>
+<p class="font-body-sm text-[12px] text-secondary">Bar-Raiser Executive Interviews &amp; On-Spot Offers</p>
+</div>
+</div>
+<span class="bg-[#ECFDF5] text-[#059669] font-label-sm text-label-sm px-2 py-0.5 rounded font-semibold border border-[#A7F3D0]">15 Candidates</span>
+</div>
+</div>
+</div>
+</div>
+<!-- ATS Sync Status -->
+<div class="mt-4 pt-3 border-t border-[#E2E8F0] flex items-center justify-between font-body-sm text-[12px] text-secondary">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#059669]"></span>
+<span><strong class="text-on-surface">Workday ATS Connected:</strong> Candidate profiles synced in real-time</span>
+</div>
+<span class="material-symbols-outlined text-secondary text-[16px]">sync</span>
+</div>
+</div>
+</section>
+<!-- D. Bottom Section (Curriculum Competency Alignment & Export Action Toolbar) -->
+<section class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-[#E2E8F0]">
+<!-- Title & Alignment Metrics -->
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+              Curriculum Competency Alignment with TechCorp Hiring Bar
+            </h3>
+<span class="bg-[#F1F5F9] text-secondary font-label-sm text-label-sm px-2 py-0.5 rounded">Dept. Syllabus Vetted</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mb-5">
+            Institutional coursework mapping based on TechCorp SDE-1 proficiency rubric and past hiring velocity.
+          </p>
+<!-- 4 Progress comparison bars -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+<!-- 1. Distributed Systems & Caching -->
+<div>
+<div class="flex justify-between items-center font-label-md text-label-md mb-1">
+<span class="text-on-surface font-semibold">1. Distributed Systems &amp; Caching</span>
+<span class="text-[#059669] font-bold">92% Alignment (Top Tier)</span>
+</div>
+<div class="w-full bg-[#F1F5F9] h-2.5 rounded-full overflow-hidden border border-[#E2E8F0]">
+<div class="bg-[#059669] h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<!-- 2. DSA & Concurrency -->
+<div>
+<div class="flex justify-between items-center font-label-md text-label-md mb-1">
+<span class="text-on-surface font-semibold">2. DSA &amp; Concurrency</span>
+<span class="text-[#1D4ED8] font-bold">94% Alignment (Above Bar)</span>
+</div>
+<div class="w-full bg-[#F1F5F9] h-2.5 rounded-full overflow-hidden border border-[#E2E8F0]">
+<div class="bg-[#1D4ED8] h-full rounded-full" style="width: 94%"></div>
+</div>
+</div>
+<!-- 3. Cloud Infrastructure & Containers -->
+<div>
+<div class="flex justify-between items-center font-label-md text-label-md mb-1">
+<span class="text-on-surface font-semibold">3. Cloud Infrastructure &amp; Containers</span>
+<span class="text-[#7C3AED] font-bold">84% Alignment</span>
+</div>
+<div class="w-full bg-[#F1F5F9] h-2.5 rounded-full overflow-hidden border border-[#E2E8F0]">
+<div class="bg-[#7C3AED] h-full rounded-full" style="width: 84%"></div>
+</div>
+</div>
+<!-- 4. STAR Behavioral Communication -->
+<div>
+<div class="flex justify-between items-center font-label-md text-label-md mb-1">
+<span class="text-on-surface font-semibold">4. STAR Behavioral Communication</span>
+<span class="text-[#059669] font-bold">88% Alignment</span>
+</div>
+<div class="w-full bg-[#F1F5F9] h-2.5 rounded-full overflow-hidden border border-[#E2E8F0]">
+<div class="bg-[#059669] h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Toolbar -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5">
+<div class="flex items-center gap-2 text-secondary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Manifest contains verified college transcripts, LeetCode handles, and institutional faculty ratings.</span>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<!-- Secondary Action -->
+<button class="flex items-center justify-center gap-2 h-10 px-4 bg-[#FFFFFF] border border-[#E2E8F0] hover:bg-[#F1F5F9] text-[#0F172A] font-label-lg text-label-lg rounded-lg transition-colors w-full sm:w-auto">
+<span class="material-symbols-outlined text-[18px]">folder_zip</span>
+            Download Transcripts &amp; Verified Portfolios (ZIP)
+          </button>
+<!-- Primary Action -->
+<button class="flex items-center justify-center gap-2 h-10 px-4 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white font-label-lg text-label-lg rounded-lg transition-colors shadow-sm active:scale-[0.98] w-full sm:w-auto shrink-0">
+<span class="material-symbols-outlined text-[18px]">cloud_upload</span>
+            Export Candidate Manifest to Workday ATS
+          </button>
+</div>
+</div>
+</section>
+</main>
+</body></html>

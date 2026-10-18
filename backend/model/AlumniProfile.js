@@ -9,7 +9,7 @@ const alumniProfileSchema = new mongoose.Schema({
   },
   graduationYear: {
     type: Number,
-    required: true,
+    default: () => new Date().getFullYear(),
   },
   currentCompany: {
     type: String,
@@ -19,7 +19,43 @@ const alumniProfileSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-});
+  department: {
+    type: String,
+    default: 'Computer Science & Engineering',
+  },
+  location: {
+    type: String,
+    default: '',
+  },
+  phone: {
+    type: String,
+    default: '',
+  },
+  bio: {
+    type: String,
+    default: '',
+  },
+  linkedinUrl: {
+    type: String,
+    default: '',
+  },
+  githubUrl: {
+    type: String,
+    default: '',
+  },
+  skills: {
+    type: [String],
+    default: [],
+  },
+  mentorshipTopics: {
+    type: [String],
+    default: [],
+  },
+  isAvailableForMentorship: {
+    type: Boolean,
+    default: true,
+  },
+}, { timestamps: true });
 
 const AlumniProfile = mongoose.model(
   'AlumniProfile',

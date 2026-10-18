@@ -1,9 +1,12 @@
 import express from 'express';
-import { addCompany } from '../controllers/companyController.js';
+import { addCompany, getCompany } from '../controllers/companyController.js';
 
 const router = express.Router();
 
-// Define the POST route
+// GET /api/companies — Get company by name or all companies
+router.get('/', getCompany);
+
+// POST /api/companies — Register or update company criteria
 router.post('/', addCompany);
 
 export default router;

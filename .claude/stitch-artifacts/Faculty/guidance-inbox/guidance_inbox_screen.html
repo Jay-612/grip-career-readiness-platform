@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP — Faculty Guidance Inbox &amp; Student Advising Queue</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Plus Jakarta Sans & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed": "#001551",
+            "surface-container-highest": "#d3e4fe",
+            "on-error": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "tertiary-fixed": "#85f8c4",
+            "error": "#ba1a1a",
+            "inverse-on-surface": "#eaf1ff",
+            "primary-container": "#1d4ed8",
+            "surface-variant": "#d3e4fe",
+            "secondary-container": "#dae2fd",
+            "on-secondary": "#ffffff",
+            "surface-dim": "#cbdbf5",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-fixed": "#131b2e",
+            "inverse-surface": "#213145",
+            "on-primary-fixed-variant": "#0039b5",
+            "on-tertiary-fixed-variant": "#005137",
+            "on-secondary-fixed-variant": "#3f465c",
+            "surface-container-low": "#eff4ff",
+            "tertiary-fixed-dim": "#68dba9",
+            "primary": "#0037b0",
+            "on-error-container": "#93000a",
+            "on-tertiary-fixed": "#002114",
+            "on-surface-variant": "#434655",
+            "on-tertiary-container": "#76eab6",
+            "tertiary": "#004f35",
+            "primary-fixed-dim": "#b7c4ff",
+            "inverse-primary": "#b7c4ff",
+            "tertiary-container": "#006948",
+            "secondary-fixed": "#dae2fd",
+            "on-primary-container": "#cad3ff",
+            "surface": "#f8f9ff",
+            "on-surface": "#0b1c30",
+            "on-secondary-container": "#5c647a",
+            "on-tertiary": "#ffffff",
+            "secondary-fixed-dim": "#bec6e0",
+            "error-container": "#ffdad6",
+            "primary-fixed": "#dce1ff",
+            "outline-variant": "#c4c5d7",
+            "on-background": "#0b1c30",
+            "secondary": "#565e74",
+            "on-primary": "#ffffff",
+            "surface-tint": "#2151da",
+            "surface-container-high": "#dce9ff",
+            "surface-container": "#e5eeff",
+            "background": "#f8f9ff",
+            "outline": "#747686"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "gutter-sm": "1rem",
+            "space-md": "1rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2.5rem",
+            "space-xs": "0.25rem",
+            "margin-sm": "1rem",
+            "gutter": "1.5rem",
+            "margin": "2rem"
+          },
+          "fontFamily": {
+            "display-lg": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-x-hidden">
+<!-- LEFT SIDEBAR -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-outline-variant/50 shadow-sm">
+<div class="flex flex-col h-full justify-between p-4">
+<!-- Brand & Faculty Info -->
+<div>
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant/40">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">GRIP</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold tracking-wide">FACULTY</span>
+</div>
+<span class="material-symbols-outlined text-outline text-xl cursor-pointer hover:text-primary transition-colors">domain</span>
+</div>
+<!-- Faculty Profile Snippet -->
+<div class="mt-4 p-3 bg-surface-container-low rounded-xl flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm flex items-center justify-center font-bold">
+              NS
+            </div>
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-tertiary-container border-2 border-surface-container-lowest rounded-full ring-1 ring-white"></span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface truncate">Prof. Neha Sharma</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Assoc. Prof &amp; Placement Lead</p>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+<span class="font-label-sm text-label-sm text-tertiary-container font-semibold">Available</span>
+</div>
+</div>
+</div>
+<!-- Navigation items mapped to Institutional Guidance -->
+<nav class="mt-5 space-y-1">
+<!-- Item 1 -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Faculty Dashboard</span>
+</a>
+<!-- Item 2 -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">quiz</span>
+<span>Interview Evaluation</span>
+</a>
+<!-- Item 3 ACTIVE -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-surface-container-low text-primary font-label-lg text-label-lg font-semibold border-l-4 border-primary shadow-xs" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">inbox</span>
+<span>Guidance Inbox</span>
+</div>
+<span class="px-2 py-0.5 text-xs font-bold rounded-full bg-primary-container text-on-primary">7 Unread</span>
+</a>
+<!-- Item 4 -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span>HOD Analytics</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Dept Only</span>
+</a>
+<!-- Item 5 -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span>Office Hours &amp; Calendar</span>
+</a>
+<!-- Item 6 Settings -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Faculty Settings</span>
+</a>
+</nav>
+</div>
+<!-- Bottom SLA Performance Card & Sign Out -->
+<div class="space-y-3 pt-4 border-t border-outline-variant/40">
+<div class="p-3 bg-surface-container rounded-xl border border-outline-variant/30">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase tracking-wider">Advising SLA</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-bold">96.4%</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-2">
+<div class="bg-tertiary-container h-1.5 rounded-full" style="width: 96.4%"></div>
+</div>
+<div class="flex justify-between items-center mt-2 text-on-surface-variant font-body-sm text-[11px]">
+<span>Avg response: 42m</span>
+<span>Target: &lt;24h</span>
+</div>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-error hover:bg-error-container/40 font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- TOP APP BAR -->
+<header class="sticky top-0 right-0 z-30 w-full ml-[260px] max-w-[calc(100vw-260px)] h-16 bg-surface-container-lowest border-b border-outline-variant/40 shadow-xs flex items-center justify-between px-6">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant">
+<span class="hover:text-primary cursor-pointer transition-colors">Portal</span>
+<span class="material-symbols-outlined text-sm text-outline">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Faculty Guidance</span>
+<span class="material-symbols-outlined text-sm text-outline">chevron_right</span>
+<span class="font-semibold text-on-surface">Guidance Inbox &amp; Advising Queue</span>
+</div>
+<!-- Center Search Bar -->
+<div class="relative w-96 max-w-md hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">search</span>
+<input class="w-full h-10 pl-9 pr-14 text-sm bg-surface-container-low border border-outline-variant/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all font-body-sm text-on-surface placeholder:text-outline" placeholder="Search queries by student name, USN, topic, or keyword..." type="text"/>
+<span class="absolute right-2.5 top-2.5 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-outline bg-surface-container rounded border border-outline-variant/60">Ctrl+K</span>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-3">
+<!-- Office Hours Live Badge -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/40 text-primary">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Office Hours: Today 3:00 PM - 5:00 PM</span>
+<span class="px-1.5 py-0.2 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-[10px] font-bold">Active</span>
+</div>
+<button class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-white"></span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="Help &amp; Documentation">
+<span class="material-symbols-outlined text-[22px]">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center border border-outline-variant/30 cursor-pointer">
+        NS
+      </div>
+</div>
+</header>
+<!-- MAIN WORKSPACE CONTAINER -->
+<main class="ml-[260px] max-w-[calc(100vw-260px)] p-6 space-y-5">
+<!-- Top Filter & Statistics Bar (Level 1 Panel) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Guidance Inbox &amp; Student Advising Queue</h1>
+<span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold">Semester 8 Recruitment Cycle</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">14 active requests requiring technical review, 1:1 mentorship guidance, or placement sign-off</p>
+</div>
+<!-- Metric summaries -->
+<div class="flex items-center gap-2 flex-wrap">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-lg border border-amber-200 text-amber-800 font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">pending_actions</span>
+<span>Unresolved (7)</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-lg border border-outline-variant/40 text-on-surface font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">timelapse</span>
+<span>Avg Wait: <strong class="font-bold">1.8h</strong></span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200 text-primary-container font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">code_blocks</span>
+<span>Code Reviews (4)</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 bg-red-50 rounded-lg border border-red-200 text-error font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+<span>Placement Critical (3)</span>
+</div>
+</div>
+</div>
+<!-- Filter Tabs & Batch Actions -->
+<div class="mt-5 pt-4 border-t border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex items-center gap-1 overflow-x-auto pb-1 custom-scrollbar">
+<button class="px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold whitespace-nowrap shadow-xs">
+            All Requests (14)
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md font-semibold whitespace-nowrap transition-colors">
+            Unread (7)
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md font-semibold whitespace-nowrap transition-colors">
+            High Urgency (3)
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md font-semibold whitespace-nowrap transition-colors">
+            Code Reviews (4)
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md font-semibold whitespace-nowrap transition-colors">
+            Mentorship Bookings (5)
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-md text-label-md font-semibold whitespace-nowrap transition-colors">
+            Archived / Resolved (38)
+          </button>
+</div>
+<div class="flex items-center gap-2 self-end md:self-auto">
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant/60 bg-surface-container-lowest text-on-surface hover:bg-surface-container-low font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Batch Endorse</span>
+</button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">video_call</span>
+<span>Schedule Open Q&amp;A Session</span>
+</button>
+</div>
+</div>
+</div>
+<!-- SPLIT-PANE WORKSPACE: Left Queue (400px) + Right Interactive Detail (Flex-1) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+<!-- LEFT COLUMN: Ticket & Query List (400px equivalent -> 4 cols on lg, 5 on xl) -->
+<div class="lg:col-span-4 xl:col-span-4 flex flex-col space-y-3">
+<!-- Search & Subfilter Header inside list -->
+<div class="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/40 flex items-center justify-between gap-2 shadow-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-lg">filter_list</span>
+<select class="bg-transparent border-0 font-label-md text-label-md text-on-surface font-semibold p-0 pr-6 focus:ring-0 cursor-pointer">
+<option>Final Yr CSE-A &amp; B</option>
+<option>Final Year CSE-A</option>
+<option>Final Year CSE-B</option>
+<option>3rd Year Pre-placement</option>
+</select>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">Sorted by: Urgency</span>
+</div>
+<!-- Scrollable Ticket List Container -->
+<div class="space-y-3 overflow-y-auto max-h-[820px] custom-scrollbar pr-0.5">
+<!-- TICKET 1: SELECTED / ACTIVE ITEM -->
+<div class="p-4 rounded-xl bg-surface-container-low border-2 border-primary-container shadow-sm cursor-pointer transition-all relative">
+<div class="absolute left-0 top-3 bottom-3 w-1.5 bg-primary-container rounded-r"></div>
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center">
+                  RM
+                </div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">Rohan Mehta</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">USN: 1DS22CS402 • Final Year CSE-A</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant font-medium">18m ago</span>
+</div>
+<div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-red-100 text-error font-label-sm text-[11px] font-bold border border-red-200">
+                Critical - Drive in 4 Days
+              </span>
+<span class="px-2 py-0.5 rounded-full bg-blue-100 text-primary-container font-label-sm text-[11px] font-semibold">
+                Code &amp; Architecture Review
+              </span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface mt-2 line-clamp-1">
+              Redis Cache Invalidation &amp; Race Condition in Payment Microservice
+            </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">
+              Professor, I implemented write-through caching with pub/sub invalidation, but I observe stale reads under concurrent test with k6...
+            </p>
+<div class="flex items-center justify-between mt-3 pt-2.5 border-t border-outline-variant/30 text-xs">
+<span class="inline-flex items-center gap-1 text-primary font-semibold">
+<span class="material-symbols-outlined text-[15px]">assignment_turned_in</span>
+                Needs Faculty Sign-off
+              </span>
+<span class="text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">attachment</span> 2 files
+              </span>
+</div>
+</div>
+<!-- TICKET 2: Ananya Iyer -->
+<div class="p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low/60 border border-outline-variant/40 shadow-xs cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-fixed font-bold text-xs flex items-center justify-center">
+                  AI
+                </div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">Ananya Iyer</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">USN: 1DS22CS034 • CSE-B</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant">1h ago</span>
+</div>
+<div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-label-sm text-[11px] font-semibold border border-amber-200">
+                Medium Urgency
+              </span>
+<span class="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-label-sm text-[11px] font-semibold">
+                1:1 Advising Booking
+              </span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface mt-2">
+              Mock System Design: Fintech Distributed Ledger Scalability
+            </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">
+              Booking for tomorrow's office hours slot. Seeking evaluation on sharding key selection for high-frequency ledger ledgers...
+            </p>
+<div class="flex items-center justify-between mt-3 pt-2.5 border-t border-outline-variant/20 text-xs">
+<span class="inline-flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[15px]">event</span>
+                Slot Requested: Tomorrow 4:30 PM
+              </span>
+<span class="text-tertiary-container font-semibold">Pending Approval</span>
+</div>
+</div>
+<!-- TICKET 3: Vikramaditya Rao -->
+<div class="p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low/60 border border-outline-variant/40 shadow-xs cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-surface-container-high text-on-surface font-bold text-xs flex items-center justify-center">
+                  VR
+                </div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">Vikramaditya Rao</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">3rd Year CSE-A</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant">3h ago</span>
+</div>
+<div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-[11px]">
+                Normal
+              </span>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-label-sm text-[11px] font-semibold">
+                Theoretical / Concept
+              </span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface mt-2">
+              Clarification on Raft Leader Election Split Vote scenarios
+            </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">
+              In case of randomized election timeouts, what is the upper theoretical bound for repeated split votes in a 5-node cluster?
+            </p>
+<div class="flex items-center justify-between mt-3 pt-2.5 border-t border-outline-variant/20 text-xs">
+<span class="text-on-surface-variant">Waiting on Faculty</span>
+<span class="text-primary font-semibold hover:underline">Quick Reply →</span>
+</div>
+</div>
+<!-- TICKET 4: Pooja Hegde -->
+<div class="p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low/60 border border-outline-variant/40 shadow-xs cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-primary-fixed text-primary font-bold text-xs flex items-center justify-center">
+                  PH
+                </div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">Pooja Hegde</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Final Year CSE-A</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant">5h ago</span>
+</div>
+<div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-label-sm text-[11px] font-semibold border border-amber-200">
+                High
+              </span>
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-[11px] font-semibold border border-emerald-200">
+                Resume &amp; Portfolio Review
+              </span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface mt-2">
+              Resume Tailoring for Google SDE-1 On-Campus Placement
+            </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">
+              Drafted new impact metrics for the open source Kubernetes controller contribution. Seeking final review before lock.
+            </p>
+<div class="flex items-center justify-between mt-3 pt-2.5 border-t border-outline-variant/20 text-xs">
+<span class="text-amber-700 font-semibold">Draft Feedback Saved</span>
+<span class="material-symbols-outlined text-[16px] text-outline">edit_note</span>
+</div>
+</div>
+<!-- TICKET 5: Kavya Patel -->
+<div class="p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low/60 border border-outline-variant/40 shadow-xs cursor-pointer transition-all opacity-85">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-surface-container text-on-surface-variant font-bold text-xs flex items-center justify-center">
+                  KP
+                </div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">Kavya Patel</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Final Year CSE-B</p>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant">Yesterday</span>
+</div>
+<div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-[11px]">
+                Normal
+              </span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-[11px]">
+                Project Guidance
+              </span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface mt-2">
+              Kafka consumer lag tuning for live stream ingestion
+            </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">
+              Thank you professor, the partition reassignment resolved the consumer rebalance storm.
+            </p>
+<div class="flex items-center justify-between mt-3 pt-2.5 border-t border-outline-variant/20 text-xs">
+<span class="text-tertiary-container font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">check_circle</span>
+                Resolved (Endorsed)
+              </span>
+<span class="text-on-surface-variant">Closed</span>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Active Ticket Detail & Interactive Guidance Composer -->
+<div class="lg:col-span-8 xl:col-span-8 flex flex-col space-y-4">
+<!-- Header Profile Card of Selected Student (Level 1 Elevation) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-start gap-4">
+<div class="w-14 h-14 rounded-xl bg-primary-container text-on-primary font-display-lg text-2xl font-bold flex items-center justify-center shadow-xs">
+                RM
+              </div>
+<div>
+<div class="flex items-center gap-2 flex-wrap">
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Rohan Mehta</h2>
+<span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+                    88.4% Placement Ready
+                  </span>
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+                    Tier-1 Approved
+                  </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+                  USN: 1DS22CS402 • Final Year CSE-A • CGPA: <strong class="text-on-surface font-semibold">9.24 / 10</strong>
+</p>
+<p class="font-body-sm text-body-sm text-primary font-medium mt-0.5">
+                  Target Track: Distributed Systems Backend Engineer • Dream Companies: TechCorp, Stripe, AWS
+                </p>
+</div>
+</div>
+<!-- Action buttons for the student -->
+<div class="flex flex-wrap md:flex-col gap-2 shrink-0">
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+<span>View Full Student Profile</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">grade</span>
+<span>Past Interview Rubrics (4.35/5.0)</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-primary font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">video_call</span>
+<span>Launch Instant Video Meeting</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Question & Context Section (Student Submission Details) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-6 shadow-xs space-y-4">
+<!-- Submission Meta -->
+<div class="border-b border-outline-variant/30 pb-4">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold">Query Context</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Submitted 18 minutes ago • Target Drive: TechCorp (In 4 Days)</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1">
+              Redis Cache Invalidation &amp; Race Condition in Payment Microservice
+            </h3>
+<div class="flex items-center gap-2 mt-2">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">Distributed Systems</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">Redis Pub/Sub</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">Concurrency Benchmark</span>
+</div>
+</div>
+<!-- Problem Description -->
+<div class="prose max-w-none text-on-surface font-body-md text-body-md leading-relaxed">
+<p>
+              Respected Professor Sharma, I am preparing the end-to-end architecture demo for the upcoming TechCorp Campus Drive. I have architected an idempotent payment ledger where account balances are cached in Redis with a 15-minute TTL. To maintain consistency, I broadcast cache invalidations via Redis Pub/Sub after writing to Postgres.
+            </p>
+<p class="mt-2">
+              However, during high-load stress testing with <strong>k6 (5,000 req/sec)</strong>, I observe a <strong>2.3% stale-read frequency</strong> where a concurrent worker repopulates the Redis cache using an outdated snapshot from Postgres read-replicas right before the invalidation pub/sub event arrives.
+            </p>
+</div>
+<!-- Code Snippet Card with Dark Slate Syntax Theme -->
+<div class="rounded-xl overflow-hidden border border-slate-700 bg-[#0F172A] text-slate-100 font-mono text-xs shadow-inner">
+<div class="flex items-center justify-between px-4 py-2.5 bg-[#1E293B] border-b border-slate-700 text-slate-300">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-primary-fixed">code</span>
+<span class="font-semibold text-white">payment_service.go</span>
+<span class="text-slate-400 font-sans text-[11px]">(Go 1.22 / Redigo Concurrency Trap)</span>
+</div>
+<span class="text-[11px] text-amber-400 flex items-center gap-1 font-sans font-medium">
+<span class="material-symbols-outlined text-[14px]">bug_report</span> Lines 48-62 Race Window
+              </span>
+</div>
+<pre class="p-4 overflow-x-auto leading-5 text-slate-200 custom-scrollbar"><code><span class="text-slate-500">// 1. Write updated ledger state to Postgres Primary</span>
+err := tx.Exec(<span class="text-emerald-400">"UPDATE accounts SET balance = balance - $1 WHERE id = $2"</span>, amount, accountID).Error
+<span class="text-purple-400">if</span> err != nil {
+    <span class="text-purple-400">return</span> err
+}
+tx.Commit()
+
+<span class="text-amber-400">// PROBLEM RACE WINDOW: Worker B reads stale balance from read-replica here!</span>
+<span class="text-slate-500">// 2. Evict cache via Redis pub/sub invalidation bus</span>
+redisClient.Publish(ctx, <span class="text-emerald-400">"account:invalidate"</span>, accountID)
+
+<span class="text-slate-500">// If another request fetches before replica catches up, stale data re-enters cache</span>
+balance, _ := cache.GetOrSet(ctx, accountID, <span class="text-blue-300">func</span>() (int64, error) {
+    <span class="text-purple-400">return</span> dbReplica.FetchBalance(accountID) <span class="text-red-400">// &lt;-- Returns pre-commit replica snapshot</span>
+})</code></pre>
+</div>
+<!-- Attached Benchmark Artifacts -->
+<div class="pt-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Attached Diagnostic Artifacts:</span>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+<div class="flex items-center justify-between p-3 rounded-lg border border-outline-variant/50 bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">analytics</span>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">k6_benchmark_results.csv</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">1.2 MB • 5,000 req/s load test metrics</p>
+</div>
+</div>
+<button class="text-primary hover:text-on-primary-fixed-variant" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg border border-outline-variant/50 bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-error text-[22px]">picture_as_pdf</span>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">architecture_v2.pdf</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">3.8 MB • Microservice topology diagram</p>
+</div>
+</div>
+<button class="text-primary hover:text-on-primary-fixed-variant" title="Download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Faculty Guidance & Interactive Composer (Level 1 Elevation) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-6 shadow-xs space-y-4">
+<div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">rate_review</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Faculty Guidance &amp; Placement Endorsement</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Draft auto-saved 2m ago</span>
+</div>
+<!-- Quick Injection Macro Snippets -->
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Quick Architectural Presets:</span>
+<div class="flex items-center gap-2 mt-2 flex-wrap">
+<button class="px-2.5 py-1 rounded-md bg-surface-container-low hover:bg-surface-container text-primary font-label-sm text-label-sm font-semibold border border-primary/20 transition-colors">
+                + Suggest Single-Flight Pattern
+              </button>
+<button class="px-2.5 py-1 rounded-md bg-surface-container-low hover:bg-surface-container text-primary font-label-sm text-label-sm font-semibold border border-primary/20 transition-colors">
+                + Recommend Fencing Tokens
+              </button>
+<button class="px-2.5 py-1 rounded-md bg-surface-container-low hover:bg-surface-container text-primary font-label-sm text-label-sm font-semibold border border-primary/20 transition-colors">
+                + Suggest CDC via Debezium
+              </button>
+<button class="px-2.5 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-semibold border border-emerald-200 transition-colors">
+                + Pre-Approve for TechCorp
+              </button>
+</div>
+</div>
+<!-- Guidance Text Editor Area -->
+<div class="space-y-1.5">
+<label class="font-label-md text-label-md font-semibold text-on-surface flex items-center justify-between">
+<span>Guidance Notes &amp; Architectural Correction</span>
+<span class="text-xs text-on-surface-variant font-normal">Markdown Supported</span>
+</label>
+<div class="border border-outline-variant/60 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all">
+<!-- Formatting toolbar -->
+<div class="flex items-center gap-1 px-3 py-1.5 bg-surface-container-low border-b border-outline-variant/40 text-on-surface-variant">
+<button class="p-1 hover:text-on-surface rounded hover:bg-surface-container" title="Bold"><span class="material-symbols-outlined text-[18px]">format_bold</span></button>
+<button class="p-1 hover:text-on-surface rounded hover:bg-surface-container" title="Italic"><span class="material-symbols-outlined text-[18px]">format_italic</span></button>
+<button class="p-1 hover:text-on-surface rounded hover:bg-surface-container" title="Code"><span class="material-symbols-outlined text-[18px]">code</span></button>
+<div class="w-px h-4 bg-outline-variant/60 mx-1"></div>
+<button class="p-1 hover:text-on-surface rounded hover:bg-surface-container" title="List"><span class="material-symbols-outlined text-[18px]">format_list_bulleted</span></button>
+<button class="p-1 hover:text-on-surface rounded hover:bg-surface-container" title="Reference Link"><span class="material-symbols-outlined text-[18px]">link</span></button>
+</div>
+<textarea class="w-full p-3 font-body-md text-body-md text-on-surface bg-surface-container-lowest border-0 focus:ring-0 resize-y leading-relaxed" rows="5">Rohan, commendable benchmark analysis with k6. The stale read stems from replica lag where the invalidate event fires before write commit propagates across all Postgres read replicas.
+
+Recommended solution:
+1. Implement versioned fencing tokens in Redis (increment monotonic version on write; reject reads with smaller versions).
+2. Alternatively, apply the 'Cache-Aside with Delayed Double-Deletion' pattern or use single-flight coalescing to eliminate thundering-herd on cache misses.
+
+Refer to Chapter 6.2 in our Advanced Distributed Systems notes. If you package this with the k6 before/after latency graph, it will be a stellar talking point for the TechCorp system design round.</textarea>
+</div>
+</div>
+<!-- Placement Endorsement Verification Checkbox -->
+<div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+<input checked="" class="mt-1 w-4 h-4 rounded text-primary border-emerald-300 focus:ring-primary" id="endorse_checkbox" type="checkbox"/>
+<div>
+<label class="font-label-lg text-label-lg font-bold text-emerald-900 cursor-pointer" for="endorse_checkbox">
+                Endorse Solution Architecture as Production-Ready
+              </label>
+<p class="font-body-sm text-body-sm text-emerald-800 mt-0.5">
+                Adds a verified faculty recommendation badge to Rohan Mehta's institutional portfolio visible directly to Campus Recruiters and Hiring Leads at TechCorp.
+              </p>
+</div>
+</div>
+<!-- Follow-up status radio options -->
+<div class="pt-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase tracking-wider">Ticket Outcome State:</span>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+<label class="flex items-center gap-2 p-3 rounded-lg border border-outline-variant/50 bg-surface-container-lowest cursor-pointer hover:bg-surface-container-low transition-colors">
+<input checked="" class="text-primary focus:ring-primary" name="ticket_resolution" type="radio" value="resolved"/>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Mark as Resolved</span>
+</label>
+<label class="flex items-center gap-2 p-3 rounded-lg border border-outline-variant/50 bg-surface-container-lowest cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="text-primary focus:ring-primary" name="ticket_resolution" type="radio" value="resubmit"/>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Request Code Re-submission</span>
+</label>
+<label class="flex items-center gap-2 p-3 rounded-lg border border-outline-variant/50 bg-surface-container-lowest cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="text-primary focus:ring-primary" name="ticket_resolution" type="radio" value="meet"/>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Schedule 15m 1:1 Sync</span>
+</label>
+</div>
+</div>
+<!-- Final Action Toolbar -->
+<div class="pt-4 border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 rounded-lg border border-outline-variant/60 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold transition-colors">
+                Save Draft
+              </button>
+<button class="px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">forward_to_inbox</span>
+<span>Forward to Co-Faculty / TA</span>
+</button>
+</div>
+<button class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-sm transition-all">
+<span class="material-symbols-outlined text-[20px]">send</span>
+<span>Send Guidance &amp; Endorse Ticket</span>
+<span class="text-xs font-mono font-normal opacity-75 ml-1">(Ctrl+Enter)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

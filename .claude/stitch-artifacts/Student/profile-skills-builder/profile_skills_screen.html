@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRIP Platform - Profile &amp; Skills Builder</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-on-surface": "#eaf1ff",
+            "tertiary-container": "#006948",
+            "on-secondary-fixed": "#131b2e",
+            "outline": "#747686",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed": "#85f8c4",
+            "on-secondary-container": "#5c647a",
+            "on-primary-fixed-variant": "#0039b5",
+            "inverse-surface": "#213145",
+            "secondary-fixed-dim": "#bec6e0",
+            "surface-container-lowest": "#ffffff",
+            "on-primary": "#ffffff",
+            "on-error-container": "#93000a",
+            "primary-container": "#1d4ed8",
+            "surface-tint": "#2151da",
+            "on-surface-variant": "#434655",
+            "on-tertiary": "#ffffff",
+            "on-primary-container": "#cad3ff",
+            "primary-fixed": "#dce1ff",
+            "on-tertiary-fixed": "#002114",
+            "tertiary": "#004f35",
+            "secondary-container": "#dae2fd",
+            "tertiary-fixed-dim": "#68dba9",
+            "primary": "#0037b0",
+            "error": "#ba1a1a",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface-container": "#e5eeff",
+            "surface-bright": "#f8f9ff",
+            "background": "#f8f9ff",
+            "surface-container-highest": "#d3e4fe",
+            "surface-container-low": "#eff4ff",
+            "primary-fixed-dim": "#b7c4ff",
+            "surface-variant": "#d3e4fe",
+            "surface-container-high": "#dce9ff",
+            "outline-variant": "#c4c5d7",
+            "on-surface": "#0b1c30",
+            "on-background": "#0b1c30",
+            "surface-dim": "#cbdbf5",
+            "secondary": "#565e74",
+            "secondary-fixed": "#dae2fd",
+            "on-tertiary-container": "#76eab6",
+            "inverse-primary": "#b7c4ff",
+            "on-tertiary-fixed-variant": "#005137",
+            "surface": "#f8f9ff",
+            "on-primary-fixed": "#001551"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "2rem",
+            "space-xl": "2.5rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.5rem",
+            "margin-sm": "1rem",
+            "gutter-sm": "1rem",
+            "gutter": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "1rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "metric-val": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "label-lg": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "display-lg-mobile": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+            "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "metric-val": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+            "headline-sm": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+            "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+            "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+            "display-lg-mobile": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    /* Ambient custom shadows matching style guidance */
+    .elevation-1 {
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+    }
+    .elevation-2 {
+      box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col font-body-md text-body-md selection:bg-primary selection:text-on-primary">
+<!-- Left Fixed Sidebar (SideNavBar Anchor) -->
+<aside class="fixed top-0 left-0 h-screen w-[260px] z-40 flex flex-col justify-between bg-surface-container-lowest border-r border-outline-variant shadow-sm p-4">
+<!-- Brand & Profile Identity Header -->
+<div class="flex flex-col gap-5">
+<!-- GRIP Logo Area -->
+<div class="flex items-center justify-between px-2 pt-1">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined fill-icon text-[22px]">school</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">GRIP</span>
+<span class="bg-surface-container text-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded font-semibold border border-outline-variant/40">CAMPUS</span>
+</div>
+<span class="font-body-sm text-[11px] text-on-surface-variant font-medium">Learn • Prepare • Grow</span>
+</div>
+</div>
+</div>
+<!-- Identity Summary Chip -->
+<div class="bg-surface-container-low p-2.5 rounded-xl border border-outline-variant/60 flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm flex items-center justify-center font-bold">
+          RM
+        </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface truncate leading-tight">Rohan Mehta</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant truncate">3rd Year • CSE Track</span>
+</div>
+</div>
+<!-- Main Navigation Rail -->
+<nav class="flex flex-col gap-1">
+<!-- 1. Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- 2. Profile & Skills (ACTIVE TAB) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-container-low text-primary font-label-lg text-label-lg font-semibold border-l-4 border-primary" href="#">
+<span class="material-symbols-outlined fill-icon text-primary">person</span>
+<span>Profile &amp; Skills</span>
+</a>
+<!-- 3. Career Compass -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary">explore</span>
+<span>Career Compass</span>
+</a>
+<!-- 4. Goal Tracker -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">flag</span>
+<span>Goal Tracker</span>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-sm text-[10px] px-1.5 py-0.5 rounded-full font-semibold">3 active</span>
+</a>
+<!-- 5. Mentorship & Q&A -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary">school</span>
+<span>Mentorship &amp; Q&amp;A</span>
+</a>
+<!-- 6. Interview & Readiness -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary">quiz</span>
+<span>Interview &amp; Readiness</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Bottom Placement Ready Widget & System Footer -->
+<div class="flex flex-col gap-3 pt-3 border-t border-outline-variant/60">
+<!-- Placement Ready Card -->
+<div class="bg-surface-bright p-3 rounded-xl border border-outline-variant/70 elevation-1">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-md text-label-md font-semibold text-on-surface">85% Placement Ready</span>
+<span class="flex items-center text-tertiary font-label-sm text-[11px] font-bold">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +12%
+          </span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mb-2 overflow-hidden">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>5 of 6 Rubrics Done</span>
+<span class="flex items-center gap-0.5 text-tertiary font-medium">
+<span class="material-symbols-outlined text-[12px] fill-icon">verified</span> TechCorp Verified
+          </span>
+</div>
+</div>
+<!-- Footer Navigation Items -->
+<div class="flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary text-[18px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/20 font-label-md text-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary text-[18px]">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Sticky Top Bar (TopNavBar Anchor) -->
+<header class="sticky top-0 right-0 z-30 w-full bg-surface-container-lowest border-b border-outline-variant elevation-1 ml-[260px] max-w-[calc(100vw-260px)] h-16 px-6 flex justify-between items-center">
+<!-- Breadcrumb & Left Search Context -->
+<div class="flex items-center gap-6">
+<nav class="flex items-center gap-1.5 font-label-md text-label-md text-on-surface-variant">
+<span>Portal</span>
+<span class="material-symbols-outlined text-outline text-[14px]">chevron_right</span>
+<span>Student Portal</span>
+<span class="material-symbols-outlined text-outline text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Profile &amp; Skills Builder</span>
+</nav>
+<!-- Global Search -->
+<div class="relative w-80 hidden xl:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-4 bg-surface-container-low border border-outline-variant/70 rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:bg-surface-container-lowest focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all outline-none" placeholder="Search competencies, coursework, certifications..." type="text"/>
+</div>
+</div>
+<!-- Header Actions -->
+<div class="flex items-center gap-3">
+<!-- Preview Public Portfolio Button -->
+<button class="h-9 px-3.5 rounded-lg border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+<span class="hidden sm:inline">Preview Public Portfolio</span>
+</button>
+<!-- Export PDF Button -->
+<button class="h-9 px-3.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md flex items-center gap-2 elevation-1 transition-colors">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>Export Verified Profile (PDF)</span>
+</button>
+<div class="h-6 w-px bg-outline-variant/80 mx-1"></div>
+<!-- Notification Bell -->
+<button aria-label="Notifications" class="relative p-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-error text-on-error font-label-sm text-[10px] rounded-full flex items-center justify-center font-bold">2</span>
+</button>
+<!-- User Avatar Thumbnail -->
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary font-label-md text-label-md flex items-center justify-center font-bold cursor-pointer hover:ring-2 hover:ring-primary-container/40 transition-all ml-1">
+        RM
+      </div>
+</div>
+</header>
+<!-- Main Content Canvas (Ml-260px offset for Left Rail) -->
+<main class="ml-[260px] p-6 max-w-[1440px] flex flex-col gap-6">
+<!-- 1. PROFILE HEADER & VERIFICATION COMPLETION BANNER -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant elevation-1 p-6 relative overflow-hidden">
+<!-- Accent Top Border Strip -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-container via-primary to-tertiary"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<!-- Left: Student Info Block -->
+<div class="flex items-start sm:items-center gap-5">
+<!-- Student Avatar with Online Badge -->
+<div class="relative shrink-0">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline-lg text-headline-lg flex items-center justify-center font-bold shadow-md">
+              RM
+            </div>
+<div class="absolute -bottom-1 -right-1 bg-surface-container-lowest p-0.5 rounded-full">
+<span class="material-symbols-outlined fill-icon text-tertiary text-[20px]" title="Institutional Identity Verified">verified</span>
+</div>
+</div>
+<!-- Academic & Contact Details -->
+<div class="flex flex-col gap-1.5">
+<div class="flex flex-wrap items-center gap-2.5">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold">Rohan Mehta</h1>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                Tier-1 Placement Candidate
+              </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant font-medium">
+              B.Tech Computer Science &amp; Engineering • Batch of 2026
+            </p>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-4 font-body-sm text-body-sm text-secondary">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">badge</span>
+                Roll No: <strong class="text-on-surface font-semibold">CS-2023-0482</strong>
+</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+                rohan.mehta@univ-engineering.edu
+              </span>
+<span class="flex items-center gap-1 font-semibold text-primary">
+<span class="material-symbols-outlined text-[16px]">grade</span>
+                CGPA 8.8 / 10.0 (Top 4% Dept. Rank)
+              </span>
+</div>
+<!-- External Profile Badges -->
+<div class="flex flex-wrap items-center gap-2 pt-1">
+<a class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm border border-outline-variant/60 transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]">code</span>
+<span>github.com/rohan-m</span>
+</a>
+<a class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm border border-outline-variant/60 transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]">link</span>
+<span>linkedin.com/in/rohan-mehta</span>
+</a>
+<a class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm border border-outline-variant/60 transition-colors" href="#">
+<span class="material-symbols-outlined text-[15px]">language</span>
+<span>rohanmehta.dev</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Right: Actions & Completeness Meter -->
+<div class="flex flex-col gap-3 min-w-[280px] lg:w-80">
+<div class="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/70">
+<div class="flex justify-between items-center mb-1.5">
+<span class="font-label-md text-label-md font-bold text-on-surface">Profile Completeness</span>
+<span class="font-label-md text-label-md font-extrabold text-primary">92%</span>
+</div>
+<!-- Dual-tone Progress Bar -->
+<div class="w-full bg-surface-variant rounded-full h-2 overflow-hidden flex">
+<div class="bg-primary-container h-full" style="width: 84%"></div>
+<div class="bg-tertiary-container h-full" style="width: 8%"></div>
+</div>
+<div class="mt-2.5 p-2 bg-surface-container-lowest rounded-lg border border-outline-variant/50 text-[11px] font-body-sm text-on-surface-variant flex items-center justify-between gap-2">
+<span class="leading-tight"><strong class="text-primary">+ Add Capstone Video (+8%)</strong> for 100% Institutional Certification</span>
+<button class="px-2 py-1 bg-primary text-on-primary font-label-sm text-[11px] rounded font-semibold hover:bg-primary-container shrink-0 transition-colors">
+                Upload
+              </button>
+</div>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex gap-2">
+<button class="flex-1 h-9 rounded-lg border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+<span>Edit Details</span>
+</button>
+<button class="flex-1 h-9 rounded-lg bg-surface-container-lowest border border-primary-container text-primary hover:bg-primary-container/10 font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">upload_file</span>
+<span>Sync ATS Resume</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. ACADEMIC RECORDS & VERIFIED COURSEWORK -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Institutional & SGPA Card (5 Columns) -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl border border-outline-variant elevation-1 p-5 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3 mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">account_balance</span>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Academic Trajectory</h2>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded text-primary font-semibold">Semester 5 Current</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+            University School of Engineering &amp; Technology • Affiliated to State Tech Board
+          </p>
+<!-- SGPA Trend Grid -->
+<div class="grid grid-cols-4 gap-2 mb-4">
+<div class="bg-surface-container-low p-2.5 rounded-lg border border-outline-variant/50 text-center">
+<span class="font-label-sm text-[11px] text-on-surface-variant block uppercase">Sem 1</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block mt-0.5">8.6</span>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-1.5">
+<div class="bg-primary h-1 rounded-full" style="width: 86%"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-lg border border-outline-variant/50 text-center">
+<span class="font-label-sm text-[11px] text-on-surface-variant block uppercase">Sem 2</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block mt-0.5">8.7</span>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-1.5">
+<div class="bg-primary h-1 rounded-full" style="width: 87%"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-lg border border-outline-variant/50 text-center">
+<span class="font-label-sm text-[11px] text-on-surface-variant block uppercase">Sem 3</span>
+<span class="font-headline-sm text-headline-sm font-bold text-tertiary block mt-0.5">8.9</span>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-1.5">
+<div class="bg-tertiary h-1 rounded-full" style="width: 89%"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-lg border border-outline-variant/50 text-center">
+<span class="font-label-sm text-[11px] text-on-surface-variant block uppercase">Sem 4</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block mt-0.5">8.8</span>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-1.5">
+<div class="bg-primary h-1 rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-bright p-3 rounded-lg border border-outline-variant/60 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary fill-icon">military_tech</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Cumulative CGPA</span>
+</div>
+<span class="font-metric-val text-metric-val text-primary font-bold">8.80</span>
+</div>
+</div>
+<!-- Verified Core Coursework (7 Columns) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl border border-outline-variant elevation-1 p-5">
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3 mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">verified_user</span>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Verified Core Coursework</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Validated via Academic Registrar</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<!-- Course Card 1 -->
+<div class="p-3 rounded-lg border border-outline-variant/70 bg-surface-bright flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Data Structures &amp; Algorithms</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Course Code: CS-301 • Sem 3</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="bg-[#ECFDF5] text-tertiary font-label-md text-label-md font-extrabold px-2 py-0.5 rounded border border-[#A7F3D0]">Grade O</span>
+</div>
+</div>
+<!-- Course Card 2 -->
+<div class="p-3 rounded-lg border border-outline-variant/70 bg-surface-bright flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Operating Systems Architecture</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Course Code: CS-402 • Sem 4</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="bg-[#ECFDF5] text-tertiary font-label-md text-label-md font-extrabold px-2 py-0.5 rounded border border-[#A7F3D0]">Grade A+</span>
+</div>
+</div>
+<!-- Course Card 3 -->
+<div class="p-3 rounded-lg border border-outline-variant/70 bg-surface-bright flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Database Management Systems</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Course Code: CS-404 • Sem 4</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="bg-[#ECFDF5] text-tertiary font-label-md text-label-md font-extrabold px-2 py-0.5 rounded border border-[#A7F3D0]">Grade A+</span>
+</div>
+</div>
+<!-- Course Card 4 -->
+<div class="p-3 rounded-lg border border-outline-variant/70 bg-surface-bright flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Computer Networks &amp; Protocols</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Course Code: CS-406 • Sem 4</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="bg-surface-container text-primary font-label-md text-label-md font-extrabold px-2 py-0.5 rounded border border-outline-variant/60">Grade A</span>
+</div>
+</div>
+<!-- Course Card 5 (In Progress) -->
+<div class="sm:col-span-2 p-3 rounded-lg border border-dashed border-outline-variant bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">pending_actions</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Distributed Systems &amp; Cloud Computing</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Course Code: CS-501 • Faculty Lead: Dr. K. Ramanathan</span>
+</div>
+</div>
+<span class="bg-[#FFFBEB] text-[#B45309] font-label-sm text-label-sm font-semibold px-2.5 py-0.5 rounded-full border border-[#FDE68A]">
+              Enrolled (Sem 5)
+            </span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. TECHNICAL SKILLS INVENTORY & COMPETENCY MATRIX -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant elevation-1 p-6 flex flex-col gap-6">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant/60 pb-5">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Technical Skills &amp; Competency Matrix</h2>
+<span class="bg-primary/10 text-primary font-label-sm text-label-sm px-2 py-0.5 rounded-full font-bold">18 Assessed</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+            Faculty-verified competencies benchmarked against Tier-1 campus hiring rubrics.
+          </p>
+</div>
+<div class="flex items-center gap-2.5">
+<button class="h-9 px-4 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-2 transition-colors elevation-1">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Add New Skill</span>
+</button>
+</div>
+</div>
+<!-- Filter Tabs -->
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-3.5 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold transition-colors">
+          All Skills (18)
+        </button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-colors">
+          Languages
+        </button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-colors">
+          Frameworks &amp; Libraries
+        </button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-colors">
+          DevOps &amp; Cloud
+        </button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-colors">
+          Core CS &amp; System Design
+        </button>
+</div>
+<!-- Interactive Skills Matrix Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<!-- Skill 1: React & TS (Advanced Verified) -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface-bright elevation-1 flex flex-col justify-between hover:border-primary-container transition-all">
+<div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">React.js &amp; TypeScript</h3>
+<span class="font-body-sm text-[11px] text-secondary">Frontend Architecture • 12 Projects</span>
+</div>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2 py-0.5 rounded-full font-label-sm text-[11px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] fill-icon">verified</span> Verified
+              </span>
+</div>
+<!-- Rubric Level & Bar -->
+<div class="mt-3">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-on-surface font-bold">Advanced Tier</span>
+<span class="text-primary font-bold">Rubric: 4.8 / 5.0</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 94%"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>Verified by <strong>Prof. Neha Sharma</strong></span>
+<button class="text-primary font-label-sm hover:underline">View Proof</button>
+</div>
+</div>
+<!-- Skill 2: Node.js / Express (Proficient Verified) -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface-bright elevation-1 flex flex-col justify-between hover:border-primary-container transition-all">
+<div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Node.js / Express</h3>
+<span class="font-body-sm text-[11px] text-secondary">Backend REST APIs • Microservices</span>
+</div>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2 py-0.5 rounded-full font-label-sm text-[11px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] fill-icon">verified</span> Verified
+              </span>
+</div>
+<div class="mt-3">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-on-surface font-bold">Proficient Tier</span>
+<span class="text-primary font-bold">Rubric: 4.6 / 5.0</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>Endorsed by <strong>Alumni Amit Verma</strong></span>
+<button class="text-primary font-label-sm hover:underline">View Proof</button>
+</div>
+</div>
+<!-- Skill 3: System Design & Microservices (Pending Faculty Review) -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface-bright elevation-1 flex flex-col justify-between hover:border-primary-container transition-all">
+<div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">System Design &amp; Microservices</h3>
+<span class="font-body-sm text-[11px] text-secondary">Scalability • Load Balancers • Kafka</span>
+</div>
+<span class="bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A] px-2 py-0.5 rounded-full font-label-sm text-[11px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">hourglass_top</span> In Review
+              </span>
+</div>
+<div class="mt-3">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-on-surface font-bold">Intermediate Tier</span>
+<span class="text-[#B45309] font-bold">Milestone Submitted</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-[#B45309] h-1.5 rounded-full" style="width: 70%"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span class="truncate">Faculty Review: gRPC Milestone</span>
+<span class="text-secondary font-label-sm">Under Review</span>
+</div>
+</div>
+<!-- Skill 4: Python & DSA (Advanced Benchmarked) -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface-bright elevation-1 flex flex-col justify-between hover:border-primary-container transition-all">
+<div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Python &amp; DSA</h3>
+<span class="font-body-sm text-[11px] text-secondary">500+ LeetCode Solved • Top 18%</span>
+</div>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2 py-0.5 rounded-full font-label-sm text-[11px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] fill-icon">verified</span> 82% Benchmark
+              </span>
+</div>
+<div class="mt-3">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-on-surface font-bold">Advanced Competitive</span>
+<span class="text-primary font-bold">Rubric: 4.9 / 5.0</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 96%"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>Automated Code Platform Sync</span>
+<button class="text-primary font-label-sm hover:underline">View Metrics</button>
+</div>
+</div>
+<!-- Skill 5: Docker & Kubernetes (Self-Assessed / Action Needed) -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface-bright elevation-1 flex flex-col justify-between hover:border-primary-container transition-all">
+<div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Docker &amp; Kubernetes</h3>
+<span class="font-body-sm text-[11px] text-secondary">CI/CD Pipelines • Containerization</span>
+</div>
+<span class="bg-surface-container text-secondary border border-outline-variant/60 px-2 py-0.5 rounded-full font-label-sm text-[11px] font-semibold">
+                Self-Assessed
+              </span>
+</div>
+<div class="mt-3">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-on-surface font-bold">Intermediate Tier</span>
+<span class="text-secondary font-medium">Pending Lab Eval</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 62%"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-[11px] font-body-sm">
+<span class="text-on-surface-variant">Cloud Lab Sem 5</span>
+<button class="text-primary font-label-sm font-bold hover:underline flex items-center gap-0.5">
+              Request Endorsement
+              <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Skill 6: PostgreSQL & MongoDB (Proficient Lab Verified) -->
+<div class="p-4 rounded-xl border border-outline-variant/80 bg-surface-bright elevation-1 flex flex-col justify-between hover:border-primary-container transition-all">
+<div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">PostgreSQL &amp; MongoDB</h3>
+<span class="font-body-sm text-[11px] text-secondary">Query Optimization • Indexing</span>
+</div>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2 py-0.5 rounded-full font-label-sm text-[11px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] fill-icon">verified</span> Verified
+              </span>
+</div>
+<div class="mt-3">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-on-surface font-bold">Proficient Tier</span>
+<span class="text-primary font-bold">Rubric: 4.7 / 5.0</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 90%"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>Verified in Sem 4 DB Lab</span>
+<button class="text-primary font-label-sm hover:underline">View Details</button>
+</div>
+</div>
+</div>
+<!-- Quick Add Skill Inline Drawer Simulation -->
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/70 mt-2">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">tune</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Direct Skill Registration &amp; Assessment Request</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Instant ATS &amp; Recruiter Profile Sync</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+<div>
+<label class="block font-label-sm text-[11px] text-on-surface-variant mb-1 uppercase font-semibold">Skill Title</label>
+<input class="w-full h-9 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-primary-container outline-none" placeholder="e.g. Apache Kafka, Go, GraphQL" type="text"/>
+</div>
+<div>
+<label class="block font-label-sm text-[11px] text-on-surface-variant mb-1 uppercase font-semibold">Domain Category</label>
+<select class="w-full h-9 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-primary-container outline-none">
+<option>Languages &amp; Runtimes</option>
+<option>Frameworks &amp; Libraries</option>
+<option>Cloud, Infra &amp; DevOps</option>
+<option>Database &amp; Storage</option>
+<option>System Architecture</option>
+</select>
+</div>
+<div>
+<label class="block font-label-sm text-[11px] text-on-surface-variant mb-1 uppercase font-semibold">Proficiency Level</label>
+<select class="w-full h-9 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-primary-container outline-none">
+<option>Intermediate (1+ yrs / Production project)</option>
+<option>Beginner (Coursework only)</option>
+<option>Proficient (Independent architecture)</option>
+<option>Advanced (Industry verified)</option>
+</select>
+</div>
+<div class="flex items-end">
+<button class="w-full h-9 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">send</span>
+              Submit for Verification
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. SOFT SKILLS & PROFESSIONAL COMPETENCIES + 5. VERIFIED CERTIFICATIONS -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Soft Skills & Behavioral Rubrics (6 Columns) -->
+<div class="lg:col-span-6 bg-surface-container-lowest rounded-xl border border-outline-variant elevation-1 p-6 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3 mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">psychology</span>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Professional Competencies</h2>
+</div>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2 py-0.5 rounded-full font-label-sm text-[11px] font-bold">
+              Panel Evaluated
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-5">
+            Structured evaluations aggregated across 4 institutional mock behavioral &amp; technical interview boards.
+          </p>
+<!-- Competency List -->
+<div class="flex flex-col gap-4">
+<!-- Item 1 -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-bold text-on-surface">Technical Articulation &amp; Communication</span>
+<span class="material-symbols-outlined text-tertiary text-[16px] fill-icon">check_circle</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-tertiary font-bold">Exceptional</span>
+<span class="font-label-md text-label-md font-extrabold text-on-surface">4.8 / 5.0</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2">
+<div class="bg-tertiary h-2 rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<!-- Item 2 -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-bold text-on-surface">Problem Solving &amp; Analytical Thinking</span>
+<span class="material-symbols-outlined text-tertiary text-[16px] fill-icon">check_circle</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-tertiary font-bold">Top Tier</span>
+<span class="font-label-md text-label-md font-extrabold text-on-surface">4.9 / 5.0</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2">
+<div class="bg-primary-container h-2 rounded-full" style="width: 98%"></div>
+</div>
+</div>
+<!-- Item 3 -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-bold text-on-surface">Agile Teamwork &amp; Collaboration</span>
+<span class="material-symbols-outlined text-tertiary text-[16px] fill-icon">check_circle</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Proficient</span>
+<span class="font-label-md text-label-md font-extrabold text-on-surface">4.5 / 5.0</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 90%"></div>
+</div>
+</div>
+<!-- Item 4 -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-bold text-on-surface">Hackathon &amp; Project Leadership</span>
+<span class="material-symbols-outlined text-tertiary text-[16px] fill-icon">check_circle</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Strong</span>
+<span class="font-label-md text-label-md font-extrabold text-on-surface">4.2 / 5.0</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 84%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-on-surface-variant font-body-sm text-[12px]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-outline text-[16px]">domain_verification</span>
+            Endorsed by Institutional Faculty &amp; Alumni Placement Council
+          </span>
+<button class="text-primary font-semibold hover:underline">Download Rubric Report</button>
+</div>
+</div>
+<!-- Verified Certifications & Credentials (6 Columns) -->
+<div class="lg:col-span-6 bg-surface-container-lowest rounded-xl border border-outline-variant elevation-1 p-6 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3 mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">workspace_premium</span>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Verified Certifications</h2>
+</div>
+<button class="h-8 px-2.5 rounded-lg border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[15px]">add</span>
+<span>Add Certification</span>
+</button>
+</div>
+<!-- Certifications List -->
+<div class="flex flex-col gap-3">
+<!-- Cert 1: AWS -->
+<div class="p-3.5 rounded-xl border border-outline-variant/70 bg-surface-bright elevation-1 flex items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold shrink-0">
+<span class="material-symbols-outlined">cloud</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">AWS Certified Cloud Practitioner</h3>
+<div class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">
+                    Credential ID: <span class="font-mono font-medium text-on-surface">AWS-8921-X</span> • Amazon Web Services
+                  </div>
+<div class="font-body-sm text-[11px] text-secondary mt-1">
+                    Issued Jun 2025 • Expires Jun 2028
+                  </div>
+</div>
+</div>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2 py-0.5 rounded text-label-sm text-[10px] font-bold shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] fill-icon">verified</span> Institutional Credential
+              </span>
+</div>
+<!-- Cert 2: Meta Frontend -->
+<div class="p-3.5 rounded-xl border border-outline-variant/70 bg-surface-bright elevation-1 flex items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold shrink-0">
+<span class="material-symbols-outlined">devices</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">Meta Certified Frontend Developer</h3>
+<div class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">
+                    Credential ID: <span class="font-mono font-medium text-on-surface">META-0428</span> • Meta / Coursera
+                  </div>
+<div class="font-body-sm text-[11px] text-secondary mt-1">
+                    Issued Jan 2025 • Lifetime Validity
+                  </div>
+</div>
+</div>
+<span class="bg-[#ECFDF5] text-tertiary border border-[#A7F3D0] px-2 py-0.5 rounded text-label-sm text-[10px] font-bold shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] fill-icon">verified</span> Verified
+              </span>
+</div>
+<!-- Cert 3: Dean's Honor List -->
+<div class="p-3.5 rounded-xl border border-outline-variant/70 bg-surface-bright elevation-1 flex items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold shrink-0">
+<span class="material-symbols-outlined">emoji_events</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface">University Dean's Honor List</h3>
+<div class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">
+                    Semesters 2, 3, &amp; 4 Continuous Academic Excellence Citation
+                  </div>
+<div class="font-body-sm text-[11px] text-secondary mt-1">
+                    Awarded by Vice-Chancellor &amp; Dean of Engineering
+                  </div>
+</div>
+</div>
+<span class="bg-surface-container text-primary border border-outline-variant/60 px-2 py-0.5 rounded text-label-sm text-[10px] font-bold shrink-0">
+                Honor Roll
+              </span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+<span class="font-body-sm text-[12px] text-on-surface-variant">3 of 3 records verified with digital signature</span>
+<button class="font-label-sm text-label-sm text-primary font-semibold hover:underline flex items-center gap-1">
+<span>Verify External Credentials</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</body></html>

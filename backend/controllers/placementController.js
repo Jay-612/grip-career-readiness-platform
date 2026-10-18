@@ -7,6 +7,7 @@ import EvaluationScore from '../model/EvaluationScore.js';
 import RecruiterFeedback from '../model/RecruiterFeedback.js';
 import CareerRoadmap from '../model/CareerRoadmap.js';
 import Company from '../model/Company.js';
+import { calculateStudentReadiness } from '../services/readinessService.js';
 
 // ─── Helper: Round to 2 decimal places ────────────────────────────
 const round2 = (num) => Math.round(num * 100) / 100;
@@ -52,100 +53,14 @@ export const getPlacementReadiness = async (req, res) => {
       });
     }
 
-    // ── Run 3 parallel data queries ──
-    const [goals, interviewData, feedbackCount] = await Promise.all([
-      // 1. Goal data
-      WeeklyGoal.find({ studentId }),
-
-      // 2. Interview data — aggregate MockInterviews + EvaluationScores
-      MockInterview.aggregate([
-        {
-          $match: {
-            studentId: new mongoose.Types.ObjectId(studentId),
-            status: 'completed',
-          },
-        },
-        {
-          $lookup: {
-            from: 'Evaluation_Scores',
-            localField: '_id',
-            foreignField: 'interviewId',
-            as: 'evaluation',
-          },
-        },
-        { $unwind: { path: '$evaluation', preserveNullAndEmptyArrays: true } },
-        {
-          $project: {
-            avgEval: {
-              $cond: {
-                if: { $ifNull: ['$evaluation', false] },
-                then: {
-                  $avg: [
-                    '$evaluation.technicalScore',
-                    '$evaluation.communicationScore',
-                    '$evaluation.confidenceScore',
-                  ],
-                },
-                else: 0,
-              },
-            },
-          },
-        },
-      ]),
-
-      // 3. Recruiter feedback count
-      RecruiterFeedback.countDocuments({ studentId }),
-    ]);
-
-    // ── Calculate goalScore ──
-    const totalGoals = goals.length;
-    const completedGoals = goals.filter((g) => g.status === 'completed').length;
-    const goalScore = totalGoals > 0
-      ? round2((completedGoals / totalGoals) * 100)
-      : 0;
-
-    // ── Calculate interviewScore ──
-    const completedInterviews = interviewData.length;
-    let avgInterviewScore = 0;
-    let interviewScore = 0;
-    if (completedInterviews > 0) {
-      const totalAvgEval = interviewData.reduce((sum, i) => sum + i.avgEval, 0);
-      avgInterviewScore = round2(totalAvgEval / completedInterviews);
-      interviewScore = round2(avgInterviewScore * 10); // scale 0–10 → 0–100
-    }
-
-    // ── Calculate feedbackScore ──
-    const feedbackScore = Math.min(feedbackCount * 20, 100);
-
-    // ── Final weighted score ──
-    const readinessScore = round2(
-      (goalScore * 0.30) + (interviewScore * 0.40) + (feedbackScore * 0.30)
-    );
-
-    // Update the student's readinessScore in their profile
-    await StudentProfile.findOneAndUpdate(
-      { studentId },
-      { readinessScore },
-      { upsert: false }
-    );
+    // ── Run Centralized Readiness Calculation Service ──
+    const readinessData = await calculateStudentReadiness(studentId);
 
     res.status(200).json({
       success: true,
       studentId: student._id,
       studentName: student.name,
-      readinessScore,
-      breakdown: {
-        goalScore,
-        interviewScore,
-        feedbackScore,
-      },
-      details: {
-        totalGoals,
-        completedGoals,
-        completedInterviews,
-        avgInterviewScore,
-        recruiterFeedbackCount: feedbackCount,
-      },
+      ...readinessData,
     });
   } catch (error) {
     res.status(500).json({
@@ -334,3 +249,54 @@ export const getLeaderboard = async (req, res) => {
     });
   }
 };
+
+// ─── 1.4 Get Authenticated Student's Rank & Percentile ───────────
+// GET /api/placement/my-rank
+export const getMyRank = async (req, res) => {
+  try {
+    const studentId = req.user?.id || req.user?.userId;
+
+    if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid student ID is required',
+      });
+    }
+
+    const sId = new mongoose.Types.ObjectId(studentId);
+
+    // Retrieve the student's current profile & readinessScore
+    const myProfile = await StudentProfile.findOne({ studentId: sId });
+    const myScore = myProfile?.readinessScore || 0;
+
+    // Fast indexed count of students with strictly higher readinessScore
+    const [higherScoreCount, totalStudents] = await Promise.all([
+      StudentProfile.countDocuments({ readinessScore: { $gt: myScore } }),
+      StudentProfile.countDocuments(),
+    ]);
+
+    const myRank = higherScoreCount + 1;
+    const total = Math.max(totalStudents, 1);
+    const percentilePct = Math.max(1, Math.round((myRank / total) * 100));
+
+    const targetTier =
+      myScore >= 80 ? 'Tier 1' : myScore >= 60 ? 'Tier 2' : 'General';
+
+    return res.status(200).json({
+      success: true,
+      studentId,
+      rank: myRank,
+      totalStudents: total,
+      percentile: `Top ${percentilePct}%`,
+      readinessScore: myScore,
+      targetTier,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while calculating student rank',
+      error: error.message,
+    });
+  }
+};
+

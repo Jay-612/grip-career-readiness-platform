@@ -1,0 +1,219 @@
+import apiClient from './apiClient';
+
+/**
+ * Faculty Service
+ * Connects directly to backend endpoints for faculty profile, cohort leaderboard,
+ * interview appointments, evaluations, guidance requests, and HOD analytics.
+ */
+export const facultyService = {
+  // Get faculty profile and user metadata
+
+  // GET /api/users/profile
+  getProfile: async () => {
+    const response = await apiClient.get('/users/profile');
+    return response.data;
+  },
+
+  // PUT /api/users/profile
+  updateProfile: async (profileData) => {
+    const response = await apiClient.put('/users/profile', profileData);
+    return response.data;
+  },
+
+  // Get scheduled interview appointments for current faculty member
+  // GET /api/appointments
+  getAppointments: async () => {
+    const response = await apiClient.get('/appointments');
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data?.appointments || [];
+  },
+
+  // Generate or refresh Google Meet room for an appointment (or save custom link)
+  // POST /api/appointments/:id/create-meet
+  generateGoogleMeet: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.post(`/appointments/${appointmentId}/create-meet`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
+
+  // Accept a pending mock interview appointment and generate Google Meet
+  // PATCH /api/appointments/:id/accept
+  acceptAppointment: async (appointmentId, customMeetLink = null) => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/accept`, {
+      customMeetLink,
+    });
+    return response.data;
+  },
+
+  // Decline/reject an appointment request
+  // PATCH /api/appointments/:id/reject
+  rejectAppointment: async (appointmentId, reason = '') => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/reject`, {
+      reason,
+    });
+    return response.data;
+  },
+
+  // Cancel scheduled interview appointment
+  // PATCH /api/appointments/:id/cancel
+  cancelAppointment: async (appointmentId, reason = '') => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/cancel`, {
+      reason,
+    });
+    return response.data;
+  },
+
+  // Get guidance requests from students (accessible to faculty)
+  // GET /api/guidance/requests?page=&limit=
+  getGuidanceRequests: async (page = 1, limit = 20) => {
+    const response = await apiClient.get('/guidance/requests', {
+      params: { page, limit },
+    });
+    return response.data;
+  },
+
+  // Get a single guidance request by ID with conversation replies
+  // GET /api/guidance/requests/:id
+  getGuidanceRequestById: async (id) => {
+    const response = await apiClient.get(`/guidance/requests/${id}`);
+    return response.data;
+  },
+
+  // Reply to a student guidance request
+  // POST /api/guidance/requests/:id/reply
+  replyGuidanceRequest: async (id, replyText) => {
+    const response = await apiClient.post(`/guidance/requests/${id}/reply`, {
+      reply: replyText,
+      answerText: replyText,
+    });
+    return response.data;
+  },
+
+  // Mark a student guidance request as resolved
+  // PUT /api/guidance/requests/:id/resolve
+  resolveGuidanceRequest: async (id) => {
+    const response = await apiClient.put(`/guidance/requests/${id}/resolve`);
+    return response.data;
+  },
+
+  // Get student placement readiness leaderboard for cohort insights
+  // GET /api/placement/leaderboard
+  getLeaderboard: async (page = 1, limit = 50) => {
+    const response = await apiClient.get('/placement/leaderboard', {
+      params: { page, limit },
+    });
+    return response.data;
+  },
+
+  // Submit mock interview rubric evaluation (with automated Action Plan triggers)
+  // POST /api/skills/evaluation
+  submitEvaluation: async ({
+    interviewId,
+    communication,
+    confidence,
+    technical,
+    technicalNotes,
+    communicationNotes,
+    confidenceNotes,
+    overallSynthesis,
+    facultyFeedback,
+    hiringVerdict,
+    actionPlanTasks,
+  }) => {
+    const response = await apiClient.post('/skills/evaluation', {
+      interviewId,
+      communication,
+      confidence,
+      technical,
+      technicalNotes,
+      communicationNotes,
+      confidenceNotes,
+      overallSynthesis,
+      facultyFeedback,
+      hiringVerdict,
+      actionPlanTasks,
+    });
+    return response.data;
+  },
+
+  // Real-time preview of the automated action plan based on rubric scores (< 7/10)
+  // POST /api/action-plans/preview
+  previewActionPlan: async (scores, notes = {}, tasks = []) => {
+    const response = await apiClient.post('/action-plans/preview', {
+      scores,
+      notes,
+      tasks,
+    });
+    return response.data;
+  },
+
+  // Get comprehensive progress analysis for an individual student
+  // GET /api/progress/dashboard/:studentId
+  getStudentProgress: async (studentId) => {
+    const response = await apiClient.get(`/progress/dashboard/${studentId}`);
+    return response.data;
+  },
+
+  // Get readiness score breakdown for an individual student
+  // GET /api/placement/readiness/:studentId
+  getStudentReadiness: async (studentId) => {
+    const response = await apiClient.get(`/placement/readiness/${studentId}`);
+    return response.data;
+  },
+
+  // Get student's interview history and past evaluation scores
+  // GET /api/progress/interviews/:studentId
+  getStudentInterviewAnalysis: async (studentId) => {
+    const response = await apiClient.get(`/progress/interviews/${studentId}`);
+    return response.data;
+  },
+
+  // Optional: Get department placement stats (HOD-only)
+  // GET /api/department/placement-stats
+  getDepartmentPlacementStats: async () => {
+    try {
+      const response = await apiClient.get('/department/placement-stats');
+      return response.data;
+    } catch {
+      // Non-HOD faculty return null gracefully without throwing
+      return null;
+    }
+  },
+
+  // Optional: Get department skill gaps (HOD-only)
+  // GET /api/department/skill-gaps
+  getDepartmentSkillGaps: async () => {
+    try {
+      const response = await apiClient.get('/department/skill-gaps');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
+  // Optional: Get department analytics (HOD-only)
+  // GET /api/department/analytics
+  getDepartmentAnalytics: async () => {
+    try {
+      const response = await apiClient.get('/department/analytics');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
+  // Optional: Get department career distribution (HOD-only)
+  // GET /api/department/career-distribution
+  getDepartmentCareerDistribution: async () => {
+    try {
+      const response = await apiClient.get('/department/career-distribution');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+};
+
+export default facultyService;

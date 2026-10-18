@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed": "node seed.js",
+    "test": "node test-action-plan-e2e.js && node test-mock-interview-e2e.js",
+    "test:action-plan": "node test-action-plan-e2e.js",
+    "test:mock-interview": "node test-mock-interview-e2e.js"
   },
   "type": "module",
   "keywords": [],
@@ -12,8 +16,10 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "googleapis": "^182.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.2"
   },

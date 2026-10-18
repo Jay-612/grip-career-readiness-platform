@@ -1,0 +1,840 @@
+{
+  "timestamp": "2026-10-04T02:23:32.483Z",
+  "routesTested": [],
+  "consoleErrors": [],
+  "networkErrors": [],
+  "metrics": {
+    "public-landing": {
+      "desktop": {
+        "height": 3056,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 27,
+        "buttons": 1,
+        "headings": 22,
+        "folds": 3.4
+      },
+      "tablet": {
+        "height": 3932,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 27,
+        "buttons": 1,
+        "headings": 22,
+        "folds": 3.8
+      },
+      "mobile": {
+        "height": 5702,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 27,
+        "buttons": 1,
+        "headings": 22,
+        "folds": 6.8
+      }
+    },
+    "public-login": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 4,
+        "buttons": 3,
+        "headings": 1,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 4,
+        "buttons": 3,
+        "headings": 1,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 4,
+        "buttons": 3,
+        "headings": 1,
+        "folds": 1
+      }
+    },
+    "public-register": {
+      "desktop": {
+        "height": 903,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 12,
+        "buttons": 7,
+        "headings": 1,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 12,
+        "buttons": 7,
+        "headings": 1,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 1040,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 12,
+        "buttons": 7,
+        "headings": 1,
+        "folds": 1.2
+      }
+    },
+    "student-dashboard": {
+      "desktop": {
+        "height": 1287,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 21,
+        "buttons": 7,
+        "headings": 10,
+        "folds": 1.4
+      },
+      "tablet": {
+        "height": 1271,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 21,
+        "buttons": 7,
+        "headings": 10,
+        "folds": 1.2
+      },
+      "mobile": {
+        "height": 2030,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 21,
+        "buttons": 7,
+        "headings": 10,
+        "folds": 2.4
+      }
+    },
+    "student-profile": {
+      "desktop": {
+        "height": 1146,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 30,
+        "buttons": 18,
+        "headings": 4,
+        "folds": 1.3
+      },
+      "tablet": {
+        "height": 1408,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 30,
+        "buttons": 18,
+        "headings": 4,
+        "folds": 1.4
+      },
+      "mobile": {
+        "height": 2105,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 30,
+        "buttons": 18,
+        "headings": 4,
+        "folds": 2.5
+      }
+    },
+    "student-career-compass": {
+      "desktop": {
+        "height": 1064,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 23,
+        "buttons": 13,
+        "headings": 5,
+        "folds": 1.2
+      },
+      "tablet": {
+        "height": 1330,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 23,
+        "buttons": 13,
+        "headings": 5,
+        "folds": 1.3
+      },
+      "mobile": {
+        "height": 1833,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 23,
+        "buttons": 13,
+        "headings": 5,
+        "folds": 2.2
+      }
+    },
+    "student-goals": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 11,
+        "headings": 2,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 11,
+        "headings": 2,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 1002,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 11,
+        "headings": 2,
+        "folds": 1.2
+      }
+    },
+    "student-guidance": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 5,
+        "buttons": 6,
+        "headings": 2,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 5,
+        "buttons": 6,
+        "headings": 2,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 5,
+        "buttons": 6,
+        "headings": 2,
+        "folds": 1
+      }
+    },
+    "student-interviews": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 10,
+        "buttons": 13,
+        "headings": 2,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 10,
+        "buttons": 13,
+        "headings": 2,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 10,
+        "buttons": 13,
+        "headings": 2,
+        "folds": 1
+      }
+    },
+    "student-alumni-posts": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 9,
+        "buttons": 23,
+        "headings": 4,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1036,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 9,
+        "buttons": 23,
+        "headings": 4,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 1401,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 9,
+        "buttons": 23,
+        "headings": 4,
+        "folds": 1.7
+      }
+    },
+    "faculty-dashboard": {
+      "desktop": {
+        "height": 1357,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 23,
+        "buttons": 21,
+        "headings": 4,
+        "folds": 1.5
+      },
+      "tablet": {
+        "height": 1765,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 23,
+        "buttons": 21,
+        "headings": 4,
+        "folds": 1.7
+      },
+      "mobile": {
+        "height": 2558,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 23,
+        "buttons": 21,
+        "headings": 4,
+        "folds": 3
+      }
+    },
+    "faculty-interviews": {
+      "desktop": {
+        "height": 1338,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 13,
+        "buttons": 16,
+        "headings": 2,
+        "folds": 1.5
+      },
+      "tablet": {
+        "height": 1355,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 13,
+        "buttons": 16,
+        "headings": 2,
+        "folds": 1.3
+      },
+      "mobile": {
+        "height": 1589,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 13,
+        "buttons": 16,
+        "headings": 2,
+        "folds": 1.9
+      }
+    },
+    "faculty-guidance": {
+      "desktop": {
+        "height": 1070,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 12,
+        "buttons": 16,
+        "headings": 8,
+        "folds": 1.2
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 10,
+        "buttons": 12,
+        "headings": 6,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 873,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 10,
+        "buttons": 12,
+        "headings": 6,
+        "folds": 1
+      }
+    },
+    "faculty-analytics": {
+      "desktop": {
+        "height": 1130,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 26,
+        "buttons": 13,
+        "headings": 3,
+        "folds": 1.3
+      },
+      "tablet": {
+        "height": 1574,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 26,
+        "buttons": 13,
+        "headings": 3,
+        "folds": 1.5
+      },
+      "mobile": {
+        "height": 2109,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 26,
+        "buttons": 13,
+        "headings": 3,
+        "folds": 2.5
+      }
+    },
+    "alumni-dashboard": {
+      "desktop": {
+        "height": 1091,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 12,
+        "buttons": 11,
+        "headings": 5,
+        "folds": 1.2
+      },
+      "tablet": {
+        "height": 1075,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 12,
+        "buttons": 11,
+        "headings": 5,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 1536,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 12,
+        "buttons": 11,
+        "headings": 5,
+        "folds": 1.8
+      }
+    },
+    "alumni-experience": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 7,
+        "buttons": 12,
+        "headings": 3,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 7,
+        "buttons": 12,
+        "headings": 3,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 7,
+        "buttons": 12,
+        "headings": 3,
+        "folds": 1
+      }
+    },
+    "alumni-mentorship": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 5,
+        "buttons": 11,
+        "headings": 1,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 5,
+        "buttons": 11,
+        "headings": 1,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 5,
+        "buttons": 11,
+        "headings": 1,
+        "folds": 1
+      }
+    },
+    "recruiter-dashboard": {
+      "desktop": {
+        "height": 1931,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 37,
+        "buttons": 23,
+        "headings": 3,
+        "folds": 2.1
+      },
+      "tablet": {
+        "height": 2010,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 37,
+        "buttons": 23,
+        "headings": 3,
+        "folds": 2
+      },
+      "mobile": {
+        "height": 3351,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 37,
+        "buttons": 23,
+        "headings": 3,
+        "folds": 4
+      }
+    },
+    "recruiter-company": {
+      "desktop": {
+        "height": 1103,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 8,
+        "headings": 4,
+        "folds": 1.2
+      },
+      "tablet": {
+        "height": 1107,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 8,
+        "headings": 4,
+        "folds": 1.1
+      },
+      "mobile": {
+        "height": 1630,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 8,
+        "headings": 4,
+        "folds": 1.9
+      }
+    },
+    "recruiter-feedback": {
+      "desktop": {
+        "height": 1353,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 18,
+        "headings": 3,
+        "folds": 1.5
+      },
+      "tablet": {
+        "height": 1356,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 18,
+        "headings": 3,
+        "folds": 1.3
+      },
+      "mobile": {
+        "height": 1965,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 17,
+        "buttons": 18,
+        "headings": 3,
+        "folds": 2.3
+      }
+    },
+    "admin-dashboard": {
+      "desktop": {
+        "height": 1323,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 20,
+        "buttons": 6,
+        "headings": 5,
+        "folds": 1.5
+      },
+      "tablet": {
+        "height": 1921,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 20,
+        "buttons": 6,
+        "headings": 5,
+        "folds": 1.9
+      },
+      "mobile": {
+        "height": 2481,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 20,
+        "buttons": 6,
+        "headings": 5,
+        "folds": 2.9
+      }
+    },
+    "admin-users": {
+      "desktop": {
+        "height": 991,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 39,
+        "buttons": 45,
+        "headings": 1,
+        "folds": 1.1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 39,
+        "buttons": 45,
+        "headings": 1,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 1395,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 39,
+        "buttons": 45,
+        "headings": 1,
+        "folds": 1.7
+      }
+    },
+    "admin-curriculum": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 18,
+        "buttons": 18,
+        "headings": 1,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 18,
+        "buttons": 18,
+        "headings": 1,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 942,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 18,
+        "buttons": 18,
+        "headings": 1,
+        "folds": 1.1
+      }
+    },
+    "admin-companies": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 21,
+        "buttons": 21,
+        "headings": 1,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 21,
+        "buttons": 21,
+        "headings": 1,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 1097,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 21,
+        "buttons": 21,
+        "headings": 1,
+        "folds": 1.3
+      }
+    },
+    "admin-events": {
+      "desktop": {
+        "height": 900,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 9,
+        "buttons": 9,
+        "headings": 1,
+        "folds": 1
+      },
+      "tablet": {
+        "height": 1024,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 9,
+        "buttons": 9,
+        "headings": 1,
+        "folds": 1
+      },
+      "mobile": {
+        "height": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 9,
+        "buttons": 9,
+        "headings": 1,
+        "folds": 1
+      }
+    },
+    "admin-analytics": {
+      "desktop": {
+        "height": 1327,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasHorizontalOverflow": false,
+        "cards": 16,
+        "buttons": 7,
+        "headings": 7,
+        "folds": 1.5
+      },
+      "tablet": {
+        "height": 1706,
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasHorizontalOverflow": false,
+        "cards": 16,
+        "buttons": 7,
+        "headings": 7,
+        "folds": 1.7
+      },
+      "mobile": {
+        "height": 1986,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "cards": 16,
+        "buttons": 7,
+        "headings": 7,
+        "folds": 2.4
+      }
+    }
+  }
+}

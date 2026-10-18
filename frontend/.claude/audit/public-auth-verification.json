@@ -1,0 +1,110 @@
+{
+  "public-landing": {
+    "title": "Landing Page",
+    "path": "/",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 3056,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 3.4,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 39,
+        "actionsCount": 14
+      },
+      "tablet": {
+        "scrollHeight": 3932,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 3.8,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 39,
+        "actionsCount": 14
+      },
+      "mobile": {
+        "scrollHeight": 5702,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 6.8,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 39,
+        "actionsCount": 14
+      }
+    }
+  },
+  "public-login": {
+    "title": "Login Page",
+    "path": "/login",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 900,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 6,
+        "actionsCount": 6
+      },
+      "tablet": {
+        "scrollHeight": 1024,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 6,
+        "actionsCount": 6
+      },
+      "mobile": {
+        "scrollHeight": 844,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 6,
+        "actionsCount": 6
+      }
+    }
+  },
+  "public-register": {
+    "title": "Register Page",
+    "path": "/register",
+    "viewports": {
+      "desktop": {
+        "scrollHeight": 903,
+        "scrollWidth": 1440,
+        "windowHeight": 900,
+        "windowWidth": 1440,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 14,
+        "actionsCount": 10
+      },
+      "tablet": {
+        "scrollHeight": 1024,
+        "scrollWidth": 768,
+        "windowHeight": 1024,
+        "windowWidth": 768,
+        "folds": 1,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 14,
+        "actionsCount": 10
+      },
+      "mobile": {
+        "scrollHeight": 1040,
+        "scrollWidth": 390,
+        "windowHeight": 844,
+        "windowWidth": 390,
+        "folds": 1.2,
+        "hasHorizontalOverflow": false,
+        "cardsCount": 14,
+        "actionsCount": 10
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "desktop": {
+    "scrollHeight": 1290,
+    "viewportHeight": 900,
+    "folds": 1.4,
+    "cards": 8,
+    "buttons": 18,
+    "sectionsFound": {
+      "header": true,
+      "timer": true,
+      "rubrics": true,
+      "observations": true
+    },
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "tablet": {
+    "scrollHeight": 1371,
+    "viewportHeight": 1024,
+    "folds": 1.3,
+    "cards": 8,
+    "buttons": 18,
+    "sectionsFound": {
+      "header": true,
+      "timer": true,
+      "rubrics": true,
+      "observations": true
+    },
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  "mobile": {
+    "scrollHeight": 1697,
+    "viewportHeight": 844,
+    "folds": 2,
+    "cards": 8,
+    "buttons": 18,
+    "sectionsFound": {
+      "header": true,
+      "timer": true,
+      "rubrics": true,
+      "observations": true
+    },
+    "consoleErrors": [],
+    "failedRequests": []
+  }
+}

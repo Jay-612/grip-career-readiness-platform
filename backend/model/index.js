@@ -15,6 +15,7 @@ import ActionPlan from './ActionPlan.js';
 import Company from './Company.js';
 import RecruiterFeedback from './RecruiterFeedback.js';
 import DepartmentEvent from './DepartmentEvent.js';
+import Notification from './Notification.js';
 
 export {
   User,
@@ -34,4 +35,5 @@ export {
   Company,
   RecruiterFeedback,
   DepartmentEvent,
+  Notification,
 };

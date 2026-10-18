@@ -6,9 +6,28 @@ import {
   getGuidanceRequestById,
   replyGuidanceRequest,
   updateGuidanceReply,
+  resolveGuidanceRequest,
+  getFacultyMentors,
+  getAlumniMentors,
 } from '../controllers/guidanceController.js';
 
 const router = express.Router();
+
+// GET /api/guidance/mentors/faculty — Dynamic Faculty list
+router.get(
+  '/mentors/faculty',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  getFacultyMentors
+);
+
+// GET /api/guidance/mentors/alumni — Dynamic Alumni list
+router.get(
+  '/mentors/alumni',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  getAlumniMentors
+);
 
 // POST /api/guidance/request — Student creates a guidance request
 router.post('/request', protect, authorize('student'), createGuidanceRequest);
@@ -29,18 +48,39 @@ router.get(
   getGuidanceRequestById
 );
 
-// POST /api/guidance/:id/reply & POST /api/guidance/requests/:id/reply — Mentor replies to a request
+// POST /api/guidance/:id/reply & POST /api/guidance/requests/:id/reply — Mentor or Student replies to a request
 router.post(
   '/:id/reply',
   protect,
-  authorize('faculty', 'alumni', 'admin'),
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  replyGuidanceRequest
+);
+
+router.post(
+  '/:id/replies',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
   replyGuidanceRequest
 );
 
 router.post(
   '/requests/:id/reply',
   protect,
-  authorize('faculty', 'alumni', 'admin'),
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  replyGuidanceRequest
+);
+
+router.post(
+  '/requests/:id/replies',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  replyGuidanceRequest
+);
+
+router.post(
+  '/reply/:id',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
   replyGuidanceRequest
 );
 
@@ -48,8 +88,52 @@ router.post(
 router.put(
   '/reply/:id',
   protect,
-  authorize('faculty', 'alumni', 'admin'),
+  authorize('student', 'faculty', 'alumni', 'admin'),
   updateGuidanceReply
+);
+
+router.put(
+  '/replies/:id',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  updateGuidanceReply
+);
+
+// PUT/PATCH /api/guidance/:id/resolve & /api/guidance/requests/:id/resolve — Mark resolved
+router.put(
+  '/:id/resolve',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  resolveGuidanceRequest
+);
+
+router.patch(
+  '/:id/resolve',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  resolveGuidanceRequest
+);
+
+router.put(
+  '/requests/:id/resolve',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  resolveGuidanceRequest
+);
+
+router.patch(
+  '/requests/:id/resolve',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  resolveGuidanceRequest
+);
+
+// GET /api/guidance/:id — Get request with replies (single ID alias)
+router.get(
+  '/:id',
+  protect,
+  authorize('student', 'faculty', 'alumni', 'admin'),
+  getGuidanceRequestById
 );
 
 export default router;

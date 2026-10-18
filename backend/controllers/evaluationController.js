@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import EvaluationScore from '../model/EvaluationScore.js';
 import MockInterview from '../model/MockInterview.js';
+import { calculateStudentReadiness } from '../services/readinessService.js';
+import { createAndAssignActionPlan } from '../services/actionPlanService.js';
 
 // ─── POST /api/skills/evaluation — Save Skill Evaluation Scores ────
 export const saveEvaluationScore = async (req, res) => {
@@ -22,6 +24,13 @@ export const saveEvaluationScore = async (req, res) => {
       communicationScore,
       confidenceScore,
       technicalScore,
+      technicalNotes,
+      communicationNotes,
+      confidenceNotes,
+      overallSynthesis,
+      facultyFeedback,
+      hiringVerdict,
+      actionPlanTasks,
     } = req.body;
 
     if (!interviewId) {
@@ -68,19 +77,83 @@ export const saveEvaluationScore = async (req, res) => {
       });
     }
 
+    if (interview.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot evaluate a cancelled mock interview appointment.',
+      });
+    }
+
+    if (interview.status !== 'scheduled' && interview.status !== 'in_progress') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot evaluate interview with status "${interview.status}". Must be scheduled or in-progress.`,
+      });
+    }
+
     // Update interview status to completed
     interview.status = 'completed';
     await interview.save();
 
-    await EvaluationScore.create({
-      interviewId,
-      communicationScore: commVal,
-      confidenceScore: confVal,
-      technicalScore: techVal,
-    });
+    // Prevent duplicate evaluation score records
+    let scoreRecord = await EvaluationScore.findOne({ interviewId });
+    if (scoreRecord) {
+      scoreRecord.communicationScore = commVal;
+      scoreRecord.confidenceScore = confVal;
+      scoreRecord.technicalScore = techVal;
+      await scoreRecord.save();
+    } else {
+      scoreRecord = await EvaluationScore.create({
+        interviewId,
+        communicationScore: commVal,
+        confidenceScore: confVal,
+        technicalScore: techVal,
+      });
+    }
+
+    // Automatically trigger Action Plan and assign remedial WeeklyGoal items
+    // (Based on SRS Section R.4.5 & Lab-3 Sequence & Activity Diagrams)
+    let actionPlan = null;
+    let assignedGoals = [];
+    if (interview.studentId) {
+      const evaluatorId = req.user?.id || req.user?._id || interview.interviewerId;
+
+      const actionPlanResult = await createAndAssignActionPlan({
+        studentId: interview.studentId,
+        interviewId: interview._id,
+        evaluatorId,
+        scores: {
+          technical: techVal,
+          communication: commVal,
+          confidence: confVal,
+        },
+        notes: {
+          technicalNotes,
+          communicationNotes,
+          confidenceNotes,
+          overallSynthesis,
+          facultyFeedback: facultyFeedback || overallSynthesis,
+          hiringVerdict,
+        },
+        tasks: Array.isArray(actionPlanTasks) ? actionPlanTasks : [],
+        facultyFeedback: facultyFeedback || overallSynthesis,
+      });
+
+      actionPlan = actionPlanResult.actionPlan;
+      assignedGoals = actionPlanResult.assignedGoals;
+
+      // Recalculate student readiness asynchronously
+      calculateStudentReadiness(interview.studentId).catch((err) =>
+        console.error('Async readiness update failed after interview evaluation:', err.message)
+      );
+    }
 
     return res.status(201).json({
-      message: 'Scores saved successfully',
+      success: true,
+      message: 'Scores saved and action plan processed successfully',
+      evaluation: scoreRecord,
+      actionPlan,
+      assignedGoals,
     });
   } catch (error) {
     return res.status(500).json({
@@ -89,4 +162,8 @@ export const saveEvaluationScore = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export default {
+  saveEvaluationScore,
 };
